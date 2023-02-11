@@ -40,7 +40,7 @@ public class OneCoffeeBotUpdateHandler extends NoopUpdateVisitor {
         Long userId = Objects.requireNonNull(model.getUser().getUserId(), "UserId is null");
         userStateMap.put(userId, UserState.DEFAULT);
         messageSender.sendMessage(userId,
-                NewMessageBodyBuilder.ofText("Бот, призванный помочь одиноким или скучающим людям найти компанию или провести время вместе \n" +
+                NewMessageBodyBuilder.ofText("Бот, призванный помочь одиноким или скучающим людям найти компанию и славно провести время вместе \n" +
                         "Напиши /help, чтобы получить список команд!").build());
     }
 

@@ -31,7 +31,7 @@ public class DefaultCommandHandler extends CommandHandler {
             case ("/help") -> {
                 handleHelp(message);
             }
-            case ("/end") -> {
+            case ("/start") -> {
                 handleStart(message);
             }
             default -> {
