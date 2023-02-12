@@ -13,7 +13,7 @@ public abstract class CommandHandler {
 
     public void handle(Message message) {
         String text = message.getBody().getText();
-        if (text == null || text.charAt(0) != '/') {
+        if (text == null || text.isEmpty() || text.charAt(0) != '/') {
             handleText(message);
             return;
         }
