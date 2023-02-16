@@ -9,12 +9,6 @@ import one.coffee.sql.tables.UsersTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import chat.tamtam.bot.exceptions.TamTamBotException;
-import chat.tamtam.bot.longpolling.LongPollingBotOptions;
-import one.coffee.bot.OneCoffeeBot;
-import one.coffee.bot.OneCoffeeBotUpdateHandler;
-import one.coffee.utils.StaticContext;
-
 public class Main {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -34,9 +28,22 @@ public class Main {
 //            LOG.error("Failed to start bot: " + e.getMessage());
 //            System.exit(1);
 //        }
-        UsersTable.putUser(new User(2077, "St. Petersburg",
-                new UserState(1, "Pretty good state!"), new UserConnection(333, 1, 2)));
+
+        testSQL();
+    }
+
+    public static void testSQL() {
+        User user1 = new User(2077, "St. Petersburg", UserState.DEFAULT, null);
+        User user2 = new User(2078, "Moscow", UserState.DEFAULT, null);
+        UserConnection userConnection = new UserConnection(user1, user2);
+        user1.setUserConnection(userConnection);
+        user2.setUserConnection(userConnection);
+
+        UsersTable.putUser(user1);
+        UsersTable.putUser(user2);
+
         System.out.println(UsersTable.getUserById(2077));
+        System.out.println(UsersTable.getUserById(2078));
     }
 
 }

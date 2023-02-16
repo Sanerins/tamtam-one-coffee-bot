@@ -1,7 +1,5 @@
 package one.coffee.sql.entities;
 
-import java.text.MessageFormat;
-
 public class User implements Entity {
 
     private long id;
@@ -48,8 +46,22 @@ public class User implements Entity {
         this.userConnection = userConnection;
     }
 
+    public User getConnectedUser() {
+        return userConnection.getUser2();
+    }
+
     @Override
     public String sqlValues() {
-        return String.format("(%d, '%s', %d, %d)", id, city, userState.getId(), userConnection.getId());
+        return String.format("(%d, '%s', %d, %d)", id, city, userState.getStateType().getId(), userConnection.getId());
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", city='" + city + '\'' +
+                ", userState=" + userState +
+                ", userConnection=" + userConnection +
+                '}';
     }
 }

@@ -1,15 +1,21 @@
 package one.coffee.sql.entities;
 
-public class UserConnection {
+public class UserConnection implements Entity {
 
     private long id;
-    private long user1Id;
-    private long user2Id;
 
-    public UserConnection(long id, long user1Id, long user2Id) {
+    // No setters because if we change one of the users connection will break
+    private final User user1;
+    private final User user2;
+
+    public UserConnection(User user1, User user2) {
+        this(-1, user1, user2);
+    }
+
+    public UserConnection(long id, User user1, User user2) {
         this.id = id;
-        this.user1Id = user1Id;
-        this.user2Id = user2Id;
+        this.user1 = user1;
+        this.user2 = user2;
     }
 
     public long getId() {
@@ -20,19 +26,24 @@ public class UserConnection {
         this.id = id;
     }
 
-    public long getUser1Id() {
-        return user1Id;
+    public User getUser1() {
+        return user1;
     }
 
-    public void setUser1Id(long user1Id) {
-        this.user1Id = user1Id;
+    public User getUser2() {
+        return user2;
     }
 
-    public long getUser2Id() {
-        return user2Id;
+    @Override
+    public String toString() {
+        return "UserConnection{" +
+                ", user1=" + user1 +
+                ", user2=" + user2 +
+                '}';
     }
 
-    public void setUser2Id(long user2Id) {
-        this.user2Id = user2Id;
+    @Override
+    public String sqlValues() {
+        return String.format("(%d, %d)", user1.getId(), user2.getId());
     }
 }

@@ -4,20 +4,19 @@ import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 
+import one.coffee.sql.entities.UserState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.model.Message;
 import one.coffee.utils.CommandHandler;
-import one.coffee.utils.MessageSender;
 import one.coffee.utils.StaticContext;
-import one.coffee.utils.UserState;
 
 public class ChattingCommandHandler extends CommandHandler {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final ConcurrentMap<Long, UserState> userStateMap = StaticContext.getUserStateMap();
+    private final ConcurrentMap<Long, UserState.StateType> userStateMap = StaticContext.getUserStateMap();
     private final ConcurrentMap<Long, Long> userConnections = StaticContext.getConnections();
 
     public ChattingCommandHandler() {
@@ -65,8 +64,8 @@ public class ChattingCommandHandler extends CommandHandler {
         messageSender.sendMessage(message.getSender().getUserId(), NewMessageBodyBuilder.ofText("Заканчиваю диалог с пользователем...").build());
         messageSender.sendMessage(recipient, NewMessageBodyBuilder.ofText("Пользователь решил закончить с вами диалог, надеюсь все прошло сладко!").build());
 
-        userStateMap.put(message.getSender().getUserId(), UserState.DEFAULT);
-        userStateMap.put(recipient, UserState.DEFAULT);
+        userStateMap.put(message.getSender().getUserId(), UserState.StateType.DEFAULT);
+        userStateMap.put(recipient, UserState.StateType.DEFAULT);
 
         userConnections.remove(message.getSender().getUserId());
         userConnections.remove(recipient);
@@ -81,7 +80,7 @@ public class ChattingCommandHandler extends CommandHandler {
             return null;
         }
 
-        if (userStateMap.get(recipient) != UserState.CHATTING) {
+        if (userStateMap.get(recipient) != UserState.StateType.CHATTING) {
             LOG.error("The recipient " + recipient + " is not in chatting state for user " + message.getSender().getUserId());
             handleConnectionError(message);
             return null;
@@ -96,7 +95,7 @@ public class ChattingCommandHandler extends CommandHandler {
 
     private void handleConnectionError(Message message) {
         messageSender.sendMessage(message.getSender().getUserId(), NewMessageBodyBuilder.ofText("Похоже соединение разорвалось...").build());
-        userStateMap.put(message.getSender().getUserId(), UserState.DEFAULT);
+        userStateMap.put(message.getSender().getUserId(), UserState.StateType.DEFAULT);
     }
 
 }

@@ -7,6 +7,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import chat.tamtam.botapi.client.TamTamClient;
 import one.coffee.sql.DB;
+import one.coffee.sql.entities.UserState;
 
 public class StaticContext {
 
@@ -16,7 +17,7 @@ public class StaticContext {
     //TODO: userWaitList должен учитывать из какого города юзер
     //TODO: userConnections сейчас - полный кринж, ибо храним две инвентированные пары ключ-значение, чтобы собеседники общались
     //TODO: сделал так, ибо сделаем нормально в SQL бд, будет табличка connection с двумя лонгами и id.
-    private static ConcurrentMap<Long, UserState> userStateMap;
+    private static ConcurrentMap<Long, UserState.StateType> userStateMap;
     private static ConcurrentMap<Long, Long> userConnections;
     private static BlockingQueue<Long> userWaitList;
     private static final DB db = new DB();
@@ -44,7 +45,7 @@ public class StaticContext {
         return sender;
     }
 
-    public static ConcurrentMap<Long, UserState> getUserStateMap() {
+    public static ConcurrentMap<Long, UserState.StateType> getUserStateMap() {
         return userStateMap;
     }
 
@@ -56,7 +57,7 @@ public class StaticContext {
         return userWaitList;
     }
 
-    private static ConcurrentMap<Long, UserState> loadUserStateMap() {
+    private static ConcurrentMap<Long, UserState.StateType> loadUserStateMap() {
         return new ConcurrentHashMap<>();
     }
 

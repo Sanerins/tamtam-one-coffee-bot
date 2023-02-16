@@ -2,11 +2,8 @@ package one.coffee.sql.tables;
 
 import one.coffee.sql.DB;
 
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public abstract class Table {
 
@@ -21,11 +18,11 @@ public abstract class Table {
     }
 
     protected void init() {
-        DB.dropTableFor(shortName);
-        DB.createTableFor(this);
+        DB.dropTable(this);
+        DB.createTable(this);
     }
 
-    // Returns full name of the table with specified types
+    // Returns full name of the table with specified types.
     @Override
     public String toString() {
         StringBuilder fullName = new StringBuilder(shortName);
@@ -40,7 +37,8 @@ public abstract class Table {
         return fullName.toString();
     }
 
-    // Without column `id`
+    // Без поля `id`. Формируется в порядке предоставления имён полей в конструкторе каждой таблицы.
+    // Фактически результат будет равен '(argName1, argName2, ...)'.
     public String signature() {
         StringBuilder signatureName = new StringBuilder(shortName);
         signatureName.append(SIGNATURE_OPEN_BRACKET);

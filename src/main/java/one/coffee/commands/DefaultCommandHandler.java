@@ -5,6 +5,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
+import one.coffee.sql.entities.UserState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,12 +13,11 @@ import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.model.Message;
 import one.coffee.utils.CommandHandler;
 import one.coffee.utils.StaticContext;
-import one.coffee.utils.UserState;
 
 public class DefaultCommandHandler extends CommandHandler {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final ConcurrentMap<Long, UserState> userStateMap = StaticContext.getUserStateMap();
+    private final ConcurrentMap<Long, UserState.StateType> userStateMap = StaticContext.getUserStateMap();
     private final ConcurrentMap<Long, Long> userConnections = StaticContext.getConnections();
     private final BlockingQueue<Long> userWaitList = StaticContext.getUserWaitList();
 
@@ -68,7 +68,7 @@ public class DefaultCommandHandler extends CommandHandler {
             startTheWait(message);
             return;
         }
-        if (userStateMap.get(recipient) != UserState.WAITING) {
+        if (userStateMap.get(recipient) != UserState.StateType.WAITING) {
             LOG.error("User " + userWaitList + " is not waiting in the userWaitList");
             startTheWait(message);
             return;
@@ -77,8 +77,8 @@ public class DefaultCommandHandler extends CommandHandler {
         userConnections.put(recipient, userId);
         userConnections.put(userId, recipient);
 
-        userStateMap.put(recipient, UserState.CHATTING);
-        userStateMap.put(userId, UserState.CHATTING);
+        userStateMap.put(recipient, UserState.StateType.CHATTING);
+        userStateMap.put(userId, UserState.StateType.CHATTING);
 
         messageSender.sendMessage(userId,
                 NewMessageBodyBuilder.ofText("""
@@ -101,7 +101,7 @@ public class DefaultCommandHandler extends CommandHandler {
                     NewMessageBodyBuilder.ofText("Встать в список ждущих пользователей не получилось, попробуй чуть позже :( ").build());
             return false;
         }
-        userStateMap.put(message.getSender().getUserId(), UserState.WAITING);
+        userStateMap.put(message.getSender().getUserId(), UserState.StateType.WAITING);
         messageSender.sendMessage(message.getSender().getUserId(),
                 NewMessageBodyBuilder.ofText("Вы успешно добавлены в список ждущий пользователей! Ожидайте начала диалога! ").build());
         return true;
