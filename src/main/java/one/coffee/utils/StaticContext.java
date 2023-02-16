@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import chat.tamtam.botapi.client.TamTamClient;
+import one.coffee.sql.DB;
 
 public class StaticContext {
 
@@ -18,6 +19,7 @@ public class StaticContext {
     private static ConcurrentMap<Long, UserState> userStateMap;
     private static ConcurrentMap<Long, Long> userConnections;
     private static BlockingQueue<Long> userWaitList;
+    private static final DB db = new DB();
 
     private static boolean isSet = false;
 
@@ -27,9 +29,9 @@ public class StaticContext {
         }
         client = TamTamClient.create(token);
         sender = new MessageSender(client);
-        userStateMap = new ConcurrentHashMap<>();
-        userConnections = new ConcurrentHashMap<>();
-        userWaitList = new LinkedBlockingQueue<>();
+        userStateMap = loadUserStateMap();
+        userConnections = loadUserConnections();
+        userWaitList = loadUserWaitList();
 
         isSet = true;
     }
@@ -46,9 +48,23 @@ public class StaticContext {
         return userStateMap;
     }
 
-    public static ConcurrentMap<Long, Long> getConnections() { return userConnections; }
+    public static ConcurrentMap<Long, Long> getConnections() {
+        return userConnections;
+    }
 
     public static BlockingQueue<Long> getUserWaitList() {
         return userWaitList;
+    }
+
+    private static ConcurrentMap<Long, UserState> loadUserStateMap() {
+        return db.getUserStates();
+    }
+
+    private static ConcurrentMap<Long, Long> loadUserConnections() {
+        return new ConcurrentHashMap<>();
+    }
+
+    private static BlockingQueue<Long> loadUserWaitList() {
+        return new LinkedBlockingQueue<>();
     }
 }
