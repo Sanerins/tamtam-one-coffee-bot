@@ -57,7 +57,7 @@ public class StaticContext {
     }
 
     private static ConcurrentMap<Long, UserState> loadUserStateMap() {
-        return db.getUserStates();
+        return new ConcurrentHashMap<>();
     }
 
     private static ConcurrentMap<Long, Long> loadUserConnections() {

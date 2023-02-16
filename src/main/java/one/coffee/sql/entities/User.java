@@ -1,18 +1,19 @@
 package one.coffee.sql.entities;
 
-public class User {
+import java.text.MessageFormat;
+
+public class User implements Entity {
 
     private long id;
+    private String city;
     private UserState userState;
     private UserConnection userConnection;
-    private String city;
 
-
-    public User(long id, UserState userState, UserConnection userConnection, String city) {
+    public User(long id, String city, UserState userState, UserConnection userConnection) {
         this.id = id;
+        this.city = city;
         this.userState = userState;
         this.userConnection = userConnection;
-        this.city = city;
     }
 
     public long getId() {
@@ -21,6 +22,14 @@ public class User {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
     }
 
     public UserState getState() {
@@ -39,11 +48,8 @@ public class User {
         this.userConnection = userConnection;
     }
 
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
+    @Override
+    public String sqlValues() {
+        return String.format("(%d, '%s', %d, %d)", id, city, userState.getId(), userConnection.getId());
     }
 }

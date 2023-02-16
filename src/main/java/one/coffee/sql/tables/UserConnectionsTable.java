@@ -1,17 +1,20 @@
 package one.coffee.sql.tables;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class UserConnectionsTable extends Table {
 
-    private UserConnectionsTable() {
-    }
+    public static final UserConnectionsTable INSTANCE = new UserConnectionsTable();
 
-    public static void init() {
-        Table.init("userConnections", List.of(
-                "id BIGINT PRIMARY KEY",
-                "user1Id INT REFERENCES users(userId)",
-                "user2Id INT REFERENCES users(userId)"
-        ));
+    private UserConnectionsTable() {
+        shortName = "userConnections";
+        args = List.of(
+                Map.entry("id", "BIGINT PRIMARY KEY"),
+                Map.entry("user1Id", "INT REFERENCES users(userId)"),
+                Map.entry("user2Id", "INT REFERENCES users(userId)")
+        );
+        init();
     }
 }
