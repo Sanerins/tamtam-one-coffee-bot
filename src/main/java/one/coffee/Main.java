@@ -36,11 +36,6 @@ public class Main {
         User user1 = new User(2077, "St. Petersburg", UserState.DEFAULT, null);
         User user2 = new User(2078, "Moscow", UserState.DEFAULT, null);
         UserConnection userConnection = new UserConnection(user1, user2);
-        user1.setUserConnection(userConnection);
-        user2.setUserConnection(userConnection);
-
-        UsersTable.putUser(user1);
-        UsersTable.putUser(user2);
 
         System.out.println(UsersTable.getUserById(2077));
         System.out.println(UsersTable.getUserById(2078));

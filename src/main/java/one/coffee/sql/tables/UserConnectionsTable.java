@@ -26,27 +26,36 @@ public class UserConnectionsTable extends Table {
         init();
     }
 
-    public static UserConnection getUserConnectionById(long id) {
+    public static UserConnection getUserConnectionByUserId(long userId) {
         AtomicReference<UserConnection> userConnection = new AtomicReference<>();
         String query = MessageFormat.format(
-                "SELECT * FROM {0}",
+                "SELECT *" +
+                        " FROM {0}" +
+                        " WHERE user1Id = " + userId + " OR user2Id = " + userId,
                 INSTANCE.shortName
         );
 
         DB.executeQuery(query, rs -> {
             if (!rs.next()) {
-                throw new SQLException("No userConnection with such id in DB: " + id);
+                throw new SQLException("No userConnection with such userId in DB: " + userId);
             }
 
             long userConnectionId = rs.getLong("id");
 
+            long user1Id = rs.getLong("user1Id");
+            String city1 = rs.getString("city1");
+            User user1 = new User(user1Id, city1, UserState.CHATTING, null);
 
+            long user2Id = rs.getLong("user2Id");
+            String city2 = rs.getString("city2");
+            User user2 = new User(user2Id, city2, UserState.CHATTING, null);
 
-            UserState.StateType stateType = UserState.StateType.fromId(rs.getLong("stateId"));
-            userState.set(new UserState(stateType));
+            userConnection.set(new UserConnection(user1, user2));
+            user1.setUserConnection(userConnection.get());
+            user2.setUserConnection(userConnection.get());
         });
 
-        return userState.get();
+        return userConnection.get();
     }
 
     public static void putUserConnection(UserConnection userConnection) {

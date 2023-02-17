@@ -1,5 +1,7 @@
 package one.coffee.sql.entities;
 
+import java.util.Objects;
+
 public class User implements Entity {
 
     private long id;
@@ -8,6 +10,11 @@ public class User implements Entity {
     private UserConnection userConnection;
 
     public User(long id, String city, UserState userState, UserConnection userConnection) {
+        if (city == null || city.trim().isEmpty()) {
+            throw new IllegalArgumentException("User's city can't be empty!");
+        }
+        Objects.requireNonNull(userState, "UserState can't be null!");
+
         this.id = id;
         this.city = city;
         this.userState = userState;
