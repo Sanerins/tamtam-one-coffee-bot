@@ -26,18 +26,18 @@ public class UserConnectionsTable extends Table {
         init();
     }
 
-    public static UserConnection getUserConnectionByUserId(long userId) {
+    public static UserConnection getUserConnectionByUsersId(long user1Id, long user2Id) {
         AtomicReference<UserConnection> userConnection = new AtomicReference<>();
         String query = MessageFormat.format(
                 "SELECT *" +
                         " FROM {0}" +
-                        " WHERE user1Id = " + userId + " OR user2Id = " + userId,
+                        " WHERE userId = " + user1Id + " OR userId = " + user2Id,
                 INSTANCE.shortName
         );
 
         DB.executeQuery(query, rs -> {
             if (!rs.next()) {
-                throw new SQLException("No userConnection with such userId in DB: " + userId);
+                throw new SQLException("No UserConnection for 'userId'=" + user1Id + " OR 'userId'=" + user2Id);
             }
 
             long userConnectionId = rs.getLong("id");
@@ -65,4 +65,5 @@ public class UserConnectionsTable extends Table {
     public static void deleteUserConnectionById(long id) {
         DB.deleteEntityById(INSTANCE, id);
     }
+
 }

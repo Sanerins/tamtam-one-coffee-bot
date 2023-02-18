@@ -1,8 +1,5 @@
 package one.coffee.sql.tables;
 
-import one.coffee.sql.DB;
-import one.coffee.sql.entities.Entity;
-
 import java.util.List;
 import java.util.Map;
 
@@ -10,7 +7,6 @@ public abstract class Table {
 
     protected String shortName;
     protected List<Map.Entry<String /*argNames*/, String /*argValues*/>> args;
-    public static Table INSTANCE;
     private static final String SIGNATURE_OPEN_BRACKET = "(";
     private static final String SIGNATURE_CLOSE_BRACKET = ")";
     private static final String ARG_ATTRIBUTES_SEPARATOR = " ";
@@ -20,8 +16,8 @@ public abstract class Table {
     }
 
     protected final void init() {
-        DB.dropTable(this);
-        DB.createTable(this);
+        //DB.dropTable(this);
+        //DB.createTable(this);
     }
 
     // Returns full name of the table with specified types.
@@ -40,8 +36,8 @@ public abstract class Table {
     }
 
     // Без поля `id`. Формируется в порядке предоставления имён полей в конструкторе каждой таблицы.
-    // Фактически результат будет равен '(argName1, argName2, ...)'.
-    public final String signature() {
+    // Фактически результат будет равен 'tableName(argName1, argName2, ...)'.
+    public final String getSignature() {
         StringBuilder signatureName = new StringBuilder(shortName);
         signatureName.append(SIGNATURE_OPEN_BRACKET);
         if (!args.isEmpty()) {

@@ -13,6 +13,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 // В рамках SQLite БД CREATE-запрос эквивалентен PUT-запросу.
 // TODO Сейчас спарсенные значения из базы почти никак не проверяются. Нужно это исправить.
@@ -27,8 +29,8 @@ public class DB {
     static {
         try {
             // Auto-commit mode with multithreading support
-            // TODO Проверить, что многопоток действительно поддерживается (дока, профилирование). Если на самом деле
-            // TODO он не поддерживается, то создать пул коннекшенов, как было на NoSQL.
+            // TODO Проверить, что многопоток действительно поддерживается (дока, профилирование, тестирование).
+            // TODO Если на самом деле он не поддерживается, то создать пул коннекшенов, как было на NoSQL.
             CONNECTION = DriverManager.getConnection(CONNECTION_URL); // auto-commit mode with multithreading support
             STATEMENT = CONNECTION.createStatement();
 
@@ -37,42 +39,67 @@ public class DB {
             UserStatesTable.putUserState(UserState.CHATTING);
         } catch (SQLException e) { // Считаю, что зафейленная инициализация БД - критическая ситуация для приложения,
                                    // поэтому ложим всё приложение, если что-то пошло тут не так
-            LOG.error("DB creation is failed! Details: {}", e);
-            throw new RuntimeException(e);
+            throw new RuntimeException("DB creation is failed! Details: " + e.getMessage());
         }
     }
 
     public static void createTable(Table table) {
-        executeQuery("CREATE TABLE IF NOT EXISTS " + table.toString());
+        Objects.requireNonNull(table, "Table can't be null!");
+
+        executeQuery("CREATE TABLE IF NOT EXISTS " + table.getSignature());
         LOG.info("Created table: {}", table.getShortName());
     }
 
     public static void dropTable(Table table) {
+        Objects.requireNonNull(table, "Table can't be null!");
+
         executeQuery("DROP TABLE IF EXISTS " + table.getShortName());
         LOG.info("Dropped table: {}", table.getShortName());
     }
 
     public static void cleanupTable(Table table) {
+        Objects.requireNonNull(table, "Table can't be null!");
+
         executeQuery("DELETE FROM " + table.getShortName());
         LOG.info("Cleanup table: {}", table.getShortName());
     }
 
     // TODO Оптимизировать подстановку строк предкомпиляцией общих паттернов (например, для MessageFormat)
     public static void putEntity(Table table, Entity entity) {
-        executeQuery("INSERT OR REPLACE INTO " + table.signature() + " VALUES " + entity.sqlValues());
+        Objects.requireNonNull(table, "Table can't be null!");
+        Objects.requireNonNull(entity, "Entity can't be null!");
+
+        executeQuery("INSERT OR REPLACE INTO " + table.getSignature() + " VALUES " + entity.sqlValues());
         LOG.info("Put entity: {}", entity);
     }
 
     public static void deleteEntityById(Table table, long id) {
+        Objects.requireNonNull(table, "Table can't be null!");
+
+        if (id <= 0) {
+            throw new IllegalArgumentException("'id' must be a positive number! Got " + id);
+        }
+
+        if (!hasEntityById(table, id)) {
+            throw new IllegalArgumentException(table.getShortName() + "with `id`=" + id + " is absent in DB!");
+        }
+
         executeQuery("DELETE FROM " + table.getShortName() + " WHERE id = " + id);
         LOG.info("Delete entity from table '{}' with 'id'={}", table.getShortName(), id);
+    }
+
+    public static boolean hasEntityById(Table table, long id) {
+        AtomicBoolean isPresent = new AtomicBoolean();
+        executeQuery("SELECT * FROM " + table.getShortName() + " WHERE id = " + id, rs -> isPresent.set(rs.next()));
+        return isPresent.get();
     }
 
     public static void executeQuery(String query) {
         try {
             STATEMENT.execute(query);
         } catch (SQLException e) {
-            LOG.warn("Error wrong when executing query: {}. Details: {}", query, e);
+            throw new RuntimeException("Error when executing query: " + query + ".\n" +
+                    "Details: " + e.getMessage());
         }
     }
 
@@ -80,7 +107,8 @@ public class DB {
         try (ResultSet rs = STATEMENT.executeQuery(query)) {
             sqlAction.run(rs);
         } catch (SQLException e) {
-            LOG.warn("Error wrong when executing query: {}. Details: {}", query, e);
+            throw new RuntimeException("Error when executing query: " + query + ".\n" +
+                    "Details: " + e.getMessage());
         }
     }
 

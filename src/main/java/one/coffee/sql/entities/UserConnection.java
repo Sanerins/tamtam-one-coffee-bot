@@ -1,5 +1,6 @@
 package one.coffee.sql.entities;
 
+import one.coffee.sql.DB;
 import one.coffee.sql.tables.UserConnectionsTable;
 import one.coffee.sql.tables.UsersTable;
 
@@ -28,11 +29,17 @@ public class UserConnection implements Entity {
             UserConnectionsTable.putUserConnection(this); // Тут id не используется, всё пройдёт гладко
             this.id = UserConnectionsTable.getUserConnectionByUserId(user1.getId()).getId();
         } else {
-            this.id = id;
+            if (!DB.hasEntityById(UserConnectionsTable.INSTANCE, id)) {
+                throw new IllegalArgumentException("No UserConnection with 'id'=" + id);
+            }
+            this.id = id; // Оно может быть известно, например, если мы уже получили индекс из базы
         }
 
         user1.setUserConnection(this);
         user2.setUserConnection(this);
+
+        user1.setState(UserState.CHATTING);
+        user2.setState(UserState.CHATTING);
 
         // TODO Насколько мы тут ожидаем, что будут происходит транзакции с базой?
         UsersTable.putUser(user1);
@@ -58,7 +65,7 @@ public class UserConnection implements Entity {
     @Override
     public String toString() {
         return "UserConnection{" +
-                ", id=" + id +
+                "id=" + id +
                 ", user1=" + user1 +
                 ", user2=" + user2 +
                 '}';

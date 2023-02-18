@@ -59,7 +59,7 @@ public class User implements Entity {
 
     @Override
     public String sqlValues() {
-        return String.format("(%d, '%s', %d, %d)", id, city, userState.getStateType().getId(), userConnection.getId());
+        return String.format("(%d, '%s', %d, %d)", id, city, userState.getId(), userConnection == null ? 0 : userConnection.getId());
     }
 
     @Override

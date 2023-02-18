@@ -1,1 +1,3 @@
-SELECT * FROM userStates
+SELECT *
+FROM userStates
+WHERE id = <stateId>

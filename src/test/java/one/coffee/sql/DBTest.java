@@ -20,6 +20,11 @@ public class DBTest extends BaseTest {
     }
 
     @Test
+    void deleteFromNull() {
+        assertThrows(Exception.class, () -> DB.deleteEntityById(null, 1));
+    }
+
+    @Test
     void deleteNonExistentId1() {
         assertThrows(Exception.class, () -> DB.deleteEntityById(DBTest.table, -1));
     }

@@ -17,7 +17,7 @@ public class UserStatesTable extends Table {
     private UserStatesTable() {
         shortName = "userStates";
         args = List.of(
-                Map.entry("id", "BIGINT PRIMARY KEY"),
+                Map.entry("id", "INTEGER PRIMARY KEY AUTOINCREMENT"),
                 Map.entry("stateId", "INT NOT NULL")
         );
         init();
