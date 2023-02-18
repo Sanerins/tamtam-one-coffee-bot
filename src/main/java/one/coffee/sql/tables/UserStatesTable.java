@@ -26,7 +26,9 @@ public class UserStatesTable extends Table {
     public static UserState getUserStateById(long id) {
         AtomicReference<UserState> userState = new AtomicReference<>();
         String query = MessageFormat.format(
-                "SELECT * FROM {0}",
+                "SELECT *" +
+                        " FROM {0}" +
+                        " WHERE stateId = " + id,
                 INSTANCE.shortName
         );
 
@@ -43,10 +45,10 @@ public class UserStatesTable extends Table {
     }
 
     public static void putUserState(UserState userState) {
-        putEntity(userState);
+        DB.putEntity(INSTANCE, userState);
     }
 
     public static void deleteUserStateById(long id) {
-        deleteEntityById(id);
+        DB.deleteEntityById(INSTANCE, id);
     }
 }

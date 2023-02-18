@@ -57,6 +57,10 @@ public class UserState implements Entity {
         this.stateType = stateType;
     }
 
+    public long getId() {
+        return stateType.getId();
+    }
+
     @Override
     public String toString() {
         return "UserState{" +

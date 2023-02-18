@@ -52,6 +52,11 @@ public class DB {
         LOG.info("Dropped table: {}", table.getShortName());
     }
 
+    public static void cleanupTable(Table table) {
+        executeQuery("DELETE FROM " + table.getShortName());
+        LOG.info("Cleanup table: {}", table.getShortName());
+    }
+
     // TODO Оптимизировать подстановку строк предкомпиляцией общих паттернов (например, для MessageFormat)
     public static void putEntity(Table table, Entity entity) {
         executeQuery("INSERT OR REPLACE INTO " + table.signature() + " VALUES " + entity.sqlValues());
@@ -59,15 +64,15 @@ public class DB {
     }
 
     public static void deleteEntityById(Table table, long id) {
-        executeQuery("DELETE * FROM " + table.getShortName() + " WHERE id = " + id);
-        LOG.info("Delete entity from table {} with id {}", table.signature(), id);
+        executeQuery("DELETE FROM " + table.getShortName() + " WHERE id = " + id);
+        LOG.info("Delete entity from table '{}' with 'id'={}", table.getShortName(), id);
     }
 
     public static void executeQuery(String query) {
         try {
             STATEMENT.execute(query);
         } catch (SQLException e) {
-            LOG.warn("Something went wrong when executing query: {}. Details: {}", query, e);
+            LOG.warn("Error wrong when executing query: {}. Details: {}", query, e);
         }
     }
 
@@ -75,7 +80,7 @@ public class DB {
         try (ResultSet rs = STATEMENT.executeQuery(query)) {
             sqlAction.run(rs);
         } catch (SQLException e) {
-            LOG.warn("Something went wrong when executing query: {}. Details: {}", query, e);
+            LOG.warn("Error wrong when executing query: {}. Details: {}", query, e);
         }
     }
 

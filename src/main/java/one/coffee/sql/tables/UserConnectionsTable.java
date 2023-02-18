@@ -14,6 +14,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class UserConnectionsTable extends Table {
 
+    public static final UserConnectionsTable INSTANCE = new UserConnectionsTable();
+
     private UserConnectionsTable() {
         shortName = "userConnections";
         args = List.of(
@@ -21,7 +23,6 @@ public class UserConnectionsTable extends Table {
                 Map.entry("user1Id", "INT REFERENCES users(userId) ON DELETE CASCADE"),
                 Map.entry("user2Id", "INT REFERENCES users(userId) ON DELETE CASCADE")
         );
-        INSTANCE = new UserConnectionsTable();
         init();
     }
 
@@ -49,7 +50,7 @@ public class UserConnectionsTable extends Table {
             String city2 = rs.getString("city2");
             User user2 = new User(user2Id, city2, UserState.CHATTING, null);
 
-            userConnection.set(new UserConnection(user1, user2));
+            userConnection.set(new UserConnection(userConnectionId, user1, user2));
             user1.setUserConnection(userConnection.get());
             user2.setUserConnection(userConnection.get());
         });
@@ -58,10 +59,10 @@ public class UserConnectionsTable extends Table {
     }
 
     public static void putUserConnection(UserConnection userConnection) {
-        putEntity(userConnection);
+        DB.putEntity(INSTANCE, userConnection);
     }
 
     public static void deleteUserConnectionById(long id) {
-        deleteEntityById(id);
+        DB.deleteEntityById(INSTANCE, id);
     }
 }

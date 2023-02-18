@@ -60,12 +60,4 @@ public abstract class Table {
     public final String getShortName() {
         return shortName;
     }
-
-    protected static void putEntity(Entity entity) {
-        DB.putEntity(INSTANCE, entity);
-    }
-
-    protected static void deleteEntityById(long id) {
-        DB.deleteEntityById(INSTANCE, id);
-    }
 }

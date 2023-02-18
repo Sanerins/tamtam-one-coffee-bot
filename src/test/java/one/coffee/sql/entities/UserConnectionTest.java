@@ -1,12 +1,18 @@
 package one.coffee.sql.entities;
 
+import one.coffee.BaseTest;
+import one.coffee.sql.tables.UserConnectionsTable;
 import one.coffee.sql.tables.UsersTable;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class UserConnectionTest {
+public class UserConnectionTest extends BaseTest {
+
+    static {
+        UserConnectionTest.table = UserConnectionsTable.INSTANCE;
+    }
 
     @Test
     void ok() {
