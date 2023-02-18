@@ -18,8 +18,6 @@ public class UsersTable extends Table {
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    public static final UsersTable INSTANCE = new UsersTable();
-
     private UsersTable() {
         shortName = "users";
         args = List.of(
@@ -31,6 +29,7 @@ public class UsersTable extends Table {
                 Map.entry("stateId", "INT REFERENCES states(stateId) ON DELETE SET NULL"),
                 Map.entry("connectionId", "INT REFERENCES userConnections(id) ON DELETE SET NULL")
         );
+        INSTANCE = new UsersTable();
         init();
     }
 
@@ -114,10 +113,10 @@ public class UsersTable extends Table {
     }
 
     public static void putUser(User user) {
-        DB.putEntity(INSTANCE, user);
+        putEntity(user);
     }
 
     public static void deleteUserById(long id) {
-        DB.deleteEntityById(INSTANCE, id);
+        deleteEntityById(id);
     }
 }

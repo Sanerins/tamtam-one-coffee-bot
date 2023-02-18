@@ -1,6 +1,7 @@
 package one.coffee.sql.tables;
 
 import one.coffee.sql.DB;
+import one.coffee.sql.entities.Entity;
 
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ public abstract class Table {
 
     protected String shortName;
     protected List<Map.Entry<String /*argNames*/, String /*argValues*/>> args;
+    public static Table INSTANCE;
     private static final String SIGNATURE_OPEN_BRACKET = "(";
     private static final String SIGNATURE_CLOSE_BRACKET = ")";
     private static final String ARG_ATTRIBUTES_SEPARATOR = " ";
@@ -17,14 +19,14 @@ public abstract class Table {
     protected Table() {
     }
 
-    protected void init() {
+    protected final void init() {
         DB.dropTable(this);
         DB.createTable(this);
     }
 
     // Returns full name of the table with specified types.
     @Override
-    public String toString() {
+    public final String toString() {
         StringBuilder fullName = new StringBuilder(shortName);
         fullName.append(SIGNATURE_OPEN_BRACKET);
         if (!args.isEmpty()) {
@@ -39,7 +41,7 @@ public abstract class Table {
 
     // Без поля `id`. Формируется в порядке предоставления имён полей в конструкторе каждой таблицы.
     // Фактически результат будет равен '(argName1, argName2, ...)'.
-    public String signature() {
+    public final String signature() {
         StringBuilder signatureName = new StringBuilder(shortName);
         signatureName.append(SIGNATURE_OPEN_BRACKET);
         if (!args.isEmpty()) {
@@ -55,7 +57,15 @@ public abstract class Table {
         return signatureName.toString();
     }
 
-    public String getShortName() {
+    public final String getShortName() {
         return shortName;
+    }
+
+    protected static void putEntity(Entity entity) {
+        DB.putEntity(INSTANCE, entity);
+    }
+
+    protected static void deleteEntityById(long id) {
+        DB.deleteEntityById(INSTANCE, id);
     }
 }

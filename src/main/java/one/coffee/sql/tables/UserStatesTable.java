@@ -43,10 +43,10 @@ public class UserStatesTable extends Table {
     }
 
     public static void putUserState(UserState userState) {
-        DB.putEntity(INSTANCE, userState);
+        putEntity(userState);
     }
 
     public static void deleteUserStateById(long id) {
-        DB.deleteEntityById(INSTANCE, id);
+        deleteEntityById(id);
     }
 }

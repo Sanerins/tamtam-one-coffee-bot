@@ -24,8 +24,8 @@ public class UserConnection implements Entity {
         this.user1 = user1;
         this.user2 = user2;
 
-        if (id < 0) {
-            UserConnectionsTable.putUserConnection(this);
+        if (id <= 0) {
+            UserConnectionsTable.putUserConnection(this); // Тут id не используется, всё пройдёт гладко
             this.id = UserConnectionsTable.getUserConnectionByUserId(user1.getId()).getId();
         } else {
             this.id = id;
@@ -34,6 +34,7 @@ public class UserConnection implements Entity {
         user1.setUserConnection(this);
         user2.setUserConnection(this);
 
+        // TODO Насколько мы тут ожидаем, что будут происходит транзакции с базой?
         UsersTable.putUser(user1);
         UsersTable.putUser(user2);
     }

@@ -26,6 +26,9 @@ public class DB {
 
     static {
         try {
+            // Auto-commit mode with multithreading support
+            // TODO Проверить, что многопоток действительно поддерживается (дока, профилирование). Если на самом деле
+            // TODO он не поддерживается, то создать пул коннекшенов, как было на NoSQL.
             CONNECTION = DriverManager.getConnection(CONNECTION_URL); // auto-commit mode with multithreading support
             STATEMENT = CONNECTION.createStatement();
 
@@ -51,13 +54,13 @@ public class DB {
 
     // TODO Оптимизировать подстановку строк предкомпиляцией общих паттернов (например, для MessageFormat)
     public static void putEntity(Table table, Entity entity) {
-        String query = "INSERT OR REPLACE INTO " + table.signature() + " VALUES " + entity.sqlValues();
-        executeQuery(query);
+        executeQuery("INSERT OR REPLACE INTO " + table.signature() + " VALUES " + entity.sqlValues());
+        LOG.info("Put entity: {}", entity);
     }
 
     public static void deleteEntityById(Table table, long id) {
-        String query = "DELETE * FROM " + table.getShortName() + " WHERE id = " + id;
-        executeQuery(query);
+        executeQuery("DELETE * FROM " + table.getShortName() + " WHERE id = " + id);
+        LOG.info("Delete entity from table {} with id {}", table.signature(), id);
     }
 
     public static void executeQuery(String query) {
