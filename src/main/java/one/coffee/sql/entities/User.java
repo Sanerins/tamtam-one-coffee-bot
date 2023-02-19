@@ -67,7 +67,7 @@ public class User implements Entity {
         return "User{" +
                 "id=" + id +
                 ", city='" + city + '\'' +
-                ", userState=" + userState +
+                ", stateId=" + userState.getId() +
                 ", userConnection=" + userConnection +
                 '}';
     }

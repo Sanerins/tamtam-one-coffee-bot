@@ -6,6 +6,7 @@ import chat.tamtam.bot.exceptions.TamTamBotException;
 import chat.tamtam.bot.longpolling.LongPollingBotOptions;
 import one.coffee.bot.OneCoffeeBot;
 import one.coffee.bot.OneCoffeeBotUpdateHandler;
+import one.coffee.sql.DB;
 import one.coffee.sql.entities.User;
 import one.coffee.sql.entities.UserConnection;
 import one.coffee.sql.entities.UserState;
@@ -39,12 +40,15 @@ public class Main {
     }
 
     public static void testSQL() {
+        DB.cleanupTable(UsersTable.INSTANCE);
+        DB.cleanupTable(UserConnectionsTable.INSTANCE);
+
         User user1 = new User(2077, "St. Petersburg", UserState.DEFAULT, null);
         UsersTable.putUser(user1);
         User user2 = new User(2078, "Moscow", UserState.DEFAULT, null);
         UsersTable.putUser(user2);
-        //UserConnection userConnection = new UserConnection(user1, user2);
-        //UserConnectionsTable.putUserConnection(userConnection);
+        UserConnection userConnection = new UserConnection(user1, user2);
+        UserConnectionsTable.putUserConnection(userConnection);
     }
 
 }

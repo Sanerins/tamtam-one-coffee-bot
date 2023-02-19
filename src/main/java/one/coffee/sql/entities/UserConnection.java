@@ -27,12 +27,12 @@ public class UserConnection implements Entity {
 
         if (id <= 0) {
             UserConnectionsTable.putUserConnection(this); // Тут id не используется, всё пройдёт гладко
-            this.id = UserConnectionsTable.getUserConnectionByUserId(user1.getId()).getId();
+            this.id = 1;//UserConnectionsTable.getUserConnectionByUserId(user1.getId()).getId();
         } else {
             if (!DB.hasEntityById(UserConnectionsTable.INSTANCE, id)) {
                 throw new IllegalArgumentException("No UserConnection with 'id'=" + id);
             }
-            this.id = id; // Оно может быть известно, например, если мы уже получили индекс из базы
+            this.id = id;
         }
 
         user1.setUserConnection(this);

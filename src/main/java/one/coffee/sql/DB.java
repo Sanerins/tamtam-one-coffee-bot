@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class DB {
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final String DB_NAME = "OneCoffee.db";
+    private static final String DB_NAME = "OneCoffee.db"; // Будет находиться прямо в корне проекта
     private static final String CONNECTION_URL = "jdbc:sqlite:" + DB_NAME;
     private static final Connection CONNECTION;
     private static final Statement STATEMENT;

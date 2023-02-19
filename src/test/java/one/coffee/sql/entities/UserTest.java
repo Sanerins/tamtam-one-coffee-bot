@@ -24,7 +24,7 @@ public class UserTest extends BaseTest {
         final String userCity = "St. Petersburg";
         final UserState userState = UserState.DEFAULT;
         final UserConnection userConnection = null;
-        assertDoesNotThrow(() -> new User(userId, userCity, userState, userConnection));
+        new User(userId, userCity, userState, userConnection);
     }
 
     @Test
