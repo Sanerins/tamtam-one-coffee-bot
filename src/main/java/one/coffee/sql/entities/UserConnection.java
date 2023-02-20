@@ -40,10 +40,12 @@ public class UserConnection implements Entity {
 
         user1.setState(UserState.CHATTING);
         user2.setState(UserState.CHATTING);
+    }
 
-        // TODO Насколько мы тут ожидаем, что будут происходит транзакции с базой?
+    public void commit() {
         UsersTable.putUser(user1);
         UsersTable.putUser(user2);
+        UserConnectionsTable.putUserConnection(this);
     }
 
     public long getId() {

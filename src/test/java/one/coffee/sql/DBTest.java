@@ -1,8 +1,10 @@
 package one.coffee.sql;
 
 import one.coffee.BaseTest;
+import one.coffee.sql.entities.User;
 import one.coffee.sql.entities.UserState;
 import one.coffee.sql.tables.UserStatesTable;
+import one.coffee.sql.tables.UsersTable;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;

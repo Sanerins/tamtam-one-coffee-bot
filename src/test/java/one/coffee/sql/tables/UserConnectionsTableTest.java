@@ -31,7 +31,7 @@ public class UserConnectionsTableTest extends BaseTest {
         userConnection = new UserConnection(user1, user2);
         UserConnectionsTable.putUserConnection(userConnection);
 
-        UserConnection savedUserConnection = UserConnectionsTable.getUserConnectionByUserId(user1Id);
+        UserConnection savedUserConnection = UserConnectionsTable.getUserConnectionsByUserId(user1Id).get(0);
         assertEquals(savedUserConnection.getUser1(), user1);
         assertEquals(savedUserConnection.getUser2(), user2);
         assertEquals(savedUserConnection.getId(), userConnection.getId());
@@ -64,7 +64,7 @@ public class UserConnectionsTableTest extends BaseTest {
         UserConnection finalUser2Connection = user2Connection;
         assertThrows(Exception.class, () -> UserConnectionsTable.putUserConnection(finalUser2Connection));
 
-        UserConnection savedUserConnection = UserConnectionsTable.getUserConnectionByUserId(user1Id);
+        UserConnection savedUserConnection = UserConnectionsTable.getUserConnectionsByUserId(user1Id).get(0);
         assertEquals(savedUserConnection.getId(), user1Connection.getId());
         assertEquals(savedUserConnection.getUser1(), user1);
         assertEquals(savedUserConnection.getUser2(), user2);

@@ -68,7 +68,7 @@ public class User implements Entity {
                 "id=" + id +
                 ", city='" + city + '\'' +
                 ", stateId=" + userState.getId() +
-                ", userConnection=" + userConnection +
+                ", userConnectionId=" + (userConnection == null ? 0 : userConnection.getId()) + // Escape reflexive calls to UserConnection::toString
                 '}';
     }
 }

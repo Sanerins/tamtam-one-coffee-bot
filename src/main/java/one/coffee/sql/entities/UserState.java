@@ -17,18 +17,24 @@ public class UserState implements Entity {
     private StateType stateType;
 
     public enum StateType {
-        DEFAULT(0),
-        WAITING(1),
-        CHATTING(2);
+        DEFAULT(0, "DEFAULT(0)"),
+        WAITING(1, "WAITING(1)"),
+        CHATTING(2, "CHATTING(2)");
 
         private final long id;
+        private final String name;
 
-        StateType(long id) {
+        StateType(long id, String name) {
             this.id = id;
+            this.name = name;
         }
 
         public long getId() {
             return id;
+        }
+
+        public String getName() {
+            return this.name;
         }
 
         public static StateType fromId(long id) {
@@ -64,7 +70,7 @@ public class UserState implements Entity {
     @Override
     public String toString() {
         return "UserState{" +
-                "stateType=" + stateType.getId() +
+                "stateType=" + stateType +
                 '}';
     }
 
