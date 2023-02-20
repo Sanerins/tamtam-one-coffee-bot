@@ -1,9 +1,6 @@
 package one.coffee.sql.entities;
 
-import one.coffee.BaseTest;
-import one.coffee.sql.tables.Table;
-import one.coffee.sql.tables.UsersTable;
-import org.junit.jupiter.api.AfterEach;
+import one.coffee.DBTest;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -12,11 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class UserTest extends BaseTest {
-
-    static {
-        UserTest.table = UsersTable.INSTANCE;
-    }
+public class UserTest {
 
     @Test
     void ok() {

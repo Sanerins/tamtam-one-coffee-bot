@@ -2,18 +2,12 @@ package one.coffee;
 
 import java.lang.invoke.MethodHandles;
 
-import chat.tamtam.bot.exceptions.TamTamBotException;
-import chat.tamtam.bot.longpolling.LongPollingBotOptions;
-import one.coffee.bot.OneCoffeeBot;
-import one.coffee.bot.OneCoffeeBotUpdateHandler;
 import one.coffee.sql.DB;
 import one.coffee.sql.entities.User;
 import one.coffee.sql.entities.UserConnection;
 import one.coffee.sql.entities.UserState;
 import one.coffee.sql.tables.UserConnectionsTable;
-import one.coffee.sql.tables.UserStatesTable;
 import one.coffee.sql.tables.UsersTable;
-import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +41,6 @@ public class Main {
         User user1 = new User(2077, "St. Petersburg", UserState.DEFAULT, null);
         User user2 = new User(2078, "Moscow", UserState.DEFAULT, null);
         UserConnection userConnection = new UserConnection(user1, user2);
-        userConnection.commit();
     }
 
 }

@@ -1,5 +1,7 @@
 package one.coffee.sql.tables;
 
+import one.coffee.sql.DB;
+
 import java.util.List;
 import java.util.Map;
 
@@ -10,7 +12,7 @@ public abstract class Table {
     private static final String SIGNATURE_OPEN_BRACKET = "(";
     private static final String SIGNATURE_CLOSE_BRACKET = ")";
     private static final String ARG_ATTRIBUTES_SEPARATOR = " ";
-    private static final String ARGS_SEPARATOR = ",";
+    private static final String ARGS_SEPARATOR = ", ";
 
     protected Table() {
     }
@@ -29,7 +31,7 @@ public abstract class Table {
             for (Map.Entry<String, String> arg : args) {
                 fullName.append(arg.getKey()).append(ARG_ATTRIBUTES_SEPARATOR).append(arg.getValue()).append(ARGS_SEPARATOR);
             }
-            fullName.deleteCharAt(fullName.length() - 1);
+            fullName.delete(fullName.length() - ARGS_SEPARATOR.length(), fullName.length());
         }
         fullName.append(SIGNATURE_CLOSE_BRACKET);
         return fullName.toString();
@@ -47,7 +49,7 @@ public abstract class Table {
                     signatureName.append(argName).append(ARGS_SEPARATOR);
                 }
             }
-            signatureName.deleteCharAt(signatureName.length() - 1);
+            signatureName.delete(signatureName.length() - ARGS_SEPARATOR.length(), signatureName.length());
         }
         signatureName.append(SIGNATURE_CLOSE_BRACKET);
         return signatureName.toString();

@@ -1,17 +1,12 @@
 package one.coffee.sql.tables;
 
-import one.coffee.BaseTest;
 import one.coffee.sql.entities.UserState;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class UsersStateTableTest extends BaseTest {
-
-    static {
-        UsersStateTableTest.table = UserStatesTable.INSTANCE;
-    }
+public class UserStatesTableTest extends TableTest {
 
     @Test
     void ok() {
@@ -30,6 +25,11 @@ public class UsersStateTableTest extends BaseTest {
         UserState userState = UserState.DEFAULT;
         UserStatesTable.putUserState(userState);
         assertThrows(Exception.class, () -> UserStatesTable.putUserState(userState));
+    }
+
+    @Override
+    protected Table getTable() {
+        return UserStatesTable.INSTANCE;
     }
 
 }

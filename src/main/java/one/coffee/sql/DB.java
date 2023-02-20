@@ -18,6 +18,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 // В рамках SQLite БД CREATE-запрос эквивалентен PUT-запросу.
 // TODO Сейчас спарсенные значения из базы почти никак не проверяются. Нужно это исправить.
+
+// TODO Решить проблему SQL-инъекций.
 public class DB {
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -30,13 +32,10 @@ public class DB {
         try {
             // Auto-commit mode with multithreading support
             // TODO Проверить, что многопоток действительно поддерживается (дока, профилирование, тестирование).
-            // TODO Если на самом деле он не поддерживается, то создать пул коннекшенов, как было на NoSQL.
+            // Если на самом деле он не поддерживается, то создать пул коннекшенов, как было на NoSQL.
             CONNECTION = DriverManager.getConnection(CONNECTION_URL); // auto-commit mode with multithreading support
             STATEMENT = CONNECTION.createStatement();
 
-            UserStatesTable.putUserState(UserState.DEFAULT);
-            UserStatesTable.putUserState(UserState.WAITING);
-            UserStatesTable.putUserState(UserState.CHATTING);
         } catch (SQLException e) { // Считаю, что зафейленная инициализация БД - критическая ситуация для приложения,
                                    // поэтому ложим всё приложение, если что-то пошло тут не так
             throw new RuntimeException("DB creation is failed! Details: " + e.getMessage());
@@ -61,6 +60,7 @@ public class DB {
         Objects.requireNonNull(table, "Table can't be null!");
 
         executeQuery("DELETE FROM " + table.getShortName());
+        executeQuery("UPDATE `sqlite_sequence` SET `seq` = 0 WHERE `name` = '" + table.getShortName() + "'");
         LOG.info("Cleanup table: {}", table.getShortName());
     }
 

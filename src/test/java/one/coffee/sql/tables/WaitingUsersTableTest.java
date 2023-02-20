@@ -1,6 +1,5 @@
 package one.coffee.sql.tables;
 
-import one.coffee.BaseTest;
 import one.coffee.sql.entities.User;
 import one.coffee.sql.entities.UserConnection;
 import one.coffee.sql.entities.UserState;
@@ -12,11 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class WaitingUsersTableTest extends BaseTest {
-
-    static {
-        WaitingUsersTableTest.table = WaitingUsersTable.INSTANCE;
-    }
+public class WaitingUsersTableTest extends TableTest {
 
     @Test
     void ok() {
@@ -47,6 +42,11 @@ public class WaitingUsersTableTest extends BaseTest {
         UsersTable.putUser(user);
 
         assertThrows(Exception.class, () -> WaitingUsersTable.putWaitingUser(user));
+    }
+
+    @Override
+    protected Table getTable() {
+        return WaitingUsersTable.INSTANCE;
     }
 
 }

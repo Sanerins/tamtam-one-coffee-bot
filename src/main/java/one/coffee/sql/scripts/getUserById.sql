@@ -1,8 +1,19 @@
-SELECT user1Id, city1, state1Id, connection1Id, user2Id, users.city AS city2, users.stateId AS state2Id, userConnections.id AS connection2Id
+SELECT DISTINCT *
 FROM (
-    SELECT users.userId AS user1Id, users.city AS city, users.stateId AS state1Id, userConnections.id AS connection1Id, user2Id
+    SELECT *
     FROM users
-        LEFT JOIN userConnections ON userConnections.id = users.connectionId
-        WHERE users.userId = <user1Id>
-) AS first_part
-LEFT JOIN users ON users.id = user2Id
+    WHERE userId = <userId>
+) AS s
+    LEFT JOIN userConnections ON userConnections.user1Id = <userId> OR userConnections.user2Id = <userId>
+
+SELECT s2.userId AS userId, s2.city AS city, s2.stateId AS stateId, s2.connectionId AS connectionId
+FROM (
+         SELECT DISTINCT userId, city, stateId, connectionId, user2Id
+         FROM (
+                  SELECT *
+                  FROM users
+                  WHERE userId = 123
+              ) AS s1
+                  LEFT JOIN userConnections ON userConnections.user1Id = 123 OR userConnections.user2Id = 123
+     ) AS s2
+         LEFT JOIN users ON users.userId = s2.user2Id

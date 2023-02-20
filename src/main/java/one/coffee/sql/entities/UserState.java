@@ -1,5 +1,6 @@
 package one.coffee.sql.entities;
 
+import one.coffee.sql.tables.UserStatesTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +54,7 @@ public class UserState implements Entity {
         Objects.requireNonNull(stateType, "StateType can't be null!");
 
         this.stateType = stateType;
+        commit();
     }
 
     public StateType getStateType() {
@@ -78,4 +80,10 @@ public class UserState implements Entity {
     public String sqlValues() {
         return String.format("(%d)", stateType.getId());
     }
+
+    @Override
+    public void commit() {
+        UserStatesTable.putUserState(this);
+    }
+
 }

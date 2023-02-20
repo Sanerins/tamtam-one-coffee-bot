@@ -1,18 +1,12 @@
 package one.coffee.sql.entities;
 
-import one.coffee.BaseTest;
-import one.coffee.sql.tables.UserConnectionsTable;
-import one.coffee.sql.tables.UsersTable;
+import one.coffee.DBTest;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class UserConnectionTest extends BaseTest {
-
-    static {
-        UserConnectionTest.table = UserConnectionsTable.INSTANCE;
-    }
+public class UserConnectionTest {
 
     @Test
     void ok() {
@@ -29,14 +23,12 @@ public class UserConnectionTest extends BaseTest {
         User user2 = new User(user2Id, user2City, user2State, user2Connection);
 
         UserConnection userConnection = new UserConnection(user1, user2);
+        userConnection.createNominalConnection();
 
-        User savedUser1 = UsersTable.getUserById(user1Id);
-        assertEquals(savedUser1.getUserConnection().getId(), userConnection.getId());
-        assertEquals(savedUser1.getConnectedUser(), user2);
-
-        User savedUser2 = UsersTable.getUserById(user2Id);
-        assertEquals(savedUser2.getUserConnection().getId(), userConnection.getId());
-        assertEquals(savedUser2.getConnectedUser(), user1);
+        assertEquals(user1.getUserConnection(), userConnection);
+        assertEquals(user2.getUserConnection(), userConnection);
+        assertEquals(user1.getConnectedUser(), user2);
+        assertEquals(user2.getConnectedUser(), user1);
     }
 
     @Test
@@ -60,4 +52,5 @@ public class UserConnectionTest extends BaseTest {
 
         assertThrows(Exception.class, () -> new UserConnection(user, null));
     }
+
 }
