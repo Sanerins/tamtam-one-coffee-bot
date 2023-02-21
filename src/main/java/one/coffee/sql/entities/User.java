@@ -1,17 +1,19 @@
 package one.coffee.sql.entities;
 
+import one.coffee.sql.tables.UserConnectionsTable;
 import one.coffee.sql.tables.UsersTable;
 
 import java.util.Objects;
 
-public class User implements Entity {
+public class User
+        implements Entity {
 
     private long id;
     private String city;
-    private UserState userState;
-    private UserConnection userConnection;
+    private long stateId;
+    private long connectionId;
 
-    public User(long id, String city, UserState userState, UserConnection userConnection) {
+    public User(long id, String city, long stateId, long connectionId) {
         if (id <= 0) {
             throw new IllegalArgumentException("Invalid User id! Got " + id);
         }
@@ -20,14 +22,10 @@ public class User implements Entity {
             throw new IllegalArgumentException("User's city can't be empty!");
         }
 
-        Objects.requireNonNull(userState, "UserState can't be null!");
-
         this.id = id;
         this.city = city;
-        this.userState = userState;
-        this.userConnection = userConnection;
-
-        commit();
+        this.stateId = stateId;
+        this.connectionId = connectionId;
     }
 
     public long getId() {
@@ -46,36 +44,34 @@ public class User implements Entity {
         this.city = city;
     }
 
-    public UserState getState() {
-        return userState;
+    public long getStateId() {
+        return stateId;
     }
 
-    public void setState(UserState userState) {
-        this.userState = userState;
+    public void setStateId(long stateId) {
+        this.stateId = stateId;
     }
 
-    public UserConnection getUserConnection() {
-        return userConnection;
+    public long getConnectionId() {
+        return connectionId;
     }
 
-    public long getUserConnectionId() {
-        Objects.requireNonNull(userConnection, "UserConnection is null!");
-        return userConnection.getId();
+    public void setConnectionId(long connectionId) {
+        this.connectionId = connectionId;
     }
 
-    public void setUserConnection(UserConnection userConnection) {
-        Objects.requireNonNull(userConnection, "UserConnection is null!");
-        this.userConnection = userConnection;
-    }
+    public long getConnectedUserId() {
+        if (connectionId <= 0) {
+            throw new IllegalStateException(this + " has not connected user!");
+        }
 
-    public User getConnectedUser() {
-        Objects.requireNonNull(userConnection, "UserConnection is null!");
-        return userConnection.getUser1().getId() == id ? userConnection.getUser2() : userConnection.getUser1(); // FIXME
+        UserConnection userConnection = UserConnectionsTable.getUserConnectionByUserId(id);
+        return userConnection.getUser1Id() == id ? userConnection.getUser2Id() : userConnection.getUser1Id();
     }
 
     @Override
     public String sqlValues() {
-        return String.format("(%d, '%s', %d, %d)", id, city, userState.getId(), userConnection == null ? 0 : userConnection.getId());
+        return String.format("(%d, '%s', %d, %d)", id, city, stateId, connectionId);
     }
 
     @Override
@@ -88,8 +84,8 @@ public class User implements Entity {
         return "User{" +
                 "id=" + id +
                 ", city='" + city + '\'' +
-                ", stateId=" + userState.getId() +
-                ", userConnectionId=" + (userConnection == null ? 0 : userConnection.getId()) + // Escape reflexive calls to UserConnection::toString
+                ", stateId=" + stateId +
+                ", connectionId=" + connectionId +
                 '}';
     }
 }

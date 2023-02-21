@@ -14,7 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class UsersTable extends Table {
+public class UsersTable
+        extends Table {
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     public static final UsersTable INSTANCE = new UsersTable();
@@ -36,15 +37,10 @@ public class UsersTable extends Table {
     public static User getUserById(long id) {
         AtomicReference<User> user = new AtomicReference<>();
         // TODO Этот скрипт будет изменён в будущем. См. комментарий в UserConnectionsTable(line 59).
-        String query = MessageFormat.format("SELECT DISTINCT userId, city, stateId, connectionId" +
-                        " FROM (" +
-                        "   SELECT *" +
-                        "   FROM {0}" +
-                        "     WHERE userId = " + id +
-                        ") AS s" +
-                        "   LEFT JOIN {1} ON {1}.user1Id = " + id + " OR {1}.user2Id = " + id,
-                UsersTable.INSTANCE.shortName,
-                UserConnectionsTable.INSTANCE.shortName
+        String query = MessageFormat.format("SELECT *" +
+                        " FROM {0}" +
+                        " WHERE userId = " + id,
+                UsersTable.INSTANCE.shortName
         );
 
         DB.executeQuery(query, rs -> {
@@ -52,39 +48,12 @@ public class UsersTable extends Table {
                 throw new SQLException("No user with such id in DB: " + id);
             }
 
-            long user1Id = rs.getLong("userId");
-            String city1 = rs.getString("city");
-            UserState userState1 = new UserState(
-                    UserState.StateType.fromId(rs.getLong("stateId"))
-            );
-            long userConnection1Id = rs.getLong("connectionId");
-            User user1 = new User(user1Id, city1, userState1, null);
-
-            if (!rs.next()) {
-                user.set(user1);
-                return;
-            }
-
-            long user2Id = rs.getLong("userId");
-            String city2 = rs.getString("city");
-            UserState userState2 = new UserState(
-                    UserState.StateType.fromId(rs.getLong("stateId"))
-            );
-            long userConnection2Id = rs.getLong("connectionId");
-            User user2 = new User(user2Id, city2, userState2, null);
-
-            if (userConnection1Id != userConnection2Id || !userState1.equals(userState2)) {
-                throw new IllegalStateException(user1 + " and " + user2 + " are in a non-consistent state");
-            }
-
-            UserConnection userConnection = new UserConnection(
-                    userConnection1Id,
-                    user1,
-                    user2
-            );
-            userConnection.createNominalConnection();
-
-            user.set(user1);
+            user.set(new User(
+                    rs.getLong("userId"),
+                    rs.getString("city"),
+                    rs.getLong("stateId"),
+                    rs.getLong("connectionId")
+            ));
         });
 
         return user.get();

@@ -1,24 +1,14 @@
 package one.coffee.sql.tables;
 
+import one.coffee.sql.entities.User;
 import one.coffee.sql.entities.UserState;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class UserStatesTableTest extends TableTest {
-
-    @Test
-    void ok() {
-        UserState userState = UserState.DEFAULT;
-        UserStatesTable.putUserState(userState);
-
-        UserState savedUserState = UserStatesTable.getUserStateById(userState.getId());
-        assertEquals(savedUserState, userState);
-
-        UserStatesTable.deleteUserStateById(userState.getId());
-        assertThrows(Exception.class, () -> UserStatesTable.getUserStateById(userState.getId()));
-    }
+public class UserStatesTableTest
+        extends TableTest {
 
     @Test
     void sameUserStateId() {

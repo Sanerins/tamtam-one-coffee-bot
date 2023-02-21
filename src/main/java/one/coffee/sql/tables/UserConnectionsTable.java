@@ -5,6 +5,7 @@ import one.coffee.sql.entities.User;
 import one.coffee.sql.entities.UserConnection;
 import one.coffee.sql.entities.UserState;
 
+import java.rmi.NoSuchObjectException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
@@ -15,7 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class UserConnectionsTable extends Table {
+public class UserConnectionsTable
+        extends Table {
 
     public static final UserConnectionsTable INSTANCE = new UserConnectionsTable();
 
@@ -29,68 +31,22 @@ public class UserConnectionsTable extends Table {
         init();
     }
 
-    public static List<UserConnection> getUserConnectionsByUserId(long userId) {
-        List<UserConnection> userConnections = new ArrayList<>();
-        String query = MessageFormat.format(
-                // TODO SQL-запрос тут без DISTINCT выдаёт существенно больше результатов, чем требуется. Можем оптимизировать?
-
-                // TODO Насколько я понимаю, конкатенировать строки в джаве не айс. Насколько это критично для нас?
-                // MessageFormatter плохо воспринимает большие числа, для него 2077.toString = "2 077", а не "2077"
-                // поэтому костыляем как можем. Есть неповторимый оригинал String.format, но мне кажется, тяжело каждый раз вводить,
-                // какой тип ожидается. Тем более в String.format нельзя переиспользовать аргументы.
-                "SELECT DISTINCT {0}.userId AS userId, city, stateId, connectionId" +
-                    " FROM (" +
-                    "    SELECT *" +
-                    "    FROM {1}" +
-                    "    WHERE user1Id = " + userId + " OR user2Id = " + userId +
-                    ") AS s" +
-                    "LEFT JOIN {0} ON {0}.userId = " + userId,
-                UsersTable.INSTANCE.getShortName(),
-                UserConnectionsTable.INSTANCE.getShortName()
-        );
-
+    public static UserConnection getUserConnectionByUserId(long userId) {
+        AtomicReference<UserConnection> userConnection = new AtomicReference<>();
+        String query = MessageFormat.format("SELECT *" +
+                " FROM {0}" +
+                " WHERE user1Id = " + userId + " OR user2Id = " + userId,
+                INSTANCE.getShortName());
         DB.executeQuery(query, rs -> {
-            // Тут база выдаст 2*N результатов, сначала идёт инфа о первом юзере в связи, потом о втором.
-            // Не нашёл более оптимального способа вытащить эту инфу из базы; если мёржить это в одну строчку,
-            // получится мегалютый запрос, который и отладить-то непросто.
-            while (rs.next()) {
-                // TODO Дублирование кода. Кто порефакторит?
-                long user1Id = rs.getLong("userId");
-                String userCity1 = rs.getString("city");
-                UserState user1State = new UserState(UserState.StateType.fromId(rs.getLong("stateId")));
-                long userConnection1Id = rs.getLong("connectionId");
-                User user1 = new User(user1Id, userCity1, user1State, null);
-                if (!user1State.equals(UserState.CHATTING)) { // TODO Пока что если пользователь есть в табличке UserConnections, это означает,
-                                                              // что он чатится уже с кем-то. В дальнейшем (https://github.com/Sanerins/tamtam-one-coffee-bot/issues/10)
-                                                              // это будет не так, и у UserConnections будут свои состояния.
-                    throw new IllegalStateException("User: " + user1 + " has illegal 'state' = " + user1State + " while expected 'state' = " + UserState.CHATTING);
-                }
-
-                long user2Id = rs.getLong("userId");
-                String userCity2 = rs.getString("city");
-                UserState user2State = new UserState(UserState.StateType.fromId(rs.getLong("stateId")));
-                long userConnection2Id = rs.getLong("connectionId");
-                User user2 = new User(user2Id, userCity2, user2State, null);
-                if (!user2State.equals(UserState.CHATTING)) {
-                    throw new IllegalStateException("User: " + user2 + " has illegal 'state' = " + user2State + " while expected 'state' = " + UserState.CHATTING);
-                }
-
-                if (userConnection1Id != userConnection2Id) {
-                    throw new IllegalStateException("User: " + user1 + ", 'connectionId' = " + userConnection1Id
-                            + ", has another connectionID than User: " + user2 + ", 'connectionId' = " + userConnection2Id);
-                }
-
-                UserConnection userConnection = new UserConnection(user1, user2);
-                userConnections.add(userConnection);
+            if (!rs.next()) {
+                throw new SQLException("User with 'userId' = " + userId + " has not any connections!");
             }
-
-            // В самом начале это проверить не можем, так как ResultSet::next двигает указатель внутри себя на данные
-            if (userConnections.isEmpty()) {
-                throw new IllegalArgumentException("No UserConnection for 'userId'=" + userId);
-            }
+            long connectionId = rs.getLong("id");
+            long user1Id = rs.getLong("user1Id");
+            long user2Id = rs.getLong("user2Id");
+            userConnection.set(new UserConnection(connectionId, user1Id, user2Id));
         });
-
-        return userConnections;
+        return userConnection.get();
     }
 
     public static void putUserConnection(UserConnection userConnection) {

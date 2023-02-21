@@ -2,12 +2,18 @@ package one.coffee.sql.tables;
 
 import one.coffee.sql.DB;
 import one.coffee.sql.entities.User;
+import one.coffee.sql.entities.UserState;
 
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
-public class WaitingUsersTable extends Table {
+public class WaitingUsersTable
+        extends Table {
 
     public static final WaitingUsersTable INSTANCE = new WaitingUsersTable();
 
@@ -21,7 +27,20 @@ public class WaitingUsersTable extends Table {
     }
 
     public static List<User> getWaitingUsers() {
-        return null;
+        List<Long> userIds = new ArrayList<>();
+        String query = MessageFormat.format(
+                "SELECT userId" +
+                        " FROM {0}",
+                INSTANCE.getShortName()
+        );
+
+        DB.executeQuery(query, rs -> {
+            while (rs.next()) {
+                userIds.add(rs.getLong("userId"));
+            }
+        });
+
+        return userIds.stream().map(UsersTable::getUserById).toList();
     }
 
     public static void putWaitingUser(User user) {

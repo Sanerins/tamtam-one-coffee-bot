@@ -7,7 +7,9 @@ import org.slf4j.LoggerFactory;
 import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 
-public class UserState implements Entity {
+@CommitOnCreate
+public class UserState
+        implements Entity {
 
     public static final UserState DEFAULT = new UserState(StateType.DEFAULT);
     public static final UserState WAITING = new UserState(StateType.WAITING);
@@ -15,32 +17,16 @@ public class UserState implements Entity {
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private StateType stateType;
+    private final StateType stateType;
 
     public enum StateType {
-        DEFAULT(0, "DEFAULT(0)"),
-        WAITING(1, "WAITING(1)"),
-        CHATTING(2, "CHATTING(2)");
-
-        private final long id;
-        private final String name;
-
-        StateType(long id, String name) {
-            this.id = id;
-            this.name = name;
-        }
-
-        public long getId() {
-            return id;
-        }
-
-        public String getName() {
-            return this.name;
-        }
+        DEFAULT,
+        WAITING,
+        CHATTING;
 
         public static StateType fromId(long id) {
             for (StateType stateType : values()) {
-                if (stateType.getId() == id) {
+                if (stateType.ordinal() == id) {
                     return stateType;
                 }
             }
@@ -50,23 +36,13 @@ public class UserState implements Entity {
         }
     }
 
-    public UserState(StateType stateType) {
-        Objects.requireNonNull(stateType, "StateType can't be null!");
-
+    private UserState(StateType stateType) {
         this.stateType = stateType;
         commit();
     }
 
-    public StateType getStateType() {
-        return stateType;
-    }
-
-    public void setStateType(StateType stateType) {
-        this.stateType = stateType;
-    }
-
-    public long getId() {
-        return stateType.getId();
+    public long getStateId() {
+        return stateType.ordinal();
     }
 
     @Override
@@ -78,7 +54,7 @@ public class UserState implements Entity {
 
     @Override
     public String sqlValues() {
-        return String.format("(%d)", stateType.getId());
+        return String.format("(%d)", stateType.ordinal());
     }
 
     @Override

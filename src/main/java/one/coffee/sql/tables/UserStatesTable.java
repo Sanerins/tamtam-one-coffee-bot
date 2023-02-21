@@ -10,7 +10,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 // Предполагается, что значения в эту таблицу уже будут подгружены извне единожды
-public class UserStatesTable extends Table {
+public class UserStatesTable
+        extends Table {
 
     public static final UserStatesTable INSTANCE = new UserStatesTable();
 
@@ -21,27 +22,6 @@ public class UserStatesTable extends Table {
                 Map.entry("stateId", "INT NOT NULL")
         );
         init();
-    }
-
-    public static UserState getUserStateById(long id) {
-        AtomicReference<UserState> userState = new AtomicReference<>();
-        String query = MessageFormat.format(
-                "SELECT *" +
-                        " FROM {0}" +
-                        " WHERE stateId = " + id,
-                INSTANCE.shortName
-        );
-
-        DB.executeQuery(query, rs -> {
-            if (!rs.next()) {
-                throw new SQLException("No userState with such id in DB: " + id);
-            }
-
-            UserState.StateType stateType = UserState.StateType.fromId(rs.getLong("stateId"));
-            userState.set(new UserState(stateType));
-        });
-
-        return userState.get();
     }
 
     public static void putUserState(UserState userState) {

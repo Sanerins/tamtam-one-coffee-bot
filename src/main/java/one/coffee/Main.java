@@ -35,12 +35,12 @@ public class Main {
     }
 
     public static void testSQL() {
-        DB.cleanupTable(UsersTable.INSTANCE);
-        DB.cleanupTable(UserConnectionsTable.INSTANCE);
-
-        User user1 = new User(2077, "St. Petersburg", UserState.DEFAULT, null);
-        User user2 = new User(2078, "Moscow", UserState.DEFAULT, null);
-        UserConnection userConnection = new UserConnection(user1, user2);
+//        DB.cleanupTable(UsersTable.INSTANCE);
+//        DB.cleanupTable(UserConnectionsTable.INSTANCE);
+//
+//        User user1 = new User(2077, "St. Petersburg", UserState.DEFAULT, null);
+//        User user2 = new User(2078, "Moscow", UserState.DEFAULT, null);
+//        UserConnection userConnection = new UserConnection(user1, user2);
     }
 
 }
