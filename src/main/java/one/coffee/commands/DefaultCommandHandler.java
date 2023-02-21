@@ -1,18 +1,17 @@
 package one.coffee.commands;
 
+import chat.tamtam.bot.builders.NewMessageBodyBuilder;
+import chat.tamtam.botapi.model.Message;
+import one.coffee.sql.entities.UserState;
+import one.coffee.utils.CommandHandler;
+import one.coffee.utils.StaticContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.invoke.MethodHandles;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
-
-import one.coffee.sql.entities.UserState;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import chat.tamtam.bot.builders.NewMessageBodyBuilder;
-import chat.tamtam.botapi.model.Message;
-import one.coffee.utils.CommandHandler;
-import one.coffee.utils.StaticContext;
 
 public class DefaultCommandHandler extends CommandHandler {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

@@ -1,9 +1,7 @@
 package one.coffee.sql;
 
 import one.coffee.sql.entities.Entity;
-import one.coffee.sql.entities.UserState;
 import one.coffee.sql.tables.Table;
-import one.coffee.sql.tables.UserStatesTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +35,7 @@ public class DB {
             STATEMENT = CONNECTION.createStatement();
 
         } catch (SQLException e) { // Считаю, что зафейленная инициализация БД - критическая ситуация для приложения,
-                                   // поэтому ложим всё приложение, если что-то пошло тут не так
+            // поэтому ложим всё приложение, если что-то пошло тут не так
             throw new RuntimeException("DB creation is failed! Details: " + e.getMessage());
         }
     }
@@ -45,7 +43,7 @@ public class DB {
     public static void createTable(Table table) {
         Objects.requireNonNull(table, "Table can't be null!");
 
-        executeQuery("CREATE TABLE IF NOT EXISTS " + table.getSignature());
+        executeQuery("CREATE TABLE IF NOT EXISTS " + table);
         LOG.info("Created table: {}", table.getShortName());
     }
 
@@ -69,28 +67,32 @@ public class DB {
         Objects.requireNonNull(table, "Table can't be null!");
         Objects.requireNonNull(entity, "Entity can't be null!");
 
-        executeQuery("INSERT OR REPLACE INTO " + table.getSignature() + " VALUES " + entity.sqlValues());
+        executeQuery("INSERT OR REPLACE INTO " + table.getSignature(entity)
+                + " VALUES " + entity.sqlArgValues());
         LOG.info("Put entity: {}", entity);
     }
 
-    public static void deleteEntityById(Table table, long id) {
+    public static void deleteEntity(Table table, Entity entity) {
         Objects.requireNonNull(table, "Table can't be null!");
 
-        if (id <= 0) {
-            throw new IllegalArgumentException("'id' must be a positive number! Got " + id);
+        if (entity.getId() <= 0) {
+            throw new IllegalArgumentException("'id' must be a positive number! Got: " + entity.getId());
         }
 
-        if (!hasEntityById(table, id)) {
-            throw new IllegalArgumentException(table.getShortName() + "with `id`=" + id + " is absent in DB!");
+        if (!hasEntity(table, entity)) {
+            throw new IllegalArgumentException("Table '" + table.getSignature(entity) + "' has not entity with `id` = " + entity.getId());
         }
 
-        executeQuery("DELETE FROM " + table.getShortName() + " WHERE id = " + id);
-        LOG.info("Delete entity from table '{}' with 'id'={}", table.getShortName(), id);
+        executeQuery("DELETE FROM " + table.getShortName() + " WHERE id = " + entity.getId());
+        LOG.info("Delete entity from table '{}' with 'id' = {}", table.getShortName(), entity.getId());
     }
 
-    public static boolean hasEntityById(Table table, long id) {
+    public static boolean hasEntity(Table table, Entity entity) {
         AtomicBoolean isPresent = new AtomicBoolean();
-        executeQuery("SELECT * FROM " + table.getShortName() + " WHERE id = " + id, rs -> isPresent.set(rs.next()));
+        executeQuery("SELECT *" +
+                " FROM " + table.getShortName() +
+                " WHERE id = " + entity.getId(),
+                rs -> isPresent.set(rs.next()));
         return isPresent.get();
     }
 

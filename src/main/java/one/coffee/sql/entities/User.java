@@ -1,39 +1,63 @@
 package one.coffee.sql.entities;
 
+import one.coffee.sql.DB;
+import one.coffee.sql.Utils;
 import one.coffee.sql.tables.UserConnectionsTable;
 import one.coffee.sql.tables.UsersTable;
 
-import java.util.Objects;
-
+@CommitOnCreate
 public class User
         implements Entity {
 
-    private long id;
+    @Argument
+    private final long id;
+    @Argument
+    private final long userId;
+    @Argument
     private String city;
+    @Argument
     private long stateId;
+    @Argument
     private long connectionId;
+    private final boolean isCreated;
 
-    public User(long id, String city, long stateId, long connectionId) {
-        if (id <= 0) {
-            throw new IllegalArgumentException("Invalid User id! Got " + id);
+    public User(long userId, String city, long stateId, long connectionId) {
+        this(-1, userId, city, stateId, connectionId);
+    }
+
+    public User(long id, long userId, String city, long stateId, long connectionId) {
+        if (userId <= 0) {
+            throw new IllegalArgumentException("Invalid User id! Got " + userId);
         }
 
         if (city == null || city.trim().isEmpty()) {
             throw new IllegalArgumentException("User's city can't be empty!");
         }
 
-        this.id = id;
+        this.userId = userId;
         this.city = city;
         this.stateId = stateId;
         this.connectionId = connectionId;
+
+        if (id <= 0) {
+            commit();
+            this.id = UsersTable.getUserByUserId(userId).getId();
+        } else {
+            this.id = id;
+            if (!DB.hasEntity(UsersTable.INSTANCE, this)) {
+                throw new IllegalArgumentException("No User with 'id' = " + id);
+            }
+        }
+
+        this.isCreated = true;
     }
 
     public long getId() {
         return id;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public long getUserId() {
+        return userId;
     }
 
     public String getCity() {
@@ -65,13 +89,24 @@ public class User
             throw new IllegalStateException(this + " has not connected user!");
         }
 
-        UserConnection userConnection = UserConnectionsTable.getUserConnectionByUserId(id);
-        return userConnection.getUser1Id() == id ? userConnection.getUser2Id() : userConnection.getUser1Id();
+        UserConnection userConnection = UserConnectionsTable.getUserConnectionByUserId(userId);
+        return userConnection.getUser1Id() == userId ? userConnection.getUser2Id() : userConnection.getUser1Id();
     }
 
     @Override
-    public String sqlValues() {
-        return String.format("(%d, '%s', %d, %d)", id, city, stateId, connectionId);
+    public boolean isCreated() {
+        return isCreated;
+    }
+
+    @Override
+    public String sqlArgValues() {
+        StringBuilder sqlValues = new StringBuilder(Utils.SIGNATURE_START);
+        if (isCreated()) {
+            sqlValues.append(id).append(Utils.ARGS_SEPARATOR);
+        }
+
+        sqlValues.append(Utils.SIGNATURE_END);
+        return sqlValues.toString();
     }
 
     @Override
@@ -83,6 +118,7 @@ public class User
     public String toString() {
         return "User{" +
                 "id=" + id +
+                ", userId=" + userId +
                 ", city='" + city + '\'' +
                 ", stateId=" + stateId +
                 ", connectionId=" + connectionId +

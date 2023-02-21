@@ -1,16 +1,17 @@
 package one.coffee.utils;
 
+import chat.tamtam.botapi.client.TamTamClient;
+import one.coffee.sql.DB;
+import one.coffee.sql.entities.UserState;
+
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import chat.tamtam.botapi.client.TamTamClient;
-import one.coffee.sql.DB;
-import one.coffee.sql.entities.UserState;
-
 public class StaticContext {
 
+    private static final DB db = new DB();
     private static TamTamClient client;
     private static MessageSender sender;
     //TODO: userStateMap, userWaitList, userConnections надо будет сделать при помощи SQL бд. Сейчас мы теряем все стейты, диалоги и очередь при перезагрузке
@@ -20,8 +21,6 @@ public class StaticContext {
     private static ConcurrentMap<Long, UserState.StateType> userStateMap;
     private static ConcurrentMap<Long, Long> userConnections;
     private static BlockingQueue<Long> userWaitList;
-    private static final DB db = new DB();
-
     private static boolean isSet = false;
 
     public static void initialize(String token) {

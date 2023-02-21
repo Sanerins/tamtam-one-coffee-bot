@@ -1,3 +1,3 @@
 SELECT *
 FROM users
-WHERE userId = <userId>
+WHERE userId = < userId >

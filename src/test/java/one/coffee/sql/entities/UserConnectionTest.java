@@ -30,8 +30,8 @@ public class UserConnectionTest {
         assertEquals(user1.getStateId(), UserState.CHATTING.getStateId());
         assertEquals(user2.getStateId(), UserState.CHATTING.getStateId());
 
-        assertEquals(user1.getConnectedUserId(), user2.getId());
-        assertEquals(user2.getConnectedUserId(), user1.getId());
+        assertEquals(user1.getConnectedUserId(), user2.getUserId());
+        assertEquals(user2.getConnectedUserId(), user1.getUserId());
     }
 
     @Test

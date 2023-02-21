@@ -3,36 +3,25 @@ package one.coffee.sql.tables;
 import one.coffee.DBTest;
 import one.coffee.sql.entities.User;
 import one.coffee.sql.entities.UserConnection;
-import one.coffee.sql.entities.UserState;
-import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class UserConnectionsTableTest
         extends TableTest {
 
-//    @DBTest
-//    void ok() {
-//        final long user1Id = 123;
-//        final String user1City = "St. Petersburg";
-//        final UserState user1State = UserState.DEFAULT;
-//        UserConnection userConnection = null;
-//        User user1 = new User(user1Id, user1City, user1State, userConnection);
-//
-//        final long user2Id = 124;
-//        final String user2City = "St. Petersburg";
-//        final UserState user2State = UserState.DEFAULT;
-//        User user2 = new User(user2Id, user2City, user2State, userConnection);
-//
-//        userConnection = new UserConnection(user1, user2);
-//
-//        UserConnection savedUserConnection = UserConnectionsTable.getUserConnectionsByUserId(user1Id).get(0);
-//        assertEquals(savedUserConnection.getUser1(), user1);
-//        assertEquals(savedUserConnection.getUser2(), user2);
-//        assertEquals(savedUserConnection.getId(), userConnection.getId());
-//    }
-//
+    @DBTest(nUsers = 2)
+    void ok(List<User> users) {
+        User user1 = users.get(0);
+        User user2 = users.get(1);
+
+        UserConnection userConnection = new UserConnection(user1.getUserId(), user2.getUserId());
+        UserConnection savedUserConnection = UserConnectionsTable.getUserConnectionByUserId(user1.getUserId());
+        assertEquals(savedUserConnection.getId(), userConnection.getId());
+        assertEquals(savedUserConnection.getUser1Id(), user1.getUserId());
+        assertEquals(savedUserConnection.getUser2Id(), user2.getUserId());
+    }
+
 //    @DBTest
 //    void twoParallelConnections() {
 //        final long user1Id = 123;

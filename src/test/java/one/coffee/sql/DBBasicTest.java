@@ -5,7 +5,6 @@ import one.coffee.sql.tables.TableTest;
 import one.coffee.sql.tables.UserStatesTable;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class DBBasicTest

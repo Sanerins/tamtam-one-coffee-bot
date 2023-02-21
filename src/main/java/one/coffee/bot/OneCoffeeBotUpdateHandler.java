@@ -1,13 +1,5 @@
 package one.coffee.bot;
 
-import java.lang.invoke.MethodHandles;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentMap;
-
-import one.coffee.sql.entities.UserState;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.bot.updates.NoopUpdateVisitor;
 import chat.tamtam.botapi.model.BotStartedUpdate;
@@ -15,8 +7,15 @@ import chat.tamtam.botapi.model.MessageCreatedUpdate;
 import one.coffee.commands.ChattingCommandHandler;
 import one.coffee.commands.DefaultCommandHandler;
 import one.coffee.commands.WaitingCommandHandler;
+import one.coffee.sql.entities.UserState;
 import one.coffee.utils.MessageSender;
 import one.coffee.utils.StaticContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.invoke.MethodHandles;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentMap;
 
 public class OneCoffeeBotUpdateHandler extends NoopUpdateVisitor {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

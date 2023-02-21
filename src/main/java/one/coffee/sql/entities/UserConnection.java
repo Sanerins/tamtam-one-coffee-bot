@@ -1,17 +1,18 @@
 package one.coffee.sql.entities;
 
 import one.coffee.sql.DB;
+import one.coffee.sql.Utils;
 import one.coffee.sql.tables.UserConnectionsTable;
 import one.coffee.sql.tables.UsersTable;
 
+@CommitOnCreate
 public class UserConnection
         implements Entity {
 
-    private long id;
-
-    // No setters because if we change one of the users our connection will break
+    private final long id;
     private final long user1Id;
     private final long user2Id;
+    private final boolean isCreated;
 
     public UserConnection(long user1Id, long user2Id) {
         this(-1, user1Id, user2Id);
@@ -22,7 +23,7 @@ public class UserConnection
         this.user2Id = user2Id;
 
         if (id <= 0) {
-            UserConnectionsTable.putUserConnection(this);
+            commit();
             this.id = UserConnectionsTable.getUserConnectionByUserId(user1Id).getId();
         } else {
             if (!DB.hasEntityById(UserConnectionsTable.INSTANCE, id)) {
@@ -30,8 +31,6 @@ public class UserConnection
             }
             this.id = id;
         }
-
-        commit();
     }
 
     @Override
@@ -45,12 +44,13 @@ public class UserConnection
         UserConnectionsTable.deleteUserConnectionById(id); // TODO В будущем мы не будем удалять коннекшены, а будем менять их состояния
     }
 
-    public long getId() {
-        return id;
+    @Override
+    public boolean isCreated() {
+        return isCreated;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public long getId() {
+        return id;
     }
 
     public long getUser1Id() {
@@ -71,17 +71,22 @@ public class UserConnection
     }
 
     @Override
-    public String sqlValues() {
-        return String.format("(%d, %d)", user1Id, user2Id);
+    public String sqlArgValues() {
+        StringBuilder sqlValues = new StringBuilder(Utils.SIGNATURE_START);
+        if (isCreated()) {
+            sqlValues.append(id).append(Utils.ARGS_SEPARATOR);
+        }
+        sqlValues.append(Utils.SIGNATURE_END);
+        return sqlValues.toString();
     }
 
     private void commitUserConnection(long connectionId, long stateId) {
-        User user1 = UsersTable.getUserById(user1Id);
+        User user1 = UsersTable.getUserByUserId(user1Id);
         user1.setConnectionId(connectionId);
         user1.setStateId(stateId);
         UsersTable.putUser(user1);
 
-        User user2 = UsersTable.getUserById(user2Id);
+        User user2 = UsersTable.getUserByUserId(user2Id);
         user2.setConnectionId(connectionId);
         user2.setStateId(stateId);
         UsersTable.putUser(user2);

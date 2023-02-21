@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
-import java.util.Objects;
 
 @CommitOnCreate
 public class UserState
@@ -17,7 +16,48 @@ public class UserState
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+    private final long id;
     private final StateType stateType;
+
+    public UserState(StateType stateType) {
+        this(-1, stateType);
+    }
+
+    public UserState(long id, StateType stateType) {
+        this.stateType = stateType;
+
+        if (id <= 0) {
+            commit();
+            this.id = UserStatesTable.getUserStateByStateType(stateType).getId();
+        } else {
+            this.id = id;
+        }
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public long getStateId() {
+        return stateType.ordinal();
+    }
+
+    @Override
+    public String toString() {
+        return "UserState{" +
+                "stateType=" + stateType +
+                '}';
+    }
+
+    @Override
+    public String sqlArgValues() {
+        return String.format("(%d)", stateType.ordinal());
+    }
+
+    @Override
+    public void commit() {
+        UserStatesTable.putUserState(this);
+    }
 
     public enum StateType {
         DEFAULT,
@@ -34,32 +74,6 @@ public class UserState
             LOG.warn("State with id {} not found!", id);
             return DEFAULT;
         }
-    }
-
-    private UserState(StateType stateType) {
-        this.stateType = stateType;
-        commit();
-    }
-
-    public long getStateId() {
-        return stateType.ordinal();
-    }
-
-    @Override
-    public String toString() {
-        return "UserState{" +
-                "stateType=" + stateType +
-                '}';
-    }
-
-    @Override
-    public String sqlValues() {
-        return String.format("(%d)", stateType.ordinal());
-    }
-
-    @Override
-    public void commit() {
-        UserStatesTable.putUserState(this);
     }
 
 }

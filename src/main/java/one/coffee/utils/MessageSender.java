@@ -35,42 +35,6 @@ public class MessageSender {
     }
 
     /**
-     * If messageBody has text with length more than {@link MessageSender#MAX_CHARS_IN_MESSAGE}, then it will be automatically
-     * split and sent as several messages.
-     * @param userId recipient
-     * @param messageBody message
-     */
-    public void sendMessage(long userId, NewMessageBody messageBody) {
-        if (messageBody.getText() == null || messageBody.getText().length() <= 4000) { // 4000 - max characters in message text
-            try {
-                new SendMessageQuery(client, messageBody).userId(userId).enqueue();
-                return;
-            } catch (ClientException e) {
-                LOG.error("Failed to send message to user=" + userId, e);
-                return;
-            }
-        }
-
-        String[] splitText = splitTextByMaxCharsInMessage(messageBody.getText());
-        try {
-            Boolean notify = messageBody.isNotify();
-            TextFormat format = messageBody.getFormat();
-
-            NewMessageBody msg = createNewMessageBody(splitText[0], messageBody.getAttachments(), messageBody.getLink(), notify, format);
-            sendMessageWithResult(userId, msg);
-            for (int i = 1; i < splitText.length; i++) {
-                sendMessageWithResult(userId, createNewMessageBody(splitText[i], null, null, notify, format));
-            }
-        } catch (APIException | ClientException e) {
-            LOG.error("Failed to send message to user=" + userId, e);
-        }
-    }
-
-    public SendMessageResult sendMessageWithResult(long userId, NewMessageBody messageBody) throws APIException, ClientException {
-        return new SendMessageQuery(client, messageBody).userId(userId).execute();
-    }
-
-    /**
      * @param text text to send
      * @return text split by {@link MessageSender#MAX_CHARS_IN_MESSAGE} chars per cell
      * @see MessageSender#MAX_CHARS_IN_MESSAGE
@@ -86,13 +50,6 @@ public class MessageSender {
         }
 
         return split;
-    }
-
-    private NewMessageBody createNewMessageBody(String text, List<AttachmentRequest> attachments, NewMessageLink link, Boolean notify, TextFormat format) {
-        NewMessageBody newMessageBody = new NewMessageBody(text, attachments, link);
-        newMessageBody.setNotify(notify);
-        newMessageBody.setFormat(format);
-        return newMessageBody;
     }
 
     private static int getEndIndexOfMaxAvailableSubstringToSend(StringBuilder sb) {
@@ -129,5 +86,49 @@ public class MessageSender {
 
         // if we are here, then there is something wrong with this string
         return MAX_CHARS_IN_MESSAGE - 1;
+    }
+
+    /**
+     * If messageBody has text with length more than {@link MessageSender#MAX_CHARS_IN_MESSAGE}, then it will be automatically
+     * split and sent as several messages.
+     *
+     * @param userId      recipient
+     * @param messageBody message
+     */
+    public void sendMessage(long userId, NewMessageBody messageBody) {
+        if (messageBody.getText() == null || messageBody.getText().length() <= 4000) { // 4000 - max characters in message text
+            try {
+                new SendMessageQuery(client, messageBody).userId(userId).enqueue();
+                return;
+            } catch (ClientException e) {
+                LOG.error("Failed to send message to user=" + userId, e);
+                return;
+            }
+        }
+
+        String[] splitText = splitTextByMaxCharsInMessage(messageBody.getText());
+        try {
+            Boolean notify = messageBody.isNotify();
+            TextFormat format = messageBody.getFormat();
+
+            NewMessageBody msg = createNewMessageBody(splitText[0], messageBody.getAttachments(), messageBody.getLink(), notify, format);
+            sendMessageWithResult(userId, msg);
+            for (int i = 1; i < splitText.length; i++) {
+                sendMessageWithResult(userId, createNewMessageBody(splitText[i], null, null, notify, format));
+            }
+        } catch (APIException | ClientException e) {
+            LOG.error("Failed to send message to user=" + userId, e);
+        }
+    }
+
+    public SendMessageResult sendMessageWithResult(long userId, NewMessageBody messageBody) throws APIException, ClientException {
+        return new SendMessageQuery(client, messageBody).userId(userId).execute();
+    }
+
+    private NewMessageBody createNewMessageBody(String text, List<AttachmentRequest> attachments, NewMessageLink link, Boolean notify, TextFormat format) {
+        NewMessageBody newMessageBody = new NewMessageBody(text, attachments, link);
+        newMessageBody.setNotify(notify);
+        newMessageBody.setFormat(format);
+        return newMessageBody;
     }
 }

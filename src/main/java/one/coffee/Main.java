@@ -1,15 +1,9 @@
 package one.coffee;
 
-import java.lang.invoke.MethodHandles;
-
-import one.coffee.sql.DB;
-import one.coffee.sql.entities.User;
-import one.coffee.sql.entities.UserConnection;
-import one.coffee.sql.entities.UserState;
-import one.coffee.sql.tables.UserConnectionsTable;
-import one.coffee.sql.tables.UsersTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.invoke.MethodHandles;
 
 public class Main {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

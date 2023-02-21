@@ -1,6 +1,8 @@
 package one.coffee.sql.tables;
 
 import one.coffee.sql.DB;
+import one.coffee.sql.Utils;
+import one.coffee.sql.entities.Entity;
 
 import java.util.List;
 import java.util.Map;
@@ -9,49 +11,60 @@ public abstract class Table {
 
     protected String shortName;
     protected List<Map.Entry<String /*argNames*/, String /*argValues*/>> args;
-    private static final String SIGNATURE_OPEN_BRACKET = "(";
-    private static final String SIGNATURE_CLOSE_BRACKET = ")";
-    private static final String ARG_ATTRIBUTES_SEPARATOR = " ";
-    private static final String ARGS_SEPARATOR = ", ";
 
     protected Table() {
     }
 
     protected final void init() {
-        //DB.dropTable(this);
-        //DB.createTable(this);
+        if (shortName == null || shortName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Illegal 'shortName'! Got: " + shortName);
+        }
+
+        if (args.size() <= 1) {
+            throw new IllegalArgumentException("Not enough 'args'! Got: " + args);
+        }
+
+        DB.dropTable(this);
+        DB.createTable(this);
     }
 
     // Returns full name of the table with specified types.
     @Override
     public final String toString() {
         StringBuilder fullName = new StringBuilder(shortName);
-        fullName.append(SIGNATURE_OPEN_BRACKET);
+        fullName.append(Utils.SIGNATURE_START);
         if (!args.isEmpty()) {
             for (Map.Entry<String, String> arg : args) {
-                fullName.append(arg.getKey()).append(ARG_ATTRIBUTES_SEPARATOR).append(arg.getValue()).append(ARGS_SEPARATOR);
+                fullName.append(arg.getKey())
+                        .append(Utils.ARG_ATTRIBUTES_SEPARATOR)
+                        .append(arg.getValue())
+                        .append(Utils.ARGS_SEPARATOR);
             }
-            fullName.delete(fullName.length() - ARGS_SEPARATOR.length(), fullName.length());
+            fullName.delete(fullName.length() - Utils.ARGS_SEPARATOR.length(), fullName.length());
         }
-        fullName.append(SIGNATURE_CLOSE_BRACKET);
+        fullName.append(Utils.SIGNATURE_END);
         return fullName.toString();
     }
 
-    // Без поля `id`. Формируется в порядке предоставления имён полей в конструкторе каждой таблицы.
+    // Формируется в порядке предоставления имён полей в конструкторе каждой таблицы.
     // Фактически результат будет равен 'tableName(argName1, argName2, ...)'.
-    public final String getSignature() {
-        StringBuilder signatureName = new StringBuilder(shortName);
-        signatureName.append(SIGNATURE_OPEN_BRACKET);
+    public final String getSignature(Entity entity) {
+        StringBuilder signatureName = new StringBuilder(getShortName());
+        signatureName.append(Utils.SIGNATURE_START);
+        if (entity.isCreated()) {
+            signatureName.append(args.get(0).getKey())
+                    .append(Utils.ARGS_SEPARATOR);
+        }
+
         if (!args.isEmpty()) {
             for (Map.Entry<String, String> arg : args) {
                 String argName = arg.getKey();
-                if (!argName.equals("id")) {
-                    signatureName.append(argName).append(ARGS_SEPARATOR);
-                }
+                signatureName.append(argName)
+                        .append(Utils.ARGS_SEPARATOR);
             }
-            signatureName.delete(signatureName.length() - ARGS_SEPARATOR.length(), signatureName.length());
+            signatureName.delete(signatureName.length() - Utils.ARGS_SEPARATOR.length(), signatureName.length());
         }
-        signatureName.append(SIGNATURE_CLOSE_BRACKET);
+        signatureName.append(Utils.SIGNATURE_END);
         return signatureName.toString();
     }
 
