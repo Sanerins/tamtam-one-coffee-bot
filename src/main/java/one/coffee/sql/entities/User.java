@@ -1,9 +1,9 @@
 package one.coffee.sql.entities;
 
 import one.coffee.sql.DB;
-import one.coffee.sql.utils.Utils;
 import one.coffee.sql.tables.UserConnectionsTable;
 import one.coffee.sql.tables.UsersTable;
+import one.coffee.sql.utils.Utils;
 
 import java.sql.SQLException;
 
@@ -15,13 +15,17 @@ public class User
     private final long id;
     @Argument
     private final long userId;
+    private final boolean isCreated;
     @Argument
     private String city;
     @Argument
     private long stateId;
     @Argument
     private long connectionId;
-    private final boolean isCreated;
+
+    public User(long userId, String city, long stateId) throws SQLException {
+        this(-1, userId, city, stateId, -1);
+    }
 
     public User(long userId, String city, long stateId, long connectionId) throws SQLException {
         this(-1, userId, city, stateId, connectionId);

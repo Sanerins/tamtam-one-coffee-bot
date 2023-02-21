@@ -1,9 +1,9 @@
 package one.coffee.sql.entities;
 
 import one.coffee.sql.DB;
-import one.coffee.sql.utils.Utils;
 import one.coffee.sql.tables.UserConnectionsTable;
 import one.coffee.sql.tables.UsersTable;
+import one.coffee.sql.utils.Utils;
 
 import java.sql.SQLException;
 

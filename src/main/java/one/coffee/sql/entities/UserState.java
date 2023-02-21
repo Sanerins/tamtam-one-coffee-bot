@@ -1,8 +1,8 @@
 package one.coffee.sql.entities;
 
 import one.coffee.sql.DB;
-import one.coffee.sql.utils.Utils;
 import one.coffee.sql.tables.UserStatesTable;
+import one.coffee.sql.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +16,7 @@ public class UserState
     public static final UserState DEFAULT;
     public static final UserState WAITING;
     public static final UserState CHATTING;
+    private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     static {
         try {
@@ -26,8 +27,6 @@ public class UserState
             throw new RuntimeException(e);
         }
     }
-
-    private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Argument
     private final long id;

@@ -6,8 +6,6 @@ import one.coffee.sql.entities.UserState;
 import one.coffee.sql.tables.TableTest;
 import one.coffee.sql.tables.UsersTable;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
 
 import java.sql.SQLException;
 import java.util.List;

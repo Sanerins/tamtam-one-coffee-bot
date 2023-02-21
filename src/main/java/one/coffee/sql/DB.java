@@ -93,8 +93,8 @@ public class DB {
     public static boolean hasEntity(Table table, Entity entity) throws SQLException {
         AtomicBoolean isPresent = new AtomicBoolean();
         executeQuery("SELECT *" +
-                " FROM " + table.getShortName() +
-                " WHERE id = " + entity.getId(),
+                        " FROM " + table.getShortName() +
+                        " WHERE id = " + entity.getId(),
                 rs -> isPresent.set(rs.next()));
         return isPresent.get();
     }

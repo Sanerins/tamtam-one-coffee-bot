@@ -80,10 +80,15 @@ public class UsersTable
     }
 
     public static List<User> getWaitingUsers() throws SQLException {
+        return getWaitingUsers(Integer.MAX_VALUE);
+    }
+
+    public static List<User> getWaitingUsers(long limit) throws SQLException {
         List<User> users = new ArrayList<>();
         String query = MessageFormat.format("SELECT *" +
                         " FROM {0}" +
-                        " WHERE stateId = " + UserState.WAITING.getStateId(),
+                        " WHERE stateId = " + UserState.WAITING.getStateId() +
+                        " LIMIT " + limit,
                 UsersTable.INSTANCE.shortName
         );
 

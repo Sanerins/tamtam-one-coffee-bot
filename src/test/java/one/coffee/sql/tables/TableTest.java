@@ -2,7 +2,6 @@ package one.coffee.sql.tables;
 
 import one.coffee.sql.DB;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 
 import java.util.List;
 

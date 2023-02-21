@@ -5,6 +5,7 @@ import java.sql.SQLException;
 public interface Entity {
 
     boolean isCreated();
+
     long getId();
 
     // Для удобного представления на SQL значений таблички.

@@ -2,7 +2,6 @@ package one.coffee.sql.tables;
 
 import one.coffee.DBTest;
 import one.coffee.sql.entities.User;
-import org.junit.jupiter.api.Disabled;
 
 import java.sql.SQLException;
 import java.util.List;

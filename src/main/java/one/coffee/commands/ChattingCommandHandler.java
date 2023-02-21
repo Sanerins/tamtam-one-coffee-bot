@@ -14,8 +14,6 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
 import java.sql.SQLException;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentMap;
 
 public class ChattingCommandHandler extends CommandHandler {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
