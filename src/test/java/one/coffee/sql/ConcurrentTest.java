@@ -7,6 +7,7 @@ import one.coffee.sql.tables.UsersTable;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
@@ -32,7 +33,7 @@ public class ConcurrentTest {
                     UsersTable.getUserByUserId(user.getUserId());
                 }
                 barrierOnEnd.await();
-            } catch (InterruptedException | BrokenBarrierException e) {
+            } catch (InterruptedException | BrokenBarrierException | SQLException e) {
                 throw new RuntimeException(e);
             }
         };
@@ -62,7 +63,7 @@ public class ConcurrentTest {
                     UsersTable.putUser(user);
                 }
                 barrierOnEnd.await();
-            } catch (InterruptedException | BrokenBarrierException e) {
+            } catch (InterruptedException | BrokenBarrierException | SQLException e) {
                 throw new RuntimeException(e);
             }
         };
@@ -93,7 +94,7 @@ public class ConcurrentTest {
                     UsersTable.deleteUser(user);
                 }
                 barrierOnEnd.await();
-            } catch (InterruptedException | BrokenBarrierException e) {
+            } catch (InterruptedException | BrokenBarrierException | SQLException e) {
                 throw new RuntimeException(e);
             }
         };
@@ -126,7 +127,7 @@ public class ConcurrentTest {
                     UsersTable.getUserByUserId(user.getUserId());
                 }
                 barrierOnEnd.await();
-            } catch (InterruptedException | BrokenBarrierException e) {
+            } catch (InterruptedException | BrokenBarrierException | SQLException e) {
                 throw new RuntimeException(e);
             }
         };
@@ -141,7 +142,7 @@ public class ConcurrentTest {
                     UsersTable.putUser(user);
                 }
                 barrierOnEnd.await();
-            } catch (InterruptedException | BrokenBarrierException e) {
+            } catch (InterruptedException | BrokenBarrierException | SQLException e) {
                 throw new RuntimeException(e);
             }
         };
@@ -156,7 +157,7 @@ public class ConcurrentTest {
                     UsersTable.deleteUser(user);
                 }
                 barrierOnEnd.await();
-            } catch (InterruptedException | BrokenBarrierException e) {
+            } catch (InterruptedException | BrokenBarrierException | SQLException e) {
                 throw new RuntimeException(e);
             }
         };

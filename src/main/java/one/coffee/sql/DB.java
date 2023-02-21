@@ -40,6 +40,9 @@ public class DB {
         }
     }
 
+    private DB() {
+    }
+
     public static void createTable(Table table) {
         Objects.requireNonNull(table, "Table can't be null!");
 
@@ -72,22 +75,22 @@ public class DB {
         //LOG.info("Put entity: {}", entity);
     }
 
-    public static void deleteEntity(Table table, Entity entity) {
+    public static void deleteEntity(Table table, Entity entity) throws SQLException {
         Objects.requireNonNull(table, "Table can't be null!");
 
         if (entity.getId() <= 0) {
             throw new IllegalArgumentException("'id' must be a positive number! Got: " + entity.getId());
         }
 
-//        if (!hasEntity(table, entity)) {
-//            throw new IllegalArgumentException("Table '" + table.getSignature(entity) + "' has not entity with `id` = " + entity.getId());
-//        }
+        if (!hasEntity(table, entity)) {
+            LOG.warn("Table {} has not entity with `id` = {}", table.getSignature(entity), entity.getId());
+        }
 
         executeQuery("DELETE FROM " + table.getShortName() + " WHERE id = " + entity.getId());
         //LOG.info("Delete entity from table '{}' with 'id' = {}", table.getShortName(), entity.getId());
     }
 
-    public static boolean hasEntity(Table table, Entity entity) {
+    public static boolean hasEntity(Table table, Entity entity) throws SQLException {
         AtomicBoolean isPresent = new AtomicBoolean();
         executeQuery("SELECT *" +
                 " FROM " + table.getShortName() +
@@ -105,12 +108,9 @@ public class DB {
         }
     }
 
-    public static synchronized void executeQuery(String query, SQLAction sqlAction) {
+    public static synchronized void executeQuery(String query, SQLAction sqlAction) throws SQLException {
         try (ResultSet rs = STATEMENT.executeQuery(query)) {
             sqlAction.run(rs);
-        } catch (SQLException e) {
-            throw new RuntimeException("Error when executing query: " + query + ".\n" +
-                    "Details: " + e.getMessage());
         }
     }
 

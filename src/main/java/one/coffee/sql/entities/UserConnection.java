@@ -1,9 +1,11 @@
 package one.coffee.sql.entities;
 
 import one.coffee.sql.DB;
-import one.coffee.sql.Utils;
+import one.coffee.sql.utils.Utils;
 import one.coffee.sql.tables.UserConnectionsTable;
 import one.coffee.sql.tables.UsersTable;
+
+import java.sql.SQLException;
 
 @CommitOnCreate
 public class UserConnection
@@ -17,19 +19,19 @@ public class UserConnection
     private final long user2Id;
     private final boolean isCreated;
 
-    public UserConnection(long user1Id, long user2Id) {
+    public UserConnection(long user1Id, long user2Id) throws SQLException {
         this(-1, user1Id, user2Id);
     }
 
-    public UserConnection(long id, long user1Id, long user2Id) {
+    public UserConnection(long id, long user1Id, long user2Id) throws SQLException {
         this(id, UsersTable.getUserByUserId(user1Id), UsersTable.getUserByUserId(user2Id));
     }
 
-    public UserConnection(User user1, User user2) {
+    public UserConnection(User user1, User user2) throws SQLException {
         this(-1, user1, user2);
     }
 
-    public UserConnection(long id, User user1, User user2) {
+    public UserConnection(long id, User user1, User user2) throws SQLException {
         if (id <= 0 &&
                 (user1.getConnectionId() >= 1 || user2.getConnectionId() >= 1)) {
             throw new IllegalArgumentException(user1 + " or " + user2 + " has already connected!");
@@ -58,13 +60,13 @@ public class UserConnection
     }
 
     // TODO Почистить ресурсы, чтобы к этому коннекшену нельзя было обращаться. По сути, предполагается, что данный метод - деструктор класса.
-    public void breakConnection() {
+    public void breakConnection() throws SQLException {
         User user1 = UsersTable.getUserByUserId(user1Id);
         User user2 = UsersTable.getUserByUserId(user2Id);
         breakConnection(user1, user2);
     }
 
-    public void breakConnection(User user1, User user2) {
+    public void breakConnection(User user1, User user2) throws SQLException {
         commitUserConnection(-1, UserState.DEFAULT.getId(), user1, user2);
         UserConnectionsTable.deleteUserConnection(this); // TODO В будущем мы не будем удалять коннекшены, а будем менять их состояния
     }

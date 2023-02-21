@@ -2,21 +2,23 @@ package one.coffee.commands;
 
 import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.model.Message;
+import one.coffee.sql.entities.User;
+import one.coffee.sql.entities.UserConnection;
 import one.coffee.sql.entities.UserState;
+import one.coffee.sql.tables.UserConnectionsTable;
+import one.coffee.sql.tables.UsersTable;
 import one.coffee.utils.CommandHandler;
 import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
+import java.sql.SQLException;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 
 public class ChattingCommandHandler extends CommandHandler {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-    private final ConcurrentMap<Long, UserState.StateType> userStateMap = StaticContext.getUserStateMap();
-    private final ConcurrentMap<Long, Long> userConnections = StaticContext.getConnections();
 
     public ChattingCommandHandler() {
         super(StaticContext.getMessageSender());
@@ -39,12 +41,12 @@ public class ChattingCommandHandler extends CommandHandler {
 
     @Override
     protected void handleText(Message message) {
-        Long recipient = getRecipient(message);
+        User recipient = getRecipient(message);
         if (recipient == null) {
             return;
         }
 
-        messageSender.sendMessage(recipient, NewMessageBodyBuilder.copyOf(message).build());
+        messageSender.sendMessage(recipient.getUserId(), NewMessageBodyBuilder.copyOf(message).build());
     }
 
     private void handleHelp(Message message) {
@@ -55,46 +57,62 @@ public class ChattingCommandHandler extends CommandHandler {
     }
 
     private void handleEnd(Message message) {
-        Long recipient = getRecipient(message);
+        User recipient = getRecipient(message);
         if (recipient == null) {
             return;
         }
+        long senderId = message.getSender().getUserId();
 
-        messageSender.sendMessage(message.getSender().getUserId(), NewMessageBodyBuilder.ofText("Заканчиваю диалог с пользователем...").build());
-        messageSender.sendMessage(recipient, NewMessageBodyBuilder.ofText("Пользователь решил закончить с вами диалог, надеюсь все прошло сладко!").build());
+        messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText("Заканчиваю диалог с пользователем...").build());
+        messageSender.sendMessage(recipient.getUserId(), NewMessageBodyBuilder.ofText("Пользователь решил закончить с вами диалог, надеюсь все прошло сладко!").build());
 
-        userStateMap.put(message.getSender().getUserId(), UserState.StateType.DEFAULT);
-        userStateMap.put(recipient, UserState.StateType.DEFAULT);
-
-        userConnections.remove(message.getSender().getUserId());
-        userConnections.remove(recipient);
+        try {
+            UserConnection userConnection = UserConnectionsTable.getUserConnectionByUserId(senderId);
+            userConnection.breakConnection();
+        } catch (SQLException e) {
+            LOG.error("Connection with user " + senderId + " has already broken!"); // TODO Кем?
+        }
     }
 
-    private Long getRecipient(Message message) {
-        Long recipient = userConnections.get(message.getSender().getUserId());
+    private User getRecipient(Message message) {
+        try {
+            User recipient = UsersTable.getUserByUserId(
+                    UsersTable.getUserByUserId(
+                            message.getSender().getUserId()
+                    ).getConnectedUserId()
+            );
 
-        if (recipient == null) {
-            LOG.error("The recipient can't be found for user " + message.getSender().getUserId());
-            handleConnectionError(message);
-            return null;
-        }
+            if (recipient.getStateId() != UserState.CHATTING.getStateId()) {
+                LOG.error("The recipient " + recipient + " is not in chatting state for user " + message.getSender().getUserId());
+                handleConnectionError(message);
+                return null;
+            }
 
-        if (userStateMap.get(recipient) != UserState.StateType.CHATTING) {
-            LOG.error("The recipient " + recipient + " is not in chatting state for user " + message.getSender().getUserId());
+            if (recipient.getConnectedUserId() != message.getSender().getUserId()) {
+                LOG.error("The recipient " + recipient + " is chatting with other person, not with " + message.getSender().getUserId());
+                handleConnectionError(message);
+                return null;
+            }
+
+            return recipient;
+        } catch (SQLException e) {
+            LOG.error(e.getMessage());
             handleConnectionError(message);
             return null;
         }
-        if (!Objects.equals(userConnections.get(recipient), message.getSender().getUserId())) {
-            LOG.error("The recipient " + recipient + " is chatting with other person, not with " + message.getSender().getUserId());
-            handleConnectionError(message);
-            return null;
-        }
-        return recipient;
     }
 
     private void handleConnectionError(Message message) {
-        messageSender.sendMessage(message.getSender().getUserId(), NewMessageBodyBuilder.ofText("Похоже соединение разорвалось...").build());
-        userStateMap.put(message.getSender().getUserId(), UserState.StateType.DEFAULT);
+        long senderId = message.getSender().getUserId();
+
+        try {
+            messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText("Похоже соединение разорвалось...").build());
+            User sender = UsersTable.getUserByUserId(senderId);
+            sender.setStateId(UserState.DEFAULT.getId());
+            sender.commit();
+        } catch (SQLException e) {
+            LOG.error("The sender " + senderId + " was deleted from DB!"); // TODO Предложения?
+        }
     }
 
 }

@@ -1,7 +1,7 @@
 package one.coffee.sql.tables;
 
 import one.coffee.sql.DB;
-import one.coffee.sql.Utils;
+import one.coffee.sql.utils.Utils;
 import one.coffee.sql.entities.Entity;
 
 import java.util.List;

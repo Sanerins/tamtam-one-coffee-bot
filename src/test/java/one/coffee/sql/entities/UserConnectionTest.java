@@ -3,6 +3,7 @@ package one.coffee.sql.entities;
 import one.coffee.DBTest;
 import org.junit.jupiter.api.Test;
 
+import java.sql.SQLException;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -10,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class UserConnectionTest {
 
     @DBTest(nUsers = 2)
-    void ok(List<User> users) {
+    void ok(List<User> users) throws SQLException {
         User user1 = users.get(0);
         User user2 = users.get(1);
 
@@ -27,7 +28,7 @@ public class UserConnectionTest {
     }
 
     @Test
-    void invalidUser1() {
+    void invalidUser1() throws SQLException {
         final long userId = 123;
         final String userCity = "St. Petersburg";
         final long stateId = UserState.DEFAULT.getStateId();
@@ -39,7 +40,7 @@ public class UserConnectionTest {
     }
 
     @Test
-    void invalidUser2() {
+    void invalidUser2() throws SQLException {
         final long userId = 123;
         final String userCity = "St. Petersburg";
         final long stateId = UserState.DEFAULT.getStateId();

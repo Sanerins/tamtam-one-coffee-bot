@@ -4,6 +4,7 @@ import one.coffee.DBTest;
 import one.coffee.sql.entities.User;
 import org.junit.jupiter.api.Disabled;
 
+import java.sql.SQLException;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -12,7 +13,7 @@ public class UsersTableTest
         extends TableTest {
 
     @DBTest(nUsers = 1)
-    void ok(List<User> users) {
+    void ok(List<User> users) throws SQLException {
         User user = users.get(0);
 
         User savedUser = UsersTable.getUserByUserId(user.getUserId());
@@ -28,7 +29,7 @@ public class UsersTableTest
     }
 
     @DBTest(nUsers = 1)
-    void rewriteUser(List<User> users) {
+    void rewriteUser(List<User> users) throws SQLException {
         User user = users.get(0);
 
         String newUserCity = user.getCity() + "777";

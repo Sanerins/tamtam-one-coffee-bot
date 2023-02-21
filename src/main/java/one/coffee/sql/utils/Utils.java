@@ -1,4 +1,4 @@
-package one.coffee.sql;
+package one.coffee.sql.utils;
 
 public class Utils {
 

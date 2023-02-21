@@ -1,12 +1,11 @@
 package one.coffee.sql.entities;
 
 import one.coffee.sql.DB;
-import one.coffee.sql.Utils;
+import one.coffee.sql.utils.Utils;
 import one.coffee.sql.tables.UserConnectionsTable;
 import one.coffee.sql.tables.UsersTable;
 
-import java.util.List;
-import java.util.Map;
+import java.sql.SQLException;
 
 @CommitOnCreate
 public class User
@@ -24,11 +23,11 @@ public class User
     private long connectionId;
     private final boolean isCreated;
 
-    public User(long userId, String city, long stateId, long connectionId) {
+    public User(long userId, String city, long stateId, long connectionId) throws SQLException {
         this(-1, userId, city, stateId, connectionId);
     }
 
-    public User(long id, long userId, String city, long stateId, long connectionId) {
+    public User(long id, long userId, String city, long stateId, long connectionId) throws SQLException {
         if (userId <= 0) {
             throw new IllegalArgumentException("Invalid User id! Got " + userId);
         }
@@ -90,7 +89,7 @@ public class User
         this.connectionId = connectionId;
     }
 
-    public long getConnectedUserId() {
+    public long getConnectedUserId() throws SQLException {
         if (connectionId <= 0) {
             throw new IllegalStateException(this + " has not connected user!");
         }

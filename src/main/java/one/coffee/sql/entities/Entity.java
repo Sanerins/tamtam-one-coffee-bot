@@ -1,5 +1,7 @@
 package one.coffee.sql.entities;
 
+import java.sql.SQLException;
+
 public interface Entity {
 
     boolean isCreated();
@@ -10,5 +12,5 @@ public interface Entity {
     String sqlArgValues();
 
     // Сохраняет состояние сущности в базе
-    void commit();
+    void commit() throws SQLException;
 }

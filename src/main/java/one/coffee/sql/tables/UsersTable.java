@@ -35,7 +35,7 @@ public class UsersTable
         init();
     }
 
-    public static User getUserByUserId(long userId) {
+    public static User getUserByUserId(long userId) throws SQLException {
         AtomicReference<User> user = new AtomicReference<>();
         // TODO Этот скрипт будет изменён в будущем. См. комментарий в UserConnectionsTable(line 59).
         String query = MessageFormat.format("SELECT *" +
@@ -55,15 +55,31 @@ public class UsersTable
         return user.get();
     }
 
+    public static List<User> getAllUsers() throws SQLException {
+        List<User> allUsers = new ArrayList<>();
+        String query = MessageFormat.format("SELECT * FROM {0}",
+                UsersTable.INSTANCE.shortName
+        );
+
+        DB.executeQuery(query, rs -> {
+            while (rs.next()) {
+                User user = UsersTable.parseUser(rs);
+                allUsers.add(user);
+            }
+        });
+
+        return allUsers;
+    }
+
     public static void putUser(User user) {
         DB.putEntity(INSTANCE, user);
     }
 
-    public static void deleteUser(User user) {
+    public static void deleteUser(User user) throws SQLException {
         DB.deleteEntity(INSTANCE, user);
     }
 
-    public static List<User> getWaitingUsers() {
+    public static List<User> getWaitingUsers() throws SQLException {
         List<User> users = new ArrayList<>();
         String query = MessageFormat.format("SELECT *" +
                         " FROM {0}" +

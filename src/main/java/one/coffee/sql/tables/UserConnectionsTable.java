@@ -24,7 +24,7 @@ public class UserConnectionsTable
         init();
     }
 
-    public static UserConnection getUserConnectionByUserId(long userId) {
+    public static UserConnection getUserConnectionByUserId(long userId) throws SQLException {
         AtomicReference<UserConnection> userConnection = new AtomicReference<>();
         String query = MessageFormat.format("SELECT *" +
                         " FROM {0}" +
@@ -46,7 +46,7 @@ public class UserConnectionsTable
         DB.putEntity(INSTANCE, userConnection);
     }
 
-    public static void deleteUserConnection(UserConnection userConnection) {
+    public static void deleteUserConnection(UserConnection userConnection) throws SQLException {
         DB.deleteEntity(INSTANCE, userConnection);
     }
 

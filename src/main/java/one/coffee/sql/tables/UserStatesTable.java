@@ -24,7 +24,7 @@ public class UserStatesTable
         init();
     }
 
-    public static UserState getUserStateByStateType(UserState.StateType stateType) {
+    public static UserState getUserStateByStateType(UserState.StateType stateType) throws SQLException {
         AtomicReference<UserState> userState = new AtomicReference<>();
         String query = MessageFormat.format("SELECT *" +
                         " FROM {0}" +
@@ -40,14 +40,14 @@ public class UserStatesTable
         return userState.get();
     }
 
-    public static void putUserState(UserState userState) {
+    public static void putUserState(UserState userState) throws SQLException {
         if (DB.hasEntity(INSTANCE, userState)) {
             throw new IllegalArgumentException("UserState = " + userState + " has already saved in DB!");
         }
         DB.putEntity(INSTANCE, userState);
     }
 
-    public static void deleteUserState(UserState userState) {
+    public static void deleteUserState(UserState userState) throws SQLException {
         DB.deleteEntity(INSTANCE, userState);
     }
 }

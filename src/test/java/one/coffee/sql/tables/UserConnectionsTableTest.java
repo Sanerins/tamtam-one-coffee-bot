@@ -5,6 +5,7 @@ import one.coffee.sql.entities.User;
 import one.coffee.sql.entities.UserConnection;
 import one.coffee.sql.entities.UserState;
 
+import java.sql.SQLException;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -13,7 +14,7 @@ public class UserConnectionsTableTest
         extends TableTest {
 
     @DBTest(nUsers = 2)
-    void ok(List<User> users) {
+    void ok(List<User> users) throws SQLException {
         User user1 = users.get(0);
         User user2 = users.get(1);
 
@@ -26,7 +27,7 @@ public class UserConnectionsTableTest
     }
 
     @DBTest(nUsers = 3)
-    void twoParallelConnections(List<User> users) {
+    void twoParallelConnections(List<User> users) throws SQLException {
         User user1 = users.get(0);
         User user2 = users.get(1);
         User user3 = users.get(2);
@@ -43,7 +44,7 @@ public class UserConnectionsTableTest
     }
 
     @DBTest(nUsers = 2)
-    void breakConnection(List<User> users) {
+    void breakConnection(List<User> users) throws SQLException {
         User user1 = users.get(0);
         User user2 = users.get(1);
 

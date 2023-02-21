@@ -2,23 +2,22 @@ package one.coffee.commands;
 
 import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.model.Message;
+import one.coffee.sql.entities.User;
 import one.coffee.sql.entities.UserState;
+import one.coffee.sql.tables.UsersTable;
 import one.coffee.utils.CommandHandler;
 import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 public class DefaultCommandHandler extends CommandHandler {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-    private final ConcurrentMap<Long, UserState.StateType> userStateMap = StaticContext.getUserStateMap();
-    private final ConcurrentMap<Long, Long> userConnections = StaticContext.getConnections();
-    private final BlockingQueue<Long> userWaitList = StaticContext.getUserWaitList();
 
     public DefaultCommandHandler() {
         super(StaticContext.getMessageSender());
@@ -47,6 +46,8 @@ public class DefaultCommandHandler extends CommandHandler {
     }
 
     private void handleStart(Message message) {
+
+        List<User> userWaitList = UsersTable.getWaitingUsers();
         if (userWaitList.isEmpty()) {
             startTheWait(message);
             return;

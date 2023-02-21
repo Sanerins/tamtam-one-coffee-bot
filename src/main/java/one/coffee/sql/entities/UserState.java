@@ -1,21 +1,31 @@
 package one.coffee.sql.entities;
 
 import one.coffee.sql.DB;
-import one.coffee.sql.Utils;
+import one.coffee.sql.utils.Utils;
 import one.coffee.sql.tables.UserStatesTable;
-import one.coffee.sql.tables.UsersTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
+import java.sql.SQLException;
 
 @CommitOnCreate
 public class UserState
         implements Entity {
 
-    public static final UserState DEFAULT = new UserState(StateType.DEFAULT);
-    public static final UserState WAITING = new UserState(StateType.WAITING);
-    public static final UserState CHATTING = new UserState(StateType.CHATTING);
+    public static final UserState DEFAULT;
+    public static final UserState WAITING;
+    public static final UserState CHATTING;
+
+    static {
+        try {
+            DEFAULT = new UserState(StateType.DEFAULT);
+            WAITING = new UserState(StateType.WAITING);
+            CHATTING = new UserState(StateType.CHATTING);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -25,11 +35,11 @@ public class UserState
     private final StateType stateType;
     private final boolean isCreated;
 
-    public UserState(StateType stateType) {
+    public UserState(StateType stateType) throws SQLException {
         this(-1, stateType);
     }
 
-    public UserState(long id, StateType stateType) {
+    public UserState(long id, StateType stateType) throws SQLException {
         this.stateType = stateType;
 
         if (id <= 0) {
@@ -83,7 +93,7 @@ public class UserState
     }
 
     @Override
-    public void commit() {
+    public void commit() throws SQLException {
         UserStatesTable.putUserState(this);
     }
 
