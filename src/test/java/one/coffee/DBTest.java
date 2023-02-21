@@ -37,15 +37,17 @@ public @interface DBTest {
         @Override
         public Stream<? extends Arguments> provideArguments(ExtensionContext extensionContext) throws Exception {
             int nUsers = extensionContext.getTestMethod().get().getAnnotation(DBTest.class).nUsers();
-            long userId = System.currentTimeMillis() % (nUsers * 10) + 1;
-            return Stream.generate(() -> 0).limit(nUsers).map(i -> Arguments.of(
-                    new User(
-                            userId,
-                            "City" + userId,
-                            UserState.DEFAULT.getStateId(),
-                            -1
-                    )
-            ));
+            return Stream.generate(() -> 0).limit(nUsers).map(i -> {
+                long userId = System.currentTimeMillis() % (nUsers * 10) + 1;
+                User user = new User(
+                        userId,
+                        "City" + userId,
+                        UserState.DEFAULT.getStateId(),
+                        -1
+                );
+                user.commit();
+                return Arguments.of(user);
+            });
         }
     }
 }

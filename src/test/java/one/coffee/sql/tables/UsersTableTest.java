@@ -17,7 +17,6 @@ public class UsersTableTest
 
     @DBTest(nUsers = 1)
     void ok(User user) {
-        user.commit();
         User savedUser = UsersTable.getUserById(user.getId());
 
         assertEquals(savedUser.getId(), user.getId());
@@ -25,7 +24,7 @@ public class UsersTableTest
         assertEquals(savedUser.getStateId(), user.getStateId());
         assertEquals(savedUser.getConnectionId(), user.getConnectionId());
 
-        UsersTable.deleteUserById(user.getId());
+        UsersTable.deleteUserById(user.getId()); // FIXME
 
         assertThrows(Exception.class, () -> UsersTable.getUserById(user.getId()));
     }
