@@ -3,12 +3,13 @@ package one.coffee.sql.entities;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.sql.SQLException;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class UserTest {
 
     @Test
-    void ok() {
+    void ok() throws SQLException {
         final long userId = 123;
         final String userCity = "St. Petersburg";
         final long stateId = UserState.DEFAULT.getStateId();

@@ -61,14 +61,25 @@ public class ChattingCommandHandler extends CommandHandler {
         }
         long senderId = message.getSender().getUserId();
 
-        messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText("Заканчиваю диалог с пользователем...").build());
-        messageSender.sendMessage(recipient.getUserId(), NewMessageBodyBuilder.ofText("Пользователь решил закончить с вами диалог, надеюсь все прошло сладко!").build());
 
         try {
             UserConnection userConnection = UserConnectionsTable.getUserConnectionByUserId(senderId);
             userConnection.breakConnection();
+
+            messageSender.sendMessage(
+                    senderId,
+                    NewMessageBodyBuilder.ofText("Диалог с пользователем завершён").build()
+            );
+            messageSender.sendMessage(
+                    recipient.getUserId(),
+                    NewMessageBodyBuilder.ofText("Пользователь решил закончить с вами диалог, надеюсь все прошло сладко!").build()
+            );
         } catch (SQLException e) {
             LOG.error("Connection with user " + senderId + " has already broken!"); // TODO Кем?
+            messageSender.sendMessage(
+                    senderId,
+                    NewMessageBodyBuilder.ofText("Не получилось отсоединиться от работяги((( Попробуй снова").build()
+            );
         }
     }
 
