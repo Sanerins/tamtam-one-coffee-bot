@@ -13,6 +13,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
 @Target({ElementType.ANNOTATION_TYPE, ElementType.METHOD})
@@ -30,16 +32,16 @@ public @interface DBTest {
         @Override
         public Stream<? extends Arguments> provideArguments(ExtensionContext extensionContext) throws Exception {
             int nUsers = extensionContext.getTestMethod().get().getAnnotation(DBTest.class).nUsers();
-            return Stream.generate(() -> 0).limit(nUsers).map(i -> {
-                long userId = System.currentTimeMillis() % (nUsers * 10) + 1;
-                User user = new User(
-                        userId,
-                        "City" + userId,
-                        UserState.DEFAULT.getStateId(),
+            List<User> users = new ArrayList<>();
+            for (int i = 0; i < nUsers; ++i) {
+                users.add(new User(
+                        i + 1,
+                        "City" + (i + 1),
+                        UserState.DEFAULT.getId(),
                         -1
-                );
-                return Arguments.of(user);
-            });
+                ));
+            }
+            return Stream.of(Arguments.of(users));
         }
     }
 }

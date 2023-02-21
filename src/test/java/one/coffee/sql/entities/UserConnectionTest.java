@@ -1,28 +1,20 @@
 package one.coffee.sql.entities;
 
+import one.coffee.DBTest;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class UserConnectionTest {
 
-    @Test
-    void ok() {
-        final long user1Id = 123;
-        final String user1City = "St. Petersburg";
-        final long state1Id = UserState.DEFAULT.getStateId();
-        final long connection1Id = -1;
-        User user1 = new User(user1Id, user1City, state1Id, connection1Id);
+    @DBTest(nUsers = 2)
+    void ok(List<User> users) {
+        User user1 = users.get(0);
+        User user2 = users.get(1);
 
-        final long user2Id = 124;
-        final String user2City = "St. Petersburg";
-        final long state2Id = UserState.DEFAULT.getStateId();
-        final long connection2Id = -1;
-        User user2 = new User(user2Id, user2City, state2Id, connection2Id);
-
-        UserConnection userConnection = new UserConnection(user1Id, user2Id);
-        userConnection.commit();
+        UserConnection userConnection = new UserConnection(user1, user2);
 
         assertEquals(user1.getConnectionId(), userConnection.getId());
         assertEquals(user2.getConnectionId(), userConnection.getId());

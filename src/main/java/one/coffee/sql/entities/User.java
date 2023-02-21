@@ -5,6 +5,9 @@ import one.coffee.sql.Utils;
 import one.coffee.sql.tables.UserConnectionsTable;
 import one.coffee.sql.tables.UsersTable;
 
+import java.util.List;
+import java.util.Map;
+
 @CommitOnCreate
 public class User
         implements Entity {
@@ -34,6 +37,8 @@ public class User
             throw new IllegalArgumentException("User's city can't be empty!");
         }
 
+        UserState.StateType.fromId(stateId); // Check for stateId existence
+
         this.userId = userId;
         this.city = city;
         this.stateId = stateId;
@@ -52,6 +57,7 @@ public class User
         this.isCreated = true;
     }
 
+    @Override
     public long getId() {
         return id;
     }
@@ -101,9 +107,17 @@ public class User
     @Override
     public String sqlArgValues() {
         StringBuilder sqlValues = new StringBuilder(Utils.SIGNATURE_START);
+
         if (isCreated()) {
             sqlValues.append(id).append(Utils.ARGS_SEPARATOR);
         }
+
+        // TODO Оптимизировать, чтобы ручками не вводить каждый аргумент. Сделать список из аннотированных элементов @Argument
+        // и добавлять их.
+        sqlValues.append(userId).append(Utils.ARGS_SEPARATOR)
+                .append(Utils.STRING_QUOTTER).append(city).append(Utils.STRING_QUOTTER).append(Utils.ARGS_SEPARATOR)
+                .append(stateId).append(Utils.ARGS_SEPARATOR)
+                .append(connectionId);
 
         sqlValues.append(Utils.SIGNATURE_END);
         return sqlValues.toString();

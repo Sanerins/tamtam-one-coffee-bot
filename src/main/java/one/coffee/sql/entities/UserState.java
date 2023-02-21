@@ -1,6 +1,9 @@
 package one.coffee.sql.entities;
 
+import one.coffee.sql.DB;
+import one.coffee.sql.Utils;
 import one.coffee.sql.tables.UserStatesTable;
+import one.coffee.sql.tables.UsersTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,8 +19,11 @@ public class UserState
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+    @Argument
     private final long id;
+    @Argument
     private final StateType stateType;
+    private final boolean isCreated;
 
     public UserState(StateType stateType) {
         this(-1, stateType);
@@ -31,9 +37,20 @@ public class UserState
             this.id = UserStatesTable.getUserStateByStateType(stateType).getId();
         } else {
             this.id = id;
+            if (!DB.hasEntity(UserStatesTable.INSTANCE, this)) {
+                throw new IllegalArgumentException("No UsetState with 'id' = " + id);
+            }
         }
+
+        this.isCreated = true;
     }
 
+    @Override
+    public boolean isCreated() {
+        return isCreated;
+    }
+
+    @Override
     public long getId() {
         return id;
     }
@@ -51,7 +68,18 @@ public class UserState
 
     @Override
     public String sqlArgValues() {
-        return String.format("(%d)", stateType.ordinal());
+        StringBuilder sqlValues = new StringBuilder(Utils.SIGNATURE_START);
+
+        if (isCreated()) {
+            sqlValues.append(id).append(Utils.ARGS_SEPARATOR);
+        }
+
+        // TODO Оптимизировать, чтобы ручками не вводить каждый аргумент. Сделать список из аннотированных элементов @Argument
+        // и добавлять их. При таком подходе метод будет один на всех.
+        sqlValues.append(stateType.ordinal());
+
+        sqlValues.append(Utils.SIGNATURE_END);
+        return sqlValues.toString();
     }
 
     @Override
@@ -71,8 +99,7 @@ public class UserState
                 }
             }
 
-            LOG.warn("State with id {} not found!", id);
-            return DEFAULT;
+            throw new IllegalArgumentException("StateType with 'id' = " + id + " not found!");
         }
     }
 

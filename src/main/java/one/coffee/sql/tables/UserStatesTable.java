@@ -41,10 +41,13 @@ public class UserStatesTable
     }
 
     public static void putUserState(UserState userState) {
+        if (DB.hasEntity(INSTANCE, userState)) {
+            throw new IllegalArgumentException("UserState = " + userState + " has already saved in DB!");
+        }
         DB.putEntity(INSTANCE, userState);
     }
 
-    public static void deleteUserStateById(long id) {
-        DB.deleteEntityById(INSTANCE, id);
+    public static void deleteUserState(UserState userState) {
+        DB.deleteEntity(INSTANCE, userState);
     }
 }

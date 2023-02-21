@@ -56,14 +56,12 @@ public abstract class Table {
                     .append(Utils.ARGS_SEPARATOR);
         }
 
-        if (!args.isEmpty()) {
-            for (Map.Entry<String, String> arg : args) {
-                String argName = arg.getKey();
-                signatureName.append(argName)
-                        .append(Utils.ARGS_SEPARATOR);
-            }
-            signatureName.delete(signatureName.length() - Utils.ARGS_SEPARATOR.length(), signatureName.length());
+        for (Map.Entry<String, String> arg : args.subList(1, args.size())) {
+            String argName = arg.getKey();
+            signatureName.append(argName)
+                    .append(Utils.ARGS_SEPARATOR);
         }
+        signatureName.delete(signatureName.length() - Utils.ARGS_SEPARATOR.length(), signatureName.length());
         signatureName.append(Utils.SIGNATURE_END);
         return signatureName.toString();
     }
@@ -71,4 +69,5 @@ public abstract class Table {
     public final String getShortName() {
         return shortName;
     }
+
 }

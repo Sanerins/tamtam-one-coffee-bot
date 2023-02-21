@@ -69,7 +69,7 @@ public class DB {
 
         executeQuery("INSERT OR REPLACE INTO " + table.getSignature(entity)
                 + " VALUES " + entity.sqlArgValues());
-        LOG.info("Put entity: {}", entity);
+        //LOG.info("Put entity: {}", entity);
     }
 
     public static void deleteEntity(Table table, Entity entity) {
@@ -79,12 +79,12 @@ public class DB {
             throw new IllegalArgumentException("'id' must be a positive number! Got: " + entity.getId());
         }
 
-        if (!hasEntity(table, entity)) {
-            throw new IllegalArgumentException("Table '" + table.getSignature(entity) + "' has not entity with `id` = " + entity.getId());
-        }
+//        if (!hasEntity(table, entity)) {
+//            throw new IllegalArgumentException("Table '" + table.getSignature(entity) + "' has not entity with `id` = " + entity.getId());
+//        }
 
         executeQuery("DELETE FROM " + table.getShortName() + " WHERE id = " + entity.getId());
-        LOG.info("Delete entity from table '{}' with 'id' = {}", table.getShortName(), entity.getId());
+        //LOG.info("Delete entity from table '{}' with 'id' = {}", table.getShortName(), entity.getId());
     }
 
     public static boolean hasEntity(Table table, Entity entity) {
@@ -96,7 +96,7 @@ public class DB {
         return isPresent.get();
     }
 
-    public static void executeQuery(String query) {
+    public static synchronized void executeQuery(String query) {
         try {
             STATEMENT.execute(query);
         } catch (SQLException e) {
@@ -105,7 +105,7 @@ public class DB {
         }
     }
 
-    public static void executeQuery(String query, SQLAction sqlAction) {
+    public static synchronized void executeQuery(String query, SQLAction sqlAction) {
         try (ResultSet rs = STATEMENT.executeQuery(query)) {
             sqlAction.run(rs);
         } catch (SQLException e) {

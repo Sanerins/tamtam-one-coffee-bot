@@ -46,8 +46,8 @@ public class UserConnectionsTable
         DB.putEntity(INSTANCE, userConnection);
     }
 
-    public static void deleteUserConnectionById(long id) {
-        DB.deleteEntityById(INSTANCE, id);
+    public static void deleteUserConnection(UserConnection userConnection) {
+        DB.deleteEntity(INSTANCE, userConnection);
     }
 
 }

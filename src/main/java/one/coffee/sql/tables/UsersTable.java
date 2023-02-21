@@ -59,8 +59,8 @@ public class UsersTable
         DB.putEntity(INSTANCE, user);
     }
 
-    public static void deleteUserById(long id) {
-        DB.deleteEntityById(INSTANCE, id);
+    public static void deleteUser(User user) {
+        DB.deleteEntity(INSTANCE, user);
     }
 
     public static List<User> getWaitingUsers() {

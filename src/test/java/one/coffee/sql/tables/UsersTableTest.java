@@ -12,7 +12,9 @@ public class UsersTableTest
         extends TableTest {
 
     @DBTest(nUsers = 1)
-    void ok(User user) {
+    void ok(List<User> users) {
+        User user = users.get(0);
+
         User savedUser = UsersTable.getUserByUserId(user.getUserId());
 
         assertEquals(savedUser.getUserId(), user.getUserId());
@@ -20,14 +22,15 @@ public class UsersTableTest
         assertEquals(savedUser.getStateId(), user.getStateId());
         assertEquals(savedUser.getConnectionId(), user.getConnectionId());
 
-        UsersTable.deleteUserById(user.getId());
+        UsersTable.deleteUser(user);
 
         assertThrows(Exception.class, () -> UsersTable.getUserByUserId(user.getUserId()));
     }
 
-    @Disabled("TODO Перезапись в базу по id")
     @DBTest(nUsers = 1)
-    void rewriteUser(User user) {
+    void rewriteUser(List<User> users) {
+        User user = users.get(0);
+
         String newUserCity = user.getCity() + "777";
         user.setCity(newUserCity);
         user.commit();
@@ -38,11 +41,6 @@ public class UsersTableTest
         assertEquals(savedUser.getCity(), newUserCity);
         assertEquals(savedUser.getStateId(), user.getStateId());
         assertEquals(savedUser.getConnectionId(), user.getConnectionId());
-    }
-
-    @Override
-    protected Table getTable() {
-        return UsersTable.INSTANCE;
     }
 
 }
