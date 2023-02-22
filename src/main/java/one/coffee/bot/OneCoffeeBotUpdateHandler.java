@@ -8,7 +8,6 @@ import one.coffee.commands.ChattingCommandHandler;
 import one.coffee.commands.DefaultCommandHandler;
 import one.coffee.commands.WaitingCommandHandler;
 import one.coffee.sql.entities.User;
-import one.coffee.sql.entities.UserState;
 import one.coffee.sql.tables.UsersTable;
 import one.coffee.utils.MessageSender;
 import one.coffee.utils.StaticContext;

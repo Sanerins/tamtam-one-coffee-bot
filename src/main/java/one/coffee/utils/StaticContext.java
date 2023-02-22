@@ -4,6 +4,8 @@ import chat.tamtam.botapi.client.TamTamClient;
 
 public class StaticContext {
 
+    public static final int NO_ID = -1;
+
     private static TamTamClient client;
     private static MessageSender sender;
     private static boolean isSet = false;

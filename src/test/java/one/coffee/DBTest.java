@@ -1,7 +1,6 @@
 package one.coffee;
 
 import one.coffee.sql.entities.User;
-import one.coffee.sql.entities.UserState;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;

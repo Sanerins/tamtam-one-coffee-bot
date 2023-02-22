@@ -1,6 +1,6 @@
 package one.coffee.sql.utils;
 
-public class Utils {
+public class SqlUtils {
 
     public static final String SIGNATURE_START = "(";
     public static final String SIGNATURE_END = ")";
@@ -8,7 +8,7 @@ public class Utils {
     public static final String ARGS_SEPARATOR = ", ";
     public static final String STRING_QUOTTER = "'";
 
-    private Utils() {
+    private SqlUtils() {
     }
 
 }

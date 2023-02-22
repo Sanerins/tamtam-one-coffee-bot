@@ -3,72 +3,87 @@ package one.coffee.sql.entities;
 import one.coffee.sql.DB;
 import one.coffee.sql.tables.UserConnectionsTable;
 import one.coffee.sql.tables.UsersTable;
-import one.coffee.sql.utils.Utils;
+import one.coffee.sql.utils.SqlUtils;
+import one.coffee.utils.StaticContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.lang.invoke.MethodHandles;
 import java.sql.SQLException;
 
-@CommitOnCreate
 public class UserConnection
         implements Entity {
 
-    @Argument
-    private final long id;
-    @Argument
-    private final long user1Id;
-    @Argument
-    private final long user2Id;
-    private final boolean isCreated;
+    private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private long id;
+    private long user1Id;
+    private long user2Id;
+    private boolean isCreated;
+    private boolean isCommitted;
 
     public UserConnection(long user1Id, long user2Id) throws SQLException {
-        this(-1, user1Id, user2Id);
+        this(StaticContext.NO_ID, user1Id, user2Id);
     }
 
     public UserConnection(long id, long user1Id, long user2Id) throws SQLException {
         this(id, UsersTable.getUserByUserId(user1Id), UsersTable.getUserByUserId(user2Id));
     }
 
-    public UserConnection(User user1, User user2) throws SQLException {
-        this(-1, user1, user2);
-    }
-
     public UserConnection(long id, User user1, User user2) throws SQLException {
         if (id <= 0 &&
-                (user1.getConnectionId() >= 1 || user2.getConnectionId() >= 1)) {
+                (user1.hasConnection() || user2.hasConnection())) {
             throw new IllegalArgumentException(user1 + " or " + user2 + " has already connected!");
         }
 
-        this.user1Id = user1.getUserId();
-        this.user2Id = user2.getUserId();
+        this.user1Id = user1.getId();
+        this.user2Id = user2.getId();
 
-        if (id <= 0) {
-            commit();
-            this.id = UserConnectionsTable.getUserConnectionByUserId(user1Id).getId();
-            commitUserConnection(this.id, UserState.CHATTING.getStateId(), user1, user2);
-        } else {
+        if (id >= 1) {
             this.id = id;
             if (!DB.hasEntity(UserConnectionsTable.INSTANCE, this)) {
                 throw new IllegalArgumentException("No UserConnection with 'id' = " + id);
             }
+            this.isCreated = true;
         }
-
-        this.isCreated = true;
     }
 
     @Override
-    public void commit() {
+    public void commit() throws SQLException {
+        if (isCommitted) {
+            LOG.warn("Connection has already built between users: {} and {}", user1Id, user2Id);
+            return;
+        }
+
         UserConnectionsTable.putUserConnection(this);
+        this.id = UserConnectionsTable.getUserConnectionByUserId(user1Id).getId();
+        commitUsersConnection(this.id, UserState.CHATTING.getStateId());
+        this.isCreated = true;
+        this.isCommitted = true;
     }
 
-    // TODO Почистить ресурсы, чтобы к этому коннекшену нельзя было обращаться. По сути, предполагается, что данный метод - деструктор класса.
+    // Деструктор класса. Обращение к его полям и методам после вызова этой функции может привести к неожиданному поведению.
     public void breakConnection() throws SQLException {
-        User user1 = UsersTable.getUserByUserId(user1Id);
-        User user2 = UsersTable.getUserByUserId(user2Id);
-        breakConnection(user1, user2);
+        commitUsersConnection(StaticContext.NO_ID, UserState.DEFAULT.getId());
+
+        // TODO В будущем мы не будем удалять коннекшены, а будем менять их состояния
+        UserConnectionsTable.deleteUserConnection(this);
+
+        this.id = StaticContext.NO_ID;
+        this.user1Id = StaticContext.NO_ID;
+        this.user2Id = StaticContext.NO_ID;
+        this.isCreated = false;
     }
 
-    public void breakConnection(User user1, User user2) throws SQLException {
-        commitUserConnection(-1, UserState.DEFAULT.getId(), user1, user2);
-        UserConnectionsTable.deleteUserConnection(this); // TODO В будущем мы не будем удалять коннекшены, а будем менять их состояния
+    private void commitUsersConnection(long connectionId, long stateId) throws SQLException {
+        User user1 = UsersTable.getUserByUserId(user1Id);
+        user1.setStateId(stateId);
+        user1.setConnectionId(connectionId);
+        user1.commit();
+
+        User user2 = UsersTable.getUserByUserId(user2Id);
+        user2.setStateId(stateId);
+        user2.setConnectionId(connectionId);
+        user2.commit();
     }
 
     @Override
@@ -100,29 +115,14 @@ public class UserConnection
 
     @Override
     public String sqlArgValues() {
-        StringBuilder sqlValues = new StringBuilder(Utils.SIGNATURE_START);
+        StringBuilder sqlValues = new StringBuilder(SqlUtils.SIGNATURE_START);
 
         if (isCreated()) {
-            sqlValues.append(id).append(Utils.ARGS_SEPARATOR);
+            sqlValues.append(id).append(SqlUtils.ARGS_SEPARATOR);
         }
 
-        // TODO Оптимизировать, чтобы ручками не вводить каждый аргумент. Сделать список из аннотированных элементов @Argument
-        // и добавлять их. При таком подходе метод будет один на всех.
-        sqlValues.append(user1Id).append(Utils.ARGS_SEPARATOR)
-                .append(user2Id);
-
-        sqlValues.append(Utils.SIGNATURE_END);
-        return sqlValues.toString();
-    }
-
-    private void commitUserConnection(long connectionId, long stateId, User user1, User user2) {
-        user1.setStateId(stateId);
-        user1.setConnectionId(connectionId);
-        user1.commit();
-
-        user2.setStateId(stateId);
-        user2.setConnectionId(connectionId);
-        user2.commit();
+        return sqlValues.append(user1Id).append(SqlUtils.ARGS_SEPARATOR)
+                .append(user2Id).append(SqlUtils.SIGNATURE_END).toString();
     }
 
 }

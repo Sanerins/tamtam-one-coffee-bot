@@ -3,7 +3,6 @@ package one.coffee.sql.tables;
 import one.coffee.DBTest;
 import one.coffee.sql.entities.User;
 import one.coffee.sql.entities.UserConnection;
-import one.coffee.sql.entities.UserState;
 
 import java.sql.SQLException;
 import java.util.List;

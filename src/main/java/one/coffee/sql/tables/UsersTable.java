@@ -2,7 +2,6 @@ package one.coffee.sql.tables;
 
 import one.coffee.sql.DB;
 import one.coffee.sql.entities.User;
-import one.coffee.sql.entities.UserState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,10 +23,7 @@ public class UsersTable
     private UsersTable() {
         shortName = "users";
         args = List.of(
-                // TODO У SQLite есть проблема, что AUTOINCREMENT действует только на тип INTEGER, а нам хотелось бы тип пошире (или не хотелось бы? :) )
-                Map.entry("id", "INTEGER PRIMARY KEY AUTOINCREMENT"),
-                // TODO Решить проблему составного ключа, так как и id, и userId должны быть уникальны
-                Map.entry("userId", "BIGINT"),
+                Map.entry("userId", "INTEGER PRIMARY KEY"),
                 Map.entry("city", "VARCHAR(20)"),
                 Map.entry("stateId", "INT REFERENCES states(stateId) ON DELETE SET NULL"),
                 Map.entry("connectionId", "INT REFERENCES userConnections(id) ON DELETE SET NULL")
@@ -103,7 +99,6 @@ public class UsersTable
 
     private static User parseUser(ResultSet rs) throws SQLException {
         return new User(
-                rs.getLong("id"),
                 rs.getLong("userId"),
                 rs.getString("city"),
                 rs.getLong("stateId"),
