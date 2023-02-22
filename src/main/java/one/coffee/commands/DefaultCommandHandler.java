@@ -4,6 +4,7 @@ import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.model.Message;
 import one.coffee.sql.entities.User;
 import one.coffee.sql.entities.UserConnection;
+import one.coffee.sql.entities.UserState;
 import one.coffee.sql.tables.UsersTable;
 import one.coffee.utils.CommandHandler;
 import one.coffee.utils.StaticContext;
@@ -53,14 +54,14 @@ public class DefaultCommandHandler extends CommandHandler {
 
             long senderId = message.getSender().getUserId();
             User recipient = userWaitList.get(0);
-            UserConnection userConnection = new UserConnection(senderId, recipient.getUserId());
+            UserConnection userConnection = new UserConnection(senderId, recipient.getId());
 
             messageSender.sendMessage(senderId,
                     NewMessageBodyBuilder.ofText("""
                             Я нашел вам собеседника!
                             Я буду передавать сообщения между вами, можете общаться сколько влезет!)
                             Список команд, доступных во время беседы можно открыть на /help\s""").build());
-            messageSender.sendMessage(recipient.getUserId(),
+            messageSender.sendMessage(recipient.getId(),
                     NewMessageBodyBuilder.ofText("""
                             Я нашел вам собеседника!
                             Я буду передавать сообщения между вами, можете общаться сколько влезет!)
@@ -75,7 +76,7 @@ public class DefaultCommandHandler extends CommandHandler {
 
         try {
             User sender = UsersTable.getUserByUserId(senderId);
-            sender.setStateId(UserState.WAITING.getStateId());
+            sender.setState(UserState.WAITING);
             sender.commit();
             messageSender.sendMessage(message.getSender().getUserId(),
                     NewMessageBodyBuilder.ofText("Вы успешно добавлены в список ждущий пользователей! Ожидайте начала диалога! ").build());

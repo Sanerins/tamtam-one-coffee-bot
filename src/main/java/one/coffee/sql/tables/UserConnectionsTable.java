@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class UserConnectionsTable
         extends Table {
 
-    public static final UserConnectionsTable INSTANCE = new UserConnectionsTable();
+    private static UserConnectionsTable INSTANCE;
 
     private UserConnectionsTable() {
         shortName = "userConnections";
@@ -22,6 +22,13 @@ public class UserConnectionsTable
                 Map.entry("user2Id", "INT REFERENCES users(userId) ON DELETE CASCADE")
         );
         init();
+    }
+
+    public static UserConnectionsTable getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new UserConnectionsTable();
+        }
+        return INSTANCE;
     }
 
     public static UserConnection getUserConnectionByUserId(long userId) throws SQLException {

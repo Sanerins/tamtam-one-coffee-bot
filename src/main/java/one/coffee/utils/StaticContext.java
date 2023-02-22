@@ -1,10 +1,14 @@
 package one.coffee.utils;
 
 import chat.tamtam.botapi.client.TamTamClient;
+import one.coffee.sql.entities.User;
+import one.coffee.sql.tables.UserConnectionsTable;
+import one.coffee.sql.tables.UsersTable;
 
 public class StaticContext {
 
-    public static final int NO_ID = -1;
+    public static final UsersTable USERS_TABLE = UsersTable.getInstance();
+    public static final UserConnectionsTable USER_CONNECTIONS_TABLE = UserConnectionsTable.getInstance();
 
     private static TamTamClient client;
     private static MessageSender sender;

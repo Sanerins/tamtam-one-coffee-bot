@@ -4,6 +4,7 @@ import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.model.Message;
 import one.coffee.sql.entities.User;
 import one.coffee.sql.entities.UserConnection;
+import one.coffee.sql.entities.UserState;
 import one.coffee.sql.tables.UserConnectionsTable;
 import one.coffee.sql.tables.UsersTable;
 import one.coffee.utils.CommandHandler;
@@ -70,7 +71,7 @@ public class ChattingCommandHandler extends CommandHandler {
                     NewMessageBodyBuilder.ofText("Диалог с пользователем завершён").build()
             );
             messageSender.sendMessage(
-                    recipient.getUserId(),
+                    recipient.getId(),
                     NewMessageBodyBuilder.ofText("Пользователь решил закончить с вами диалог, надеюсь все прошло сладко!").build()
             );
         } catch (SQLException e) {
@@ -90,7 +91,7 @@ public class ChattingCommandHandler extends CommandHandler {
                     ).getConnectedUserId()
             );
 
-            if (recipient.getStateId() != UserState.CHATTING.getStateId()) {
+            if (recipient.getState() != UserState.CHATTING) {
                 LOG.error("The recipient " + recipient + " is not in chatting state for user " + message.getSender().getUserId());
                 handleConnectionError(message);
                 return null;
@@ -116,7 +117,7 @@ public class ChattingCommandHandler extends CommandHandler {
         try {
             messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText("Похоже соединение разорвалось...").build());
             User sender = UsersTable.getUserByUserId(senderId);
-            sender.setStateId(UserState.DEFAULT.getId());
+            sender.setState(UserState.DEFAULT);
             sender.commit();
         } catch (SQLException e) {
             LOG.error("The sender " + senderId + " was deleted from DB!"); // TODO Предложения?

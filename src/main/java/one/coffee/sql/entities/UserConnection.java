@@ -15,14 +15,17 @@ public class UserConnection
         implements Entity {
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     private long id;
-    private long user1Id;
-    private long user2Id;
+    private final long user1Id;
+    private final long user2Id;
+
     private boolean isCreated;
     private boolean isCommitted;
+    private boolean isDestructed;
 
     public UserConnection(long user1Id, long user2Id) throws SQLException {
-        this(StaticContext.NO_ID, user1Id, user2Id);
+        this(SqlUtils.NO_ID, user1Id, user2Id);
     }
 
     public UserConnection(long id, long user1Id, long user2Id) throws SQLException {
@@ -40,7 +43,7 @@ public class UserConnection
 
         if (id >= 1) {
             this.id = id;
-            if (!DB.hasEntity(UserConnectionsTable.INSTANCE, this)) {
+            if (!DB.hasEntity(StaticContext.USER_CONNECTIONS_TABLE, this)) {
                 throw new IllegalArgumentException("No UserConnection with 'id' = " + id);
             }
             this.isCreated = true;
@@ -49,6 +52,11 @@ public class UserConnection
 
     @Override
     public void commit() throws SQLException {
+        if (isDestructed) {
+            LOG.warn("Connection has already broken between users: {} and {}", user1Id, user2Id);
+            return;
+        }
+
         if (isCommitted) {
             LOG.warn("Connection has already built between users: {} and {}", user1Id, user2Id);
             return;
@@ -56,32 +64,31 @@ public class UserConnection
 
         UserConnectionsTable.putUserConnection(this);
         this.id = UserConnectionsTable.getUserConnectionByUserId(user1Id).getId();
-        commitUsersConnection(this.id, UserState.CHATTING.getStateId());
+        commitUsersConnection(this.id, UserState.CHATTING);
         this.isCreated = true;
         this.isCommitted = true;
     }
 
     // Деструктор класса. Обращение к его полям и методам после вызова этой функции может привести к неожиданному поведению.
     public void breakConnection() throws SQLException {
-        commitUsersConnection(StaticContext.NO_ID, UserState.DEFAULT.getId());
+        commitUsersConnection(SqlUtils.NO_ID, UserState.DEFAULT);
 
         // TODO В будущем мы не будем удалять коннекшены, а будем менять их состояния
         UserConnectionsTable.deleteUserConnection(this);
 
-        this.id = StaticContext.NO_ID;
-        this.user1Id = StaticContext.NO_ID;
-        this.user2Id = StaticContext.NO_ID;
+        this.id = SqlUtils.NO_ID;
         this.isCreated = false;
+        this.isDestructed = true;
     }
 
-    private void commitUsersConnection(long connectionId, long stateId) throws SQLException {
+    private void commitUsersConnection(long connectionId, UserState state) throws SQLException {
         User user1 = UsersTable.getUserByUserId(user1Id);
-        user1.setStateId(stateId);
+        user1.setState(state);
         user1.setConnectionId(connectionId);
         user1.commit();
 
         User user2 = UsersTable.getUserByUserId(user2Id);
-        user2.setStateId(stateId);
+        user2.setState(state);
         user2.setConnectionId(connectionId);
         user2.commit();
     }

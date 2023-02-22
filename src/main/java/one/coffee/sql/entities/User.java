@@ -11,14 +11,14 @@ public class User
 
     private final long userId;
     private String city;
-    private long stateId;
+    private UserState state;
     private long connectionId;
 
-    public User(long userId, String city, long stateId) throws SQLException {
-        this(userId, city, stateId, -1);
+    public User(long userId, String city, UserState state) throws SQLException {
+        this(userId, city, state, SqlUtils.NO_ID);
     }
 
-    public User(long userId, String city, long stateId, long connectionId) throws SQLException {
+    public User(long userId, String city, UserState state, long connectionId) throws SQLException {
         if (userId <= 0) {
             throw new IllegalArgumentException("Invalid User id! Got " + userId);
         }
@@ -27,11 +27,9 @@ public class User
             throw new IllegalArgumentException("User's city can't be empty!");
         }
 
-        UserState.StateType.fromId(stateId); // Check for stateId existence
-
         this.userId = userId;
         this.city = city;
-        this.stateId = stateId;
+        this.state = state;
         this.connectionId = connectionId;
     }
 
@@ -48,12 +46,12 @@ public class User
         this.city = city;
     }
 
-    public long getStateId() {
-        return stateId;
+    public UserState getState() {
+        return state;
     }
 
-    public void setStateId(long stateId) {
-        this.stateId = stateId;
+    public void setState(UserState state) {
+        this.state = state;
     }
 
     public long getConnectionId() {
@@ -87,7 +85,7 @@ public class User
         return new StringBuilder(SqlUtils.SIGNATURE_START)
                 .append(userId).append(SqlUtils.ARGS_SEPARATOR)
                 .append(SqlUtils.STRING_QUOTTER).append(city).append(SqlUtils.STRING_QUOTTER).append(SqlUtils.ARGS_SEPARATOR)
-                .append(stateId).append(SqlUtils.ARGS_SEPARATOR)
+                .append(state).append(SqlUtils.ARGS_SEPARATOR)
                 .append(connectionId)
                 .append(SqlUtils.SIGNATURE_END).toString();
     }
@@ -102,7 +100,7 @@ public class User
         return "User{" +
                 "userId=" + userId +
                 ", city='" + city + '\'' +
-                ", stateId=" + stateId +
+                ", state=" + state +
                 ", connectionId=" + connectionId +
                 '}';
     }

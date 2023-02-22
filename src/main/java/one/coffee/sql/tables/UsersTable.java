@@ -2,6 +2,7 @@ package one.coffee.sql.tables;
 
 import one.coffee.sql.DB;
 import one.coffee.sql.entities.User;
+import one.coffee.sql.entities.UserState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,8 +18,8 @@ import java.util.concurrent.atomic.AtomicReference;
 public class UsersTable
         extends Table {
 
-    public static final UsersTable INSTANCE = new UsersTable();
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static UsersTable INSTANCE;
 
     private UsersTable() {
         shortName = "users";
@@ -29,6 +30,13 @@ public class UsersTable
                 Map.entry("connectionId", "INT REFERENCES userConnections(id) ON DELETE SET NULL")
         );
         init();
+    }
+
+    public static UsersTable getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new UsersTable();
+        }
+        return INSTANCE;
     }
 
     public static User getUserByUserId(long userId) throws SQLException {
@@ -51,22 +59,6 @@ public class UsersTable
         return user.get();
     }
 
-    public static List<User> getAllUsers() throws SQLException {
-        List<User> allUsers = new ArrayList<>();
-        String query = MessageFormat.format("SELECT * FROM {0}",
-                UsersTable.INSTANCE.shortName
-        );
-
-        DB.executeQuery(query, rs -> {
-            while (rs.next()) {
-                User user = UsersTable.parseUser(rs);
-                allUsers.add(user);
-            }
-        });
-
-        return allUsers;
-    }
-
     public static void putUser(User user) {
         DB.putEntity(INSTANCE, user);
     }
@@ -75,15 +67,11 @@ public class UsersTable
         DB.deleteEntity(INSTANCE, user);
     }
 
-    public static List<User> getWaitingUsers() throws SQLException {
-        return getWaitingUsers(Integer.MAX_VALUE);
-    }
-
     public static List<User> getWaitingUsers(long limit) throws SQLException {
         List<User> users = new ArrayList<>();
         String query = MessageFormat.format("SELECT *" +
                         " FROM {0}" +
-                        " WHERE stateId = " + UserState.WAITING.getStateId() +
+                        " WHERE stateId = " + UserState.WAITING +
                         " LIMIT " + limit,
                 UsersTable.INSTANCE.shortName
         );
