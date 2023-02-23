@@ -46,15 +46,23 @@ public class DefaultCommandHandler extends CommandHandler {
 
     private void handleStart(Message message) {
         try {
+            long senderId = message.getSender().getUserId();
+            User sender = UsersTable.getUserByUserId(senderId);
+            if (sender == null) {
+                // См. возможные причины в OneCoffeeUpdateHandler::visit(MessageCreatedUpdate)
+                sender = new User(senderId, "Cyberpunk2077", UserState.DEFAULT);
+                sender.commit();
+            }
+
             List<User> userWaitList = UsersTable.getWaitingUsers(1);
             if (userWaitList.isEmpty()) {
                 startTheWait(message);
                 return;
             }
 
-            long senderId = message.getSender().getUserId();
             User recipient = userWaitList.get(0);
             UserConnection userConnection = new UserConnection(senderId, recipient.getId());
+            userConnection.commit();
 
             messageSender.sendMessage(senderId,
                     NewMessageBodyBuilder.ofText("""
@@ -76,6 +84,10 @@ public class DefaultCommandHandler extends CommandHandler {
 
         try {
             User sender = UsersTable.getUserByUserId(senderId);
+            if (sender == null) {
+                // См. возможные причины в OneCoffeeUpdateHandler::visit(MessageCreatedUpdate)
+                sender = new User(senderId, "Cyberpunk2077", UserState.DEFAULT);
+            }
             sender.setState(UserState.WAITING);
             sender.commit();
             messageSender.sendMessage(message.getSender().getUserId(),

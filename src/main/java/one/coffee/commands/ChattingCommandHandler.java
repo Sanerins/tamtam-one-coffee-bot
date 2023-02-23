@@ -74,8 +74,13 @@ public class ChattingCommandHandler extends CommandHandler {
                     NewMessageBodyBuilder.ofText("Пользователь решил закончить с вами диалог, надеюсь все прошло сладко!").build()
             );
         } catch (SQLException e) {
-
-            LOG.error("Connection with user " + senderId + " has already broken!"); // TODO Кем?
+            // Тут исключение может упасть по трём причинам
+            // 1. Упала база;
+            // 2. Невалидный запрос.
+            // Действия:
+            // 1. Описано в OneCoffeeBotUpdateHandler::visit(MessageCreatedUpdate)
+            // 2. Описано в OneCoffeeBotUpdateHandler::visit(MessageCreatedUpdate)
+            LOG.error("Can't break connection for user {}!", senderId, e);
             messageSender.sendMessage(
                     senderId,
                     NewMessageBodyBuilder.ofText("Не получилось отсоединиться от работяги((( Попробуй снова").build()
@@ -105,7 +110,7 @@ public class ChattingCommandHandler extends CommandHandler {
 
             return recipient;
         } catch (SQLException e) {
-            LOG.error(e.getMessage());
+            LOG.error("Can't get recipient!", e);
             handleConnectionError(message);
             return null;
         }
@@ -120,7 +125,19 @@ public class ChattingCommandHandler extends CommandHandler {
             sender.setState(UserState.DEFAULT);
             sender.commit();
         } catch (SQLException e) {
-            LOG.error("The sender " + senderId + " was deleted from DB!"); // TODO Предложения?
+            // Тут исключение может упасть по трём причинам
+            // 1. Упала база;
+            // 2. Невалидный запрос;
+            // 3. Отправителя нет в базе.
+            // Действия:
+            // 1. Описано в OneCoffeeBotUpdateHandler::visit(MessageCreatedUpdate)
+            // 2. Описано в OneCoffeeBotUpdateHandler::visit(MessageCreatedUpdate)
+            // 3. Надо восстановить работягу в базе. Но для этого потребуется запросить его данные снова.
+            LOG.warn("Can't process error for user {}!", senderId, e);
+            // TODO Тут сделать механизм опроса пользователя об актуальной информации, так как старую мы потеряли(((
+            messageSender.sendMessage(senderId,
+                    NewMessageBodyBuilder.ofText("Работяга! Информация о тебе по неясным причинам была удалена." +
+                            " Если хочешь продолжать общение, пожалуйста, введи заново сведения о себе.").build());
         }
     }
 

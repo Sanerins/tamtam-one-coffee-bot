@@ -26,7 +26,7 @@ public class UsersTable
         args = List.of(
                 Map.entry("id", "INTEGER PRIMARY KEY"),
                 Map.entry("city", "VARCHAR(20)"),
-                Map.entry("stateId", "INT REFERENCES states(stateId) ON DELETE SET NULL"),
+                Map.entry("stateId", "INT"),
                 Map.entry("connectionId", "INT REFERENCES userConnections(id) ON DELETE SET NULL")
         );
         init();
@@ -68,7 +68,7 @@ public class UsersTable
         List<User> users = new ArrayList<>();
         String query = MessageFormat.format("SELECT *" +
                         " FROM {0}" +
-                        " WHERE stateId = " + UserState.WAITING +
+                        " WHERE stateId = " + UserState.WAITING.ordinal() +
                         " LIMIT " + limit,
                 getInstance().getShortName()
         );

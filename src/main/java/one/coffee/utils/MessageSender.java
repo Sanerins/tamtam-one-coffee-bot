@@ -101,7 +101,7 @@ public class MessageSender {
                 new SendMessageQuery(client, messageBody).userId(userId).enqueue();
                 return;
             } catch (ClientException e) {
-                LOG.error("Failed to send message to user=" + userId, e);
+                LOG.error("Failed to send message to user {}", userId, e);
                 return;
             }
         }
@@ -117,7 +117,7 @@ public class MessageSender {
                 sendMessageWithResult(userId, createNewMessageBody(splitText[i], null, null, notify, format));
             }
         } catch (APIException | ClientException e) {
-            LOG.error("Failed to send message to user=" + userId, e);
+            LOG.error("Failed to send message to user {}", userId, e);
         }
     }
 
