@@ -3,6 +3,7 @@ package one.coffee.sql;
 import one.coffee.DBTest;
 import one.coffee.sql.tables.Table;
 import one.coffee.sql.tables.TableTest;
+import one.coffee.utils.StaticContext;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -21,7 +22,7 @@ public class BasicDBTest
 
     @DBTest(nUsers = 0)
     protected Table getTable() {
-        return UserStatesTable.INSTANCE;
+        return StaticContext.USERS_TABLE;
     }
 
 }

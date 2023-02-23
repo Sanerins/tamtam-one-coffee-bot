@@ -44,7 +44,7 @@ public class ChattingCommandHandler extends CommandHandler {
             return;
         }
 
-        messageSender.sendMessage(recipient.getUserId(), NewMessageBodyBuilder.copyOf(message).build());
+        messageSender.sendMessage(recipient.getId(), NewMessageBodyBuilder.copyOf(message).build());
     }
 
     private void handleHelp(Message message) {
@@ -61,9 +61,8 @@ public class ChattingCommandHandler extends CommandHandler {
         }
         long senderId = message.getSender().getUserId();
 
-
         try {
-            UserConnection userConnection = UserConnectionsTable.getUserConnectionByUserId(senderId);
+            UserConnection userConnection = UserConnectionsTable.getUserConnectionUserById(senderId);
             userConnection.breakConnection();
 
             messageSender.sendMessage(
@@ -75,6 +74,7 @@ public class ChattingCommandHandler extends CommandHandler {
                     NewMessageBodyBuilder.ofText("Пользователь решил закончить с вами диалог, надеюсь все прошло сладко!").build()
             );
         } catch (SQLException e) {
+
             LOG.error("Connection with user " + senderId + " has already broken!"); // TODO Кем?
             messageSender.sendMessage(
                     senderId,

@@ -2,7 +2,7 @@ package one.coffee.sql.entities;
 
 import one.coffee.sql.tables.UserConnectionsTable;
 import one.coffee.sql.tables.UsersTable;
-import one.coffee.sql.utils.SqlUtils;
+import one.coffee.sql.utils.SQLUtils;
 
 import java.sql.SQLException;
 
@@ -14,8 +14,16 @@ public class User
     private UserState state;
     private long connectionId;
 
+    public User(long userId, String city, long stateId) throws SQLException {
+        this(userId, city, stateId, SQLUtils.NO_ID);
+    }
+
+    public User(long userId, String city, long stateId, long connectionId) throws SQLException {
+        this(userId, city, UserState.fromId(stateId), connectionId);
+    }
+
     public User(long userId, String city, UserState state) throws SQLException {
-        this(userId, city, state, SqlUtils.NO_ID);
+        this(userId, city, state, SQLUtils.NO_ID);
     }
 
     public User(long userId, String city, UserState state, long connectionId) throws SQLException {
@@ -71,7 +79,7 @@ public class User
             throw new IllegalStateException(this + " has not connected user!");
         }
 
-        UserConnection userConnection = UserConnectionsTable.getUserConnectionByUserId(userId);
+        UserConnection userConnection = UserConnectionsTable.getUserConnectionUserById(userId);
         return userConnection.getUser1Id() == userId ? userConnection.getUser2Id() : userConnection.getUser1Id();
     }
 
@@ -82,12 +90,12 @@ public class User
 
     @Override
     public String sqlArgValues() {
-        return new StringBuilder(SqlUtils.SIGNATURE_START)
-                .append(userId).append(SqlUtils.ARGS_SEPARATOR)
-                .append(SqlUtils.STRING_QUOTTER).append(city).append(SqlUtils.STRING_QUOTTER).append(SqlUtils.ARGS_SEPARATOR)
-                .append(state).append(SqlUtils.ARGS_SEPARATOR)
+        return new StringBuilder(SQLUtils.TABLE_SIGNATURE_START)
+                .append(userId).append(SQLUtils.ARGS_SEPARATOR)
+                .append(SQLUtils.STRING_QUOTTER).append(city).append(SQLUtils.STRING_QUOTTER).append(SQLUtils.ARGS_SEPARATOR)
+                .append(state.ordinal()).append(SQLUtils.ARGS_SEPARATOR)
                 .append(connectionId)
-                .append(SqlUtils.SIGNATURE_END).toString();
+                .append(SQLUtils.TABLE_SIGNATURE_END).toString();
     }
 
     @Override

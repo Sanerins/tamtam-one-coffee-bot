@@ -3,7 +3,7 @@ package one.coffee.sql.entities;
 import one.coffee.sql.DB;
 import one.coffee.sql.tables.UserConnectionsTable;
 import one.coffee.sql.tables.UsersTable;
-import one.coffee.sql.utils.SqlUtils;
+import one.coffee.sql.utils.SQLUtils;
 import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +25,7 @@ public class UserConnection
     private boolean isDestructed;
 
     public UserConnection(long user1Id, long user2Id) throws SQLException {
-        this(SqlUtils.NO_ID, user1Id, user2Id);
+        this(SQLUtils.NO_ID, user1Id, user2Id);
     }
 
     public UserConnection(long id, long user1Id, long user2Id) throws SQLException {
@@ -63,7 +63,7 @@ public class UserConnection
         }
 
         UserConnectionsTable.putUserConnection(this);
-        this.id = UserConnectionsTable.getUserConnectionByUserId(user1Id).getId();
+        this.id = UserConnectionsTable.getUserConnectionUserById(user1Id).getId();
         commitUsersConnection(this.id, UserState.CHATTING);
         this.isCreated = true;
         this.isCommitted = true;
@@ -71,12 +71,12 @@ public class UserConnection
 
     // Деструктор класса. Обращение к его полям и методам после вызова этой функции может привести к неожиданному поведению.
     public void breakConnection() throws SQLException {
-        commitUsersConnection(SqlUtils.NO_ID, UserState.DEFAULT);
+        commitUsersConnection(SQLUtils.NO_ID, UserState.DEFAULT);
 
         // TODO В будущем мы не будем удалять коннекшены, а будем менять их состояния
         UserConnectionsTable.deleteUserConnection(this);
 
-        this.id = SqlUtils.NO_ID;
+        this.id = SQLUtils.NO_ID;
         this.isCreated = false;
         this.isDestructed = true;
     }
@@ -122,14 +122,14 @@ public class UserConnection
 
     @Override
     public String sqlArgValues() {
-        StringBuilder sqlValues = new StringBuilder(SqlUtils.SIGNATURE_START);
+        StringBuilder sqlValues = new StringBuilder(SQLUtils.TABLE_SIGNATURE_START);
 
         if (isCreated()) {
-            sqlValues.append(id).append(SqlUtils.ARGS_SEPARATOR);
+            sqlValues.append(id).append(SQLUtils.ARGS_SEPARATOR);
         }
 
-        return sqlValues.append(user1Id).append(SqlUtils.ARGS_SEPARATOR)
-                .append(user2Id).append(SqlUtils.SIGNATURE_END).toString();
+        return sqlValues.append(user1Id).append(SQLUtils.ARGS_SEPARATOR)
+                .append(user2Id).append(SQLUtils.TABLE_SIGNATURE_END).toString();
     }
 
 }

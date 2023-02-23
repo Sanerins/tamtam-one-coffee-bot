@@ -2,7 +2,7 @@ package one.coffee.sql.tables;
 
 import one.coffee.sql.DB;
 import one.coffee.sql.entities.Entity;
-import one.coffee.sql.utils.SqlUtils;
+import one.coffee.sql.utils.SQLUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -24,25 +24,25 @@ public abstract class Table {
             throw new IllegalArgumentException("Not enough 'args'! Got: " + args);
         }
 
-        DB.dropTable(this);
-        DB.createTable(this);
+        //DB.dropTable(this);
+        //DB.createTable(this);
     }
 
     // Returns full name of the table with specified types.
     @Override
     public final String toString() {
         StringBuilder fullName = new StringBuilder(shortName);
-        fullName.append(SqlUtils.SIGNATURE_START);
+        fullName.append(SQLUtils.TABLE_SIGNATURE_START);
         if (!args.isEmpty()) {
             for (Map.Entry<String, String> arg : args) {
                 fullName.append(arg.getKey())
-                        .append(SqlUtils.ARG_ATTRIBUTES_SEPARATOR)
+                        .append(SQLUtils.ARG_ATTRIBUTES_SEPARATOR)
                         .append(arg.getValue())
-                        .append(SqlUtils.ARGS_SEPARATOR);
+                        .append(SQLUtils.ARGS_SEPARATOR);
             }
-            fullName.delete(fullName.length() - SqlUtils.ARGS_SEPARATOR.length(), fullName.length());
+            fullName.delete(fullName.length() - SQLUtils.ARGS_SEPARATOR.length(), fullName.length());
         }
-        fullName.append(SqlUtils.SIGNATURE_END);
+        fullName.append(SQLUtils.TABLE_SIGNATURE_END);
         return fullName.toString();
     }
 
@@ -50,19 +50,19 @@ public abstract class Table {
     // Фактически результат будет равен 'tableName(argName1, argName2, ...)'.
     public final String getSignature(Entity entity) {
         StringBuilder signatureName = new StringBuilder(getShortName());
-        signatureName.append(SqlUtils.SIGNATURE_START);
+        signatureName.append(SQLUtils.TABLE_SIGNATURE_START);
         if (entity.isCreated()) {
             signatureName.append(args.get(0).getKey())
-                    .append(SqlUtils.ARGS_SEPARATOR);
+                    .append(SQLUtils.ARGS_SEPARATOR);
         }
 
         for (Map.Entry<String, String> arg : args.subList(1, args.size())) {
             String argName = arg.getKey();
             signatureName.append(argName)
-                    .append(SqlUtils.ARGS_SEPARATOR);
+                    .append(SQLUtils.ARGS_SEPARATOR);
         }
-        signatureName.delete(signatureName.length() - SqlUtils.ARGS_SEPARATOR.length(), signatureName.length());
-        signatureName.append(SqlUtils.SIGNATURE_END);
+        signatureName.delete(signatureName.length() - SQLUtils.ARGS_SEPARATOR.length(), signatureName.length());
+        signatureName.append(SQLUtils.TABLE_SIGNATURE_END);
         return signatureName.toString();
     }
 

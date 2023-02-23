@@ -24,7 +24,7 @@ public class UsersTable
     private UsersTable() {
         shortName = "users";
         args = List.of(
-                Map.entry("userId", "INTEGER PRIMARY KEY"),
+                Map.entry("id", "INTEGER PRIMARY KEY"),
                 Map.entry("city", "VARCHAR(20)"),
                 Map.entry("stateId", "INT REFERENCES states(stateId) ON DELETE SET NULL"),
                 Map.entry("connectionId", "INT REFERENCES userConnections(id) ON DELETE SET NULL")
@@ -41,30 +41,27 @@ public class UsersTable
 
     public static User getUserByUserId(long userId) throws SQLException {
         AtomicReference<User> user = new AtomicReference<>();
-        // TODO Этот скрипт будет изменён в будущем. См. комментарий в UserConnectionsTable(line 59).
         String query = MessageFormat.format("SELECT *" +
                         " FROM {0}" +
-                        " WHERE userId = " + userId,
-                UsersTable.INSTANCE.shortName
+                        " WHERE id = " + userId,
+                getInstance().getShortName()
         );
-
         DB.executeQuery(query, rs -> {
             if (!rs.next()) {
-                throw new SQLException("No user with 'userId' = " + userId + " in DB!");
+                LOG.warn("No user with 'id' = {} in DB!", userId);
+                return;
             }
-
             user.set(parseUser(rs));
         });
-
         return user.get();
     }
 
     public static void putUser(User user) {
-        DB.putEntity(INSTANCE, user);
+        DB.putEntity(getInstance(), user);
     }
 
     public static void deleteUser(User user) throws SQLException {
-        DB.deleteEntity(INSTANCE, user);
+        DB.deleteEntity(getInstance(), user);
     }
 
     public static List<User> getWaitingUsers(long limit) throws SQLException {
@@ -73,7 +70,7 @@ public class UsersTable
                         " FROM {0}" +
                         " WHERE stateId = " + UserState.WAITING +
                         " LIMIT " + limit,
-                UsersTable.INSTANCE.shortName
+                getInstance().getShortName()
         );
 
         DB.executeQuery(query, rs -> {
@@ -87,7 +84,7 @@ public class UsersTable
 
     private static User parseUser(ResultSet rs) throws SQLException {
         return new User(
-                rs.getLong("userId"),
+                rs.getLong("id"),
                 rs.getString("city"),
                 rs.getLong("stateId"),
                 rs.getLong("connectionId")

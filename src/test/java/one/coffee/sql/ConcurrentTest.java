@@ -2,6 +2,7 @@ package one.coffee.sql;
 
 import one.coffee.DBTest;
 import one.coffee.sql.entities.User;
+import one.coffee.sql.entities.UserState;
 import one.coffee.sql.tables.UsersTable;
 import org.junit.jupiter.api.Disabled;
 
@@ -20,26 +21,11 @@ public class ConcurrentTest {
         final int nThreads = 100;
         final CyclicBarrier barrierOnStart = new CyclicBarrier(nThreads);
         final CyclicBarrier barrierOnEnd = new CyclicBarrier(nThreads + 1);
-        final Runnable getRunnable = () -> {
-            try {
-                barrierOnStart.await();
-                long part = Thread.currentThread().getId() % nThreads;
-                int from = (int) Math.floor(N * (double) part / nThreads);
-                int to = (int) Math.floor(N * (double) (part + 1) / nThreads);
-                List<User> sublist = users.subList(from, to);
-                for (User user : sublist) {
-                    UsersTable.getUserByUserId(user.getUserId());
-                }
-                barrierOnEnd.await();
-            } catch (InterruptedException | BrokenBarrierException | SQLException e) {
-                throw new RuntimeException(e);
-            }
-        };
-
+        final ConcurrentTestRunnable getRunnable
+                = new ConcurrentTestRunnable(barrierOnStart, barrierOnEnd, nThreads, N, users, user -> UsersTable.getUserByUserId(user.getId()));
         for (int i = 1; i <= nThreads; ++i) {
             new Thread(getRunnable, "GetThread-" + i).start();
         }
-
         barrierOnEnd.await();
     }
 
@@ -50,26 +36,11 @@ public class ConcurrentTest {
         final int nThreads = 10;
         final CyclicBarrier barrierOnStart = new CyclicBarrier(nThreads);
         final CyclicBarrier barrierOnEnd = new CyclicBarrier(nThreads + 1);
-        final Runnable putRunnable = () -> {
-            try {
-                barrierOnStart.await();
-                long part = Thread.currentThread().getId() % nThreads;
-                int from = (int) Math.floor(N * (double) part / nThreads) + 1;
-                int to = (int) Math.floor(N * (double) (part + 1) / nThreads) + 1;
-                for (int i = from; i < to; ++i) {
-                    User user = new User(i, "City" + i, UserState.DEFAULT.getId(), -1);
-                    UsersTable.putUser(user);
-                }
-                barrierOnEnd.await();
-            } catch (InterruptedException | BrokenBarrierException | SQLException e) {
-                throw new RuntimeException(e);
-            }
-        };
-
+        final ConcurrentTestRunnable putRunnable
+                = new ConcurrentTestRunnable(barrierOnStart, barrierOnEnd, nThreads, N, users, UsersTable::putUser);
         for (int i = 1; i <= nThreads; ++i) {
             new Thread(putRunnable, "PutThread-" + i).start();
         }
-
         barrierOnEnd.await();
     }
 
@@ -81,31 +52,16 @@ public class ConcurrentTest {
         final CyclicBarrier barrierOnStart = new CyclicBarrier(nThreads);
         final CyclicBarrier barrierOnEnd = new CyclicBarrier(nThreads + 1);
         final AtomicInteger userId = new AtomicInteger();
-        final Runnable deleteRunnable = () -> {
-            try {
-                barrierOnStart.await();
-                long part = Thread.currentThread().getId() % nThreads;
-                int from = (int) Math.floor(N * (double) part / nThreads);
-                int to = (int) Math.floor(N * (double) (part + 1) / nThreads);
-                List<User> sublist = users.subList(from, to);
-                for (User user : sublist) {
-                    UsersTable.deleteUser(user);
-                }
-                barrierOnEnd.await();
-            } catch (InterruptedException | BrokenBarrierException | SQLException e) {
-                throw new RuntimeException(e);
-            }
-        };
-
+        final ConcurrentTestRunnable deleteRunnable
+                = new ConcurrentTestRunnable(barrierOnStart, barrierOnEnd, nThreads, N, users, UsersTable::deleteUser);
         for (int i = 1; i <= nThreads; ++i) {
             new Thread(deleteRunnable, "DeleteThread-" + i).start();
         }
-
         barrierOnEnd.await();
     }
 
     @Disabled("Работяга умеет в конкурентность! 1 секунда, 4к операций, 54 потока...")
-    @DBTest(nUsers = 4000 + 20 + 100)
+    @DBTest(nUsers = 4000)
     void concurrentCombined(List<User> users) throws BrokenBarrierException, InterruptedException {
         final int NGets = 4000;
         final int NPuts = 20;
@@ -114,52 +70,12 @@ public class ConcurrentTest {
         final int nThreads = 18 * nRunnables;
         final CyclicBarrier barrierOnStart = new CyclicBarrier(nThreads);
         final CyclicBarrier barrierOnEnd = new CyclicBarrier(nThreads + 1);
-        final Runnable getRunnable = () -> {
-            try {
-                barrierOnStart.await();
-                long part = Thread.currentThread().getId() % nThreads;
-                int from = (int) Math.floor(NGets * (double) part / nThreads);
-                int to = (int) Math.floor(NGets * (double) (part + 1) / nThreads);
-                List<User> sublist = users.subList(from, to);
-                for (User user : sublist) {
-                    UsersTable.getUserByUserId(user.getUserId());
-                }
-                barrierOnEnd.await();
-            } catch (InterruptedException | BrokenBarrierException | SQLException e) {
-                throw new RuntimeException(e);
-            }
-        };
-        final Runnable putRunnable = () -> {
-            try {
-                barrierOnStart.await();
-                long part = Thread.currentThread().getId() % nThreads;
-                int from = (int) Math.floor(NPuts * (double) part / nThreads) + 1;
-                int to = (int) Math.floor(NPuts * (double) (part + 1) / nThreads) + 1;
-                for (int i = NGets + from; i < NGets + to; ++i) {
-                    User user = new User(i, "City" + i, UserState.DEFAULT.getId(), -1);
-                    UsersTable.putUser(user);
-                }
-                barrierOnEnd.await();
-            } catch (InterruptedException | BrokenBarrierException | SQLException e) {
-                throw new RuntimeException(e);
-            }
-        };
-        final Runnable deleteRunnable = () -> {
-            try {
-                barrierOnStart.await();
-                long part = Thread.currentThread().getId() % nThreads;
-                int from = (int) Math.floor(NDeletes * (double) part / nThreads);
-                int to = (int) Math.floor(NDeletes * (double) (part + 1) / nThreads);
-                List<User> sublist = users.subList(NGets + NPuts + from, NGets + NPuts + to);
-                for (User user : sublist) {
-                    UsersTable.deleteUser(user);
-                }
-                barrierOnEnd.await();
-            } catch (InterruptedException | BrokenBarrierException | SQLException e) {
-                throw new RuntimeException(e);
-            }
-        };
-
+        final ConcurrentTestRunnable getRunnable
+                = new ConcurrentTestRunnable(barrierOnStart, barrierOnEnd, nThreads, NGets, users, user -> UsersTable.getUserByUserId(user.getId()));
+        final ConcurrentTestRunnable putRunnable
+                = new ConcurrentTestRunnable(barrierOnStart, barrierOnEnd, nThreads, NPuts, users, UsersTable::putUser);
+        final ConcurrentTestRunnable deleteRunnable
+                = new ConcurrentTestRunnable(barrierOnStart, barrierOnEnd, nThreads, NDeletes, users, UsersTable::deleteUser);
         for (int i = 1; i <= nThreads / nRunnables; ++i) {
             new Thread(getRunnable, "GetThread-" + i).start();
             new Thread(putRunnable, "PutThread-" + i).start();
@@ -167,6 +83,47 @@ public class ConcurrentTest {
         }
 
         barrierOnEnd.await();
+    }
+
+    static class ConcurrentTestRunnable implements Runnable {
+
+        private final CyclicBarrier barrierOnStart;
+        private final CyclicBarrier barrierOnEnd;
+        private final int nThreads;
+        private final int N;
+        private final List<User> users;
+        private final SQLOperation operation;
+
+        ConcurrentTestRunnable(CyclicBarrier barrierOnStart, CyclicBarrier barrierOnEnd, int nThreads, int N,
+                               List<User> users, SQLOperation operation) {
+            this.barrierOnStart = barrierOnStart;
+            this.barrierOnEnd = barrierOnEnd;
+            this.nThreads = nThreads;
+            this.N = N;
+            this.users = users;
+            this.operation = operation;
+        }
+
+        @Override
+        public void run() {
+            try {
+                barrierOnStart.await();
+                long part = Thread.currentThread().getId() % nThreads;
+                int from = (int) Math.floor(N * (double) part / nThreads);
+                int to = (int) Math.floor(N * (double) (part + 1) / nThreads);
+                List<User> sublist = users.subList(from, to);
+                for (User user : sublist) {
+                    operation.execute(user);
+                }
+                barrierOnEnd.await();
+            } catch (InterruptedException | BrokenBarrierException | SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    public interface SQLOperation {
+        void execute(User user) throws SQLException;
     }
 
 }

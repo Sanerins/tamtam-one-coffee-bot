@@ -14,14 +14,10 @@ import java.sql.Statement;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-// В рамках SQLite БД CREATE-запрос эквивалентен PUT-запросу.
-// TODO Сейчас спарсенные значения из базы почти никак не проверяются. Нужно это исправить.
-
-// TODO Решить проблему SQL-инъекций.
 public class DB {
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final String DB_NAME = "OneCoffee.db"; // Будет находиться прямо в корне проекта
+    private static final String DB_NAME = "OneCoffee.db";
     private static final String CONNECTION_URL = "jdbc:sqlite:" + DB_NAME;
     private static final Connection CONNECTION;
     private static final Statement STATEMENT;
@@ -31,10 +27,11 @@ public class DB {
             // Auto-commit mode with multithreading support
             // TODO Проверить, что многопоток действительно поддерживается (дока, профилирование, тестирование).
             // Если на самом деле он не поддерживается, то создать пул коннекшенов, как было на NoSQL.
-            CONNECTION = DriverManager.getConnection(CONNECTION_URL); // auto-commit mode with multithreading support
+            CONNECTION = DriverManager.getConnection(CONNECTION_URL);
             STATEMENT = CONNECTION.createStatement();
 
-        } catch (SQLException e) { // Считаю, что зафейленная инициализация БД - критическая ситуация для приложения,
+        } catch (SQLException e) {
+            // Считаю, что зафейленная инициализация БД - критическая ситуация для приложения,
             // поэтому ложим всё приложение, если что-то пошло тут не так
             throw new RuntimeException("DB creation is failed! Details: " + e.getMessage());
         }
@@ -65,7 +62,6 @@ public class DB {
         LOG.info("Cleanup table: {}", table.getShortName());
     }
 
-    // TODO Оптимизировать подстановку строк предкомпиляцией общих паттернов (например, для MessageFormat)
     public static void putEntity(Table table, Entity entity) {
         Objects.requireNonNull(table, "Table can't be null!");
         Objects.requireNonNull(entity, "Entity can't be null!");

@@ -1,6 +1,8 @@
 package one.coffee;
 
 import one.coffee.sql.entities.User;
+import one.coffee.sql.entities.UserState;
+import one.coffee.sql.utils.SQLUtils;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -33,12 +35,15 @@ public @interface DBTest {
             int nUsers = extensionContext.getTestMethod().get().getAnnotation(DBTest.class).nUsers();
             List<User> users = new ArrayList<>();
             for (int i = 0; i < nUsers; ++i) {
-                users.add(new User(
-                        i + 1,
-                        "City" + (i + 1),
-                        UserState.DEFAULT.getId(),
-                        -1
-                ));
+                long id = i + 1;
+                User user = new User(
+                        id,
+                        "City" + id,
+                        UserState.DEFAULT,
+                        SQLUtils.NO_ID
+                );
+                user.commit();
+                users.add(user);
             }
             return Stream.of(Arguments.of(users));
         }

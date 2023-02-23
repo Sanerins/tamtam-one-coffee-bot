@@ -2,6 +2,7 @@ package one.coffee.sql;
 
 import one.coffee.DBTest;
 import one.coffee.sql.entities.User;
+import one.coffee.sql.entities.UserState;
 import one.coffee.sql.tables.TableTest;
 import one.coffee.sql.tables.UsersTable;
 import org.junit.jupiter.api.Disabled;
@@ -17,7 +18,7 @@ public class HighloadTest
     void getUsers(List<User> users) throws SQLException {
         final int N = users.size();
         for (User user : users) {
-            UsersTable.getUserByUserId(user.getUserId());
+            UsersTable.getUserByUserId(user.getId());
         }
     }
 
@@ -26,7 +27,7 @@ public class HighloadTest
     void putUsers() throws SQLException {
         final int N = 20;
         for (int i = 0; i < N; ++i) {
-            User user = new User(i + 1, "City" + (i + 1), UserState.DEFAULT.getId(), -1);
+            User user = new User(i + 1, "City" + (i + 1), UserState.DEFAULT, -1);
             UsersTable.putUser(user);
         }
     }
