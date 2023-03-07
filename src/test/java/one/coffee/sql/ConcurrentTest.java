@@ -1,9 +1,7 @@
 package one.coffee.sql;
 
 import one.coffee.DBTest;
-import one.coffee.sql.entities.User;
-import one.coffee.sql.entities.UserState;
-import one.coffee.sql.tables.UsersTable;
+import one.coffee.sql.user.UsersTable;
 import org.junit.jupiter.api.Disabled;
 
 import java.sql.SQLException;

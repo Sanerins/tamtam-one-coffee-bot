@@ -1,9 +1,10 @@
 package one.coffee.sql.tables;
 
 import one.coffee.sql.DB;
-import one.coffee.sql.entities.Entity;
+import one.coffee.sql.Entity;
 import one.coffee.sql.utils.SQLUtils;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -48,7 +49,8 @@ public abstract class Table {
 
     // Формируется в порядке предоставления имён полей в конструкторе каждой таблицы.
     // Фактически результат будет равен 'tableName(argName1, argName2, ...)'.
-    public final String getSignature(Entity entity) {
+    // Не учитывается поле 'id' каждой сущности, если она ещё не была создана (см. имплементации Entity::isCreated).
+    public final String getSignature(Entity entity) throws SQLException {
         StringBuilder signatureName = new StringBuilder(getShortName());
         signatureName.append(SQLUtils.TABLE_SIGNATURE_START);
         if (entity.isCreated()) {

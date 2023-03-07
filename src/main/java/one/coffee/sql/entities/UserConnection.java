@@ -1,8 +1,9 @@
 package one.coffee.sql.entities;
 
 import one.coffee.sql.DB;
+import one.coffee.sql.Entity;
 import one.coffee.sql.tables.UserConnectionsTable;
-import one.coffee.sql.tables.UsersTable;
+import one.coffee.sql.user.UsersTable;
 import one.coffee.sql.utils.SQLUtils;
 import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;

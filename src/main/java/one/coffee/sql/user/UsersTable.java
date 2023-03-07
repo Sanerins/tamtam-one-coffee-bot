@@ -1,8 +1,8 @@
-package one.coffee.sql.tables;
+package one.coffee.sql.user;
 
 import one.coffee.sql.DB;
-import one.coffee.sql.entities.User;
 import one.coffee.sql.entities.UserState;
+import one.coffee.sql.tables.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +57,14 @@ public class UsersTable
     }
 
     public static void putUser(User user) {
+        if (user.getId() <= 0) {
+            throw new IllegalArgumentException("Invalid User id! Got " + user);
+        }
+
+        if (!isValidCity(user.getCity())) {
+            throw new IllegalArgumentException("User's city can't be empty!");
+        }
+
         DB.putEntity(getInstance(), user);
     }
 
@@ -80,6 +88,10 @@ public class UsersTable
         });
 
         return users;
+    }
+
+    private static boolean isValidCity(String city) {
+        return city != null && !city.trim().isEmpty();
     }
 
     private static User parseUser(ResultSet rs) throws SQLException {

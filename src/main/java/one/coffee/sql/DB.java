@@ -1,6 +1,5 @@
 package one.coffee.sql;
 
-import one.coffee.sql.entities.Entity;
 import one.coffee.sql.tables.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,15 +72,9 @@ public class DB {
 
     public static void deleteEntity(Table table, Entity entity) throws SQLException {
         Objects.requireNonNull(table, "Table can't be null!");
-
-        if (entity.getId() <= 0) {
-            throw new IllegalArgumentException("'id' must be a positive number! Got: " + entity.getId());
-        }
-
         if (!hasEntity(table, entity)) {
             LOG.warn("Table {} has not entity with `id` = {}", table.getSignature(entity), entity.getId());
         }
-
         executeQuery("DELETE FROM " + table.getShortName() + " WHERE id = " + entity.getId());
         //LOG.info("Delete entity from table '{}' with 'id' = {}", table.getShortName(), entity.getId());
     }
@@ -99,7 +92,7 @@ public class DB {
         try {
             STATEMENT.execute(query);
         } catch (SQLException e) {
-            throw new RuntimeException("Error when executing query: " + query + ".\n" +
+            throw new RuntimeException("Error when executing query: '" + query + "'.\n" +
                     "Details: " + e.getMessage());
         }
     }

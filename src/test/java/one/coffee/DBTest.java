@@ -1,6 +1,5 @@
 package one.coffee;
 
-import one.coffee.sql.entities.User;
 import one.coffee.sql.entities.UserState;
 import one.coffee.sql.utils.SQLUtils;
 import org.junit.jupiter.api.Timeout;

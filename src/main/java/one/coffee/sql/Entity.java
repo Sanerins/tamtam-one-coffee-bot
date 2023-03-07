@@ -1,10 +1,10 @@
-package one.coffee.sql.entities;
+package one.coffee.sql;
 
 import java.sql.SQLException;
 
 public interface Entity {
 
-    boolean isCreated();
+    boolean isCreated() throws SQLException;
 
     long getId();
 
@@ -12,6 +12,4 @@ public interface Entity {
     // Порядок выдачи значений должен соответствовать порядку сигнатурного объявления соответствующих столбцов.
     String sqlArgValues();
 
-    // Сохраняет состояние сущности в базе
-    void commit() throws SQLException;
 }
