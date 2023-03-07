@@ -1,14 +1,18 @@
 package one.coffee.sql.user;
 
 import one.coffee.sql.Entity;
-import one.coffee.sql.entities.UserConnection;
-import one.coffee.sql.entities.UserState;
-import one.coffee.sql.tables.UserConnectionsTable;
+import one.coffee.sql.user_connection.UserConnection;
+import one.coffee.sql.UserState;
 import one.coffee.sql.utils.SQLUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.lang.invoke.MethodHandles;
 import java.sql.SQLException;
 
 public class User implements Entity {
+
+    private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final long id;
     private String city;
@@ -64,7 +68,8 @@ public class User implements Entity {
 
     public long getConnectedUserId() throws SQLException {
         if (connectionId <= 0) {
-            throw new IllegalStateException(this + " has not connected user!");
+            LOG.warn(this + " has not connected user!");
+            return SQLUtils.NO_ID;
         }
 
         UserConnection userConnection = UserConnectionsTable.getUserConnectionUserById(id);
@@ -73,7 +78,7 @@ public class User implements Entity {
 
     @Override
     public boolean isCreated() {
-        return true;
+        return true; // Because we don't create a new 'id' for each user, we use in-built userId
     }
 
     @Override

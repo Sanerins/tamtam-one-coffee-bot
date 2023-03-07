@@ -1,7 +1,6 @@
 package one.coffee.sql;
 
 import one.coffee.DBTest;
-import one.coffee.sql.tables.Table;
 import one.coffee.sql.tables.TableTest;
 import one.coffee.utils.StaticContext;
 

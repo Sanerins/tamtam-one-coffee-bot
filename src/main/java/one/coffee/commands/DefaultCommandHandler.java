@@ -2,10 +2,9 @@ package one.coffee.commands;
 
 import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.model.Message;
-import one.coffee.sql.entities.UserConnection;
-import one.coffee.sql.entities.UserState;
+import one.coffee.sql.user_connection.UserConnection;
+import one.coffee.sql.UserState;
 import one.coffee.sql.user.User;
-import one.coffee.sql.user.UsersTable;
 import one.coffee.utils.CommandHandler;
 import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;

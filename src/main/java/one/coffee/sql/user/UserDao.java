@@ -2,8 +2,7 @@ package one.coffee.sql.user;
 
 import one.coffee.sql.DB;
 import one.coffee.sql.Dao;
-import one.coffee.sql.tables.Table;
-import one.coffee.utils.StaticContext;
+import one.coffee.sql.UserState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,14 +10,13 @@ import java.lang.invoke.MethodHandles;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class UserDao
-        extends Table
-        implements Dao<User> {
+public class UserDao extends Dao<User> {
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static UserDao INSTANCE;
@@ -42,7 +40,7 @@ public class UserDao
     }
 
     @Override
-    public Optional<User> get(long id) throws SQLException {
+    public Optional<User> get(long id) {
         AtomicReference<User> user = new AtomicReference<>();
         String query = MessageFormat.format("SELECT *" +
                         " FROM {0}" +
@@ -59,23 +57,32 @@ public class UserDao
         return Optional.of(user.get());
     }
 
-    @Override
-    public List<User> getAll() {
-        throw new UnsupportedOperationException("Getting all rows from 'users' is unsupported operation!");
-    }
+    public List<User> getWaitingUsers(long n) {
+        List<User> users = new ArrayList<>();
+        String query = MessageFormat.format("SELECT *" +
+                        " FROM {0}" +
+                        " WHERE stateId = " + UserState.WAITING.ordinal() +
+                        " LIMIT " + n,
+                getInstance().getShortName()
+        );
 
-    public List<User> getAllWaitingUsers(long n) {
+        DB.executeQuery(query, rs -> {
+            while (rs.next()) {
+                users.add(parseUser(rs));
+            }
+        });
 
+        return users;
     }
 
     @Override
     public void save(User user) {
-        DB.putEntity(StaticContext.USERS_TABLE, user);
+        DB.putEntity(this, user);
     }
 
     @Override
-    public void delete(User user) throws SQLException {
-        DB.deleteEntity(StaticContext.USERS_TABLE, user);
+    public void delete(User user) {
+        DB.deleteEntity(this, user);
     }
 
     private static User parseUser(ResultSet rs) throws SQLException {
@@ -86,4 +93,5 @@ public class UserDao
                 rs.getLong("connectionId")
         );
     }
+
 }

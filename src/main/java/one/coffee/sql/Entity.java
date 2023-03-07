@@ -4,7 +4,7 @@ import java.sql.SQLException;
 
 public interface Entity {
 
-    boolean isCreated() throws SQLException;
+    boolean isCreated();
 
     long getId();
 

@@ -1,6 +1,5 @@
 package one.coffee.sql;
 
-import one.coffee.sql.tables.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,6 +12,7 @@ import java.sql.Statement;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+// TODO Подумать, нужно ли объединять DB с Dao
 public class DB {
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -39,50 +39,50 @@ public class DB {
     private DB() {
     }
 
-    public static void createTable(Table table) {
-        Objects.requireNonNull(table, "Table can't be null!");
+    public static void createTable(Dao<?> dao) {
+        Objects.requireNonNull(dao, "Table can't be null!");
 
-        executeQuery("CREATE TABLE IF NOT EXISTS " + table);
-        LOG.info("Created table: {}", table.getShortName());
+        executeQuery("CREATE TABLE IF NOT EXISTS " + dao);
+        LOG.info("Created table: {}", dao.getShortName());
     }
 
-    public static void dropTable(Table table) {
-        Objects.requireNonNull(table, "Table can't be null!");
+    public static void dropTable(Dao<?> dao) {
+        Objects.requireNonNull(dao, "Table can't be null!");
 
-        executeQuery("DROP TABLE IF EXISTS " + table.getShortName());
-        LOG.info("Dropped table: {}", table.getShortName());
+        executeQuery("DROP TABLE IF EXISTS " + dao.getShortName());
+        LOG.info("Dropped table: {}", dao.getShortName());
     }
 
-    public static void cleanupTable(Table table) {
-        Objects.requireNonNull(table, "Table can't be null!");
+    public static void cleanupTable(Dao<?> dao) {
+        Objects.requireNonNull(dao, "Table can't be null!");
 
-        executeQuery("DELETE FROM " + table.getShortName());
-        executeQuery("UPDATE `sqlite_sequence` SET `seq` = 0 WHERE `name` = '" + table.getShortName() + "'");
-        LOG.info("Cleanup table: {}", table.getShortName());
+        executeQuery("DELETE FROM " + dao.getShortName());
+        executeQuery("UPDATE `sqlite_sequence` SET `seq` = 0 WHERE `name` = '" + dao.getShortName() + "'");
+        LOG.info("Cleanup table: {}", dao.getShortName());
     }
 
-    public static void putEntity(Table table, Entity entity) {
-        Objects.requireNonNull(table, "Table can't be null!");
+    public static void putEntity(Dao<?> dao, Entity entity) {
+        Objects.requireNonNull(dao, "Table can't be null!");
         Objects.requireNonNull(entity, "Entity can't be null!");
 
-        executeQuery("INSERT OR REPLACE INTO " + table.getSignature(entity)
+        executeQuery("INSERT OR REPLACE INTO " + dao.getSignature(entity)
                 + " VALUES " + entity.sqlArgValues());
         //LOG.info("Put entity: {}", entity);
     }
 
-    public static void deleteEntity(Table table, Entity entity) throws SQLException {
-        Objects.requireNonNull(table, "Table can't be null!");
-        if (!hasEntity(table, entity)) {
-            LOG.warn("Table {} has not entity with `id` = {}", table.getSignature(entity), entity.getId());
+    public static void deleteEntity(Dao<?> dao, Entity entity) {
+        Objects.requireNonNull(dao, "Table can't be null!");
+        if (!hasEntity(dao, entity)) {
+            LOG.warn("Table {} has not entity with `id` = {}", dao.getSignature(entity), entity.getId());
         }
-        executeQuery("DELETE FROM " + table.getShortName() + " WHERE id = " + entity.getId());
+        executeQuery("DELETE FROM " + dao.getShortName() + " WHERE id = " + entity.getId());
         //LOG.info("Delete entity from table '{}' with 'id' = {}", table.getShortName(), entity.getId());
     }
 
-    public static boolean hasEntity(Table table, Entity entity) throws SQLException {
+    public static boolean hasEntity(Dao<?> dao, Entity entity) {
         AtomicBoolean isPresent = new AtomicBoolean();
         executeQuery("SELECT *" +
-                        " FROM " + table.getShortName() +
+                        " FROM " + dao.getShortName() +
                         " WHERE id = " + entity.getId(),
                 rs -> isPresent.set(rs.next()));
         return isPresent.get();
@@ -92,18 +92,20 @@ public class DB {
         try {
             STATEMENT.execute(query);
         } catch (SQLException e) {
-            throw new RuntimeException("Error when executing query: '" + query + "'.\n" +
-                    "Details: " + e.getMessage());
+            LOG.warn("Error while executing query to DB!", e);
         }
     }
 
-    public static synchronized void executeQuery(String query, SQLAction sqlAction) throws SQLException {
+    public static synchronized void executeQuery(String query, SQLAction sqlAction) {
         try (ResultSet rs = STATEMENT.executeQuery(query)) {
             sqlAction.run(rs);
+        } catch (SQLException e) {
+            LOG.warn("Error while executing query to DB!", e);
         }
     }
 
     public interface SQLAction {
         void run(ResultSet rs) throws SQLException;
     }
+
 }

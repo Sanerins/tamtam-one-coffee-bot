@@ -1,4 +1,4 @@
-package one.coffee.sql.entities;
+package one.coffee.sql;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
