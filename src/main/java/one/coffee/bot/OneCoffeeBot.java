@@ -1,16 +1,15 @@
 package one.coffee.bot;
 
-import java.lang.invoke.MethodHandles;
-
-import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import chat.tamtam.bot.exceptions.TamTamBotException;
 import chat.tamtam.bot.longpolling.LongPollingBot;
 import chat.tamtam.bot.longpolling.LongPollingBotOptions;
 import chat.tamtam.botapi.client.TamTamClient;
 import chat.tamtam.botapi.model.Update;
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.invoke.MethodHandles;
 
 public class OneCoffeeBot extends LongPollingBot {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

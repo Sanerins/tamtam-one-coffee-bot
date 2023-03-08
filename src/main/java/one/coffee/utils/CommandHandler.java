@@ -26,12 +26,19 @@ public abstract class CommandHandler {
     }
 
 
+    // TODO /text не работает, на самом деле, в чате нельзя на него нажать. Надо это пофиксить.
     protected void handleText(Message message) {
-        messageSender.sendMessage(message.getSender().getUserId(), NewMessageBodyBuilder.ofText("Работяга, пришли мне команду!!! /help").build());
+        messageSender.sendMessage(
+                message.getSender().getUserId(),
+                NewMessageBodyBuilder.ofText("Работяга, пришли мне команду!!! /help").build()
+        );
     }
 
     protected void handleDefault(Message message) {
-        messageSender.sendMessage(message.getSender().getUserId(), NewMessageBodyBuilder.ofText("Такой команды не знаю :(").build());
+        messageSender.sendMessage(
+                message.getSender().getUserId(),
+                NewMessageBodyBuilder.ofText("Такой команды не знаю :(").build()
+        );
     }
 
 }

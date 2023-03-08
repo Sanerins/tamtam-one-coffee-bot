@@ -1,24 +1,27 @@
 package one.coffee.commands;
 
-import java.lang.invoke.MethodHandles;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentMap;
-
+import chat.tamtam.bot.builders.NewMessageBodyBuilder;
+import chat.tamtam.botapi.model.Message;
+import one.coffee.sql.UserState;
+import one.coffee.sql.user.User;
+import one.coffee.sql.user.UserService;
+import one.coffee.sql.user_connection.UserConnection;
+import one.coffee.sql.user_connection.UserConnectionService;
+import one.coffee.sql.utils.SQLUtils;
+import one.coffee.utils.CommandHandler;
+import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import chat.tamtam.bot.builders.NewMessageBodyBuilder;
-import chat.tamtam.botapi.model.Message;
-import one.coffee.utils.CommandHandler;
-import one.coffee.utils.MessageSender;
-import one.coffee.utils.StaticContext;
-import one.coffee.utils.UserState;
+import java.lang.invoke.MethodHandles;
+import java.sql.SQLException;
+import java.util.Optional;
 
 public class ChattingCommandHandler extends CommandHandler {
-    private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final ConcurrentMap<Long, UserState> userStateMap = StaticContext.getUserStateMap();
-    private final ConcurrentMap<Long, Long> userConnections = StaticContext.getConnections();
+    private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final UserService userService = StaticContext.USER_SERVICE;
+    private static final UserConnectionService userConnectionService = StaticContext.USER_CONNECTION_SERVICE;
 
     public ChattingCommandHandler() {
         super(StaticContext.getMessageSender());
@@ -41,12 +44,12 @@ public class ChattingCommandHandler extends CommandHandler {
 
     @Override
     protected void handleText(Message message) {
-        Long recipient = getRecipient(message);
+        User recipient = getRecipient(message);
         if (recipient == null) {
             return;
         }
 
-        messageSender.sendMessage(recipient, NewMessageBodyBuilder.copyOf(message).build());
+        messageSender.sendMessage(recipient.getId(), NewMessageBodyBuilder.copyOf(message).build());
     }
 
     private void handleHelp(Message message) {
@@ -57,46 +60,69 @@ public class ChattingCommandHandler extends CommandHandler {
     }
 
     private void handleEnd(Message message) {
-        Long recipient = getRecipient(message);
+        User recipient = getRecipient(message);
         if (recipient == null) {
             return;
         }
+        long senderId = message.getSender().getUserId();
 
-        messageSender.sendMessage(message.getSender().getUserId(), NewMessageBodyBuilder.ofText("Заканчиваю диалог с пользователем...").build());
-        messageSender.sendMessage(recipient, NewMessageBodyBuilder.ofText("Пользователь решил закончить с вами диалог, надеюсь все прошло сладко!").build());
+        UserConnection userConnection = userConnectionService.getByUserId(senderId).get();
+        userConnectionService.delete(userConnection);
 
-        userStateMap.put(message.getSender().getUserId(), UserState.DEFAULT);
-        userStateMap.put(recipient, UserState.DEFAULT);
-
-        userConnections.remove(message.getSender().getUserId());
-        userConnections.remove(recipient);
+        messageSender.sendMessage(
+                senderId,
+                NewMessageBodyBuilder.ofText("Диалог с пользователем завершён").build()
+        );
+        messageSender.sendMessage(
+                recipient.getId(),
+                NewMessageBodyBuilder.ofText("Пользователь решил закончить с вами диалог, надеюсь все прошло сладко!").build()
+        );
     }
 
-    private Long getRecipient(Message message) {
-        Long recipient = userConnections.get(message.getSender().getUserId());
-
-        if (recipient == null) {
-            LOG.error("The recipient can't be found for user " + message.getSender().getUserId());
-            handleConnectionError(message);
+    private User getRecipient(Message message) {
+        long senderId = message.getSender().getUserId();
+        long recipientId = userConnectionService.getConnectedUserId(senderId);
+        if (recipientId == SQLUtils.NO_ID) {
             return null;
         }
 
-        if (userStateMap.get(recipient) != UserState.CHATTING) {
-            LOG.error("The recipient " + recipient + " is not in chatting state for user " + message.getSender().getUserId());
+        Optional<User> optionalRecipient = userService.get(recipientId);
+        User recipient;
+        if (optionalRecipient.isEmpty()) { // TODO Восстановление инфы
+            recipient = new User(recipientId, "Cyberpunk2077", UserState.DEFAULT);
+            userService.save(recipient);
+        } else {
+            recipient = optionalRecipient.get();
+        }
+
+        if (recipient.getState() != UserState.CHATTING) {
+            LOG.error("The recipient " + recipient + " is not in chatting state for user " + senderId);
             handleConnectionError(message);
             return null;
         }
-        if (!Objects.equals(userConnections.get(recipient), message.getSender().getUserId())) {
-            LOG.error("The recipient " + recipient + " is chatting with other person, not with " + message.getSender().getUserId());
+
+        if (userConnectionService.getConnectedUserId(recipientId) != message.getSender().getUserId()) {
+            LOG.error("The recipient " + recipient + " is chatting with other person, not with " + senderId);
             handleConnectionError(message);
             return null;
         }
+
         return recipient;
     }
 
     private void handleConnectionError(Message message) {
-        messageSender.sendMessage(message.getSender().getUserId(), NewMessageBodyBuilder.ofText("Похоже соединение разорвалось...").build());
-        userStateMap.put(message.getSender().getUserId(), UserState.DEFAULT);
+        long senderId = message.getSender().getUserId();
+        messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText("Похоже соединение разорвалось...").build());
+        Optional<User> optionalSender = userService.get(senderId);
+        User sender;
+        if (optionalSender.isEmpty()) { // TODO Восстановление инфы
+            sender = new User(senderId, "Cyberpunk2077", UserState.DEFAULT);
+            userService.save(sender);
+        } else {
+            sender = optionalSender.get();
+        }
+        sender.setState(UserState.DEFAULT);
+        userService.save(sender);
     }
 
 }
