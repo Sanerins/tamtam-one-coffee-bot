@@ -2,25 +2,20 @@ package one.coffee.sql;
 
 import one.coffee.DBTest;
 import one.coffee.utils.StaticContext;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class BasicDBTest
-        extends ResourceTest {
+public class BasicDBTest {
 
-    @DBTest(nUsers = 0)
+    @Test
     void putNull() {
-        assertThrows(Exception.class, () -> DB.putEntity(getDao(), null));
+        assertThrows(Exception.class, () -> DB.putEntity(StaticContext.USER_DAO, null));
     }
 
-    @DBTest(nUsers = 0)
+    @Test
     void deleteFromNull() {
         assertThrows(Exception.class, () -> DB.deleteEntity(null, null));
-    }
-
-    @DBTest(nUsers = 0)
-    protected Dao<?> getDao() {
-        return StaticContext.USER_DAO;
     }
 
 }
