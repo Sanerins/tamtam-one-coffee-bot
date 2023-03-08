@@ -48,7 +48,8 @@ public class UserConnectionService
         long user1Id = userConnection.getUser1Id();
         long user2Id = userConnection.getUser2Id();
         if (userConnection.getId() <= 0) {
-            if (isConnected(user1Id) || isConnected(user2Id)) {
+            if (isConnected(user1Id) || isConnected(user2Id)) { // Но не факт, что они сконнекчены друг с другом.
+                                                                // Можно попытаться выпарсить этот случай.
                 LOG.warn("{} or {} has already connected!", user1Id, user2Id);
                 return;
             }
@@ -73,7 +74,7 @@ public class UserConnectionService
     }
 
     private boolean isConnected(long userId) {
-
+        return getByUserId(userId, SQLUtils.NO_ID).isPresent();
     }
 
     private void commitUsersConnection(long connectionId, long user1Id, long user2Id, UserState state) {

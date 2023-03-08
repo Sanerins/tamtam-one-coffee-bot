@@ -58,23 +58,19 @@ public class User implements Entity {
         return connectionId;
     }
 
-    public boolean hasConnection() throws SQLException {
-        return UsersTable.getUserByUserId(id).getConnectionId() >= 1;
-    }
-
     public void setConnectionId(long connectionId) {
         this.connectionId = connectionId;
     }
 
-    public long getConnectedUserId() throws SQLException {
-        if (connectionId <= 0) {
-            LOG.warn(this + " has not connected user!");
-            return SQLUtils.NO_ID;
-        }
-
-        UserConnection userConnection = UserConnectionsTable.getUserConnectionUserById(id);
-        return userConnection.getUser1Id() == id ? userConnection.getUser2Id() : userConnection.getUser1Id();
-    }
+//    public long getConnectedUserId() throws SQLException {
+//        if (connectionId <= 0) {
+//            LOG.warn(this + " has not connected user!");
+//            return SQLUtils.NO_ID;
+//        }
+//
+//        UserConnection userConnection = UserConnectionsTable.getUserConnectionUserById(id);
+//        return userConnection.getUser1Id() == id ? userConnection.getUser2Id() : userConnection.getUser1Id();
+//    }
 
     @Override
     public boolean isCreated() {

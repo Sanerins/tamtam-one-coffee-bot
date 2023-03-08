@@ -56,10 +56,6 @@ public class UserConnectionDao
             long id = rs.getLong("id");
             long actualUser1Id = rs.getLong("user1Id");
             long actualUser2Id = rs.getLong("user2Id");
-//            if (actualUser2Id != user2Id) {
-//                LOG.warn("There is no connection between users: {} and {}", user1Id, user2Id);
-//                return;
-//            }
             userConnection.set(new UserConnection(id, actualUser1Id, actualUser2Id));
         });
         return Optional.of(userConnection.get());

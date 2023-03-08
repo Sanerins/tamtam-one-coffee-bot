@@ -1,6 +1,9 @@
 package one.coffee.sql;
 
 import one.coffee.DBTest;
+import one.coffee.sql.user.User;
+import one.coffee.sql.user.UserDao;
+import one.coffee.utils.StaticContext;
 import org.junit.jupiter.api.Disabled;
 
 import java.sql.SQLException;
@@ -11,6 +14,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ConcurrentTest {
 
+    private static final UserDao userDao = StaticContext.USER_DAO;
+
     @Disabled("База поддерживает 4.5K GET-Rps в многопоток")
     @DBTest(nUsers = 4500)
     void concurrentGet(List<User> users) throws BrokenBarrierException, InterruptedException {
@@ -19,7 +24,7 @@ public class ConcurrentTest {
         final CyclicBarrier barrierOnStart = new CyclicBarrier(nThreads);
         final CyclicBarrier barrierOnEnd = new CyclicBarrier(nThreads + 1);
         final ConcurrentTestRunnable getRunnable
-                = new ConcurrentTestRunnable(barrierOnStart, barrierOnEnd, nThreads, N, users, user -> UsersTable.getUserByUserId(user.getId()));
+                = new ConcurrentTestRunnable(barrierOnStart, barrierOnEnd, nThreads, N, users, user -> userDao.get(user.getId()));
         for (int i = 1; i <= nThreads; ++i) {
             new Thread(getRunnable, "GetThread-" + i).start();
         }
@@ -34,7 +39,7 @@ public class ConcurrentTest {
         final CyclicBarrier barrierOnStart = new CyclicBarrier(nThreads);
         final CyclicBarrier barrierOnEnd = new CyclicBarrier(nThreads + 1);
         final ConcurrentTestRunnable putRunnable
-                = new ConcurrentTestRunnable(barrierOnStart, barrierOnEnd, nThreads, N, users, UsersTable::putUser);
+                = new ConcurrentTestRunnable(barrierOnStart, barrierOnEnd, nThreads, N, users, userDao::save);
         for (int i = 1; i <= nThreads; ++i) {
             new Thread(putRunnable, "PutThread-" + i).start();
         }
@@ -50,7 +55,7 @@ public class ConcurrentTest {
         final CyclicBarrier barrierOnEnd = new CyclicBarrier(nThreads + 1);
         final AtomicInteger userId = new AtomicInteger();
         final ConcurrentTestRunnable deleteRunnable
-                = new ConcurrentTestRunnable(barrierOnStart, barrierOnEnd, nThreads, N, users, UsersTable::deleteUser);
+                = new ConcurrentTestRunnable(barrierOnStart, barrierOnEnd, nThreads, N, users, userDao::delete);
         for (int i = 1; i <= nThreads; ++i) {
             new Thread(deleteRunnable, "DeleteThread-" + i).start();
         }
@@ -68,11 +73,11 @@ public class ConcurrentTest {
         final CyclicBarrier barrierOnStart = new CyclicBarrier(nThreads);
         final CyclicBarrier barrierOnEnd = new CyclicBarrier(nThreads + 1);
         final ConcurrentTestRunnable getRunnable
-                = new ConcurrentTestRunnable(barrierOnStart, barrierOnEnd, nThreads, NGets, users, user -> UsersTable.getUserByUserId(user.getId()));
+                = new ConcurrentTestRunnable(barrierOnStart, barrierOnEnd, nThreads, NGets, users, user -> userDao.get(user.getId()));
         final ConcurrentTestRunnable putRunnable
-                = new ConcurrentTestRunnable(barrierOnStart, barrierOnEnd, nThreads, NPuts, users, UsersTable::putUser);
+                = new ConcurrentTestRunnable(barrierOnStart, barrierOnEnd, nThreads, NPuts, users, userDao::save);
         final ConcurrentTestRunnable deleteRunnable
-                = new ConcurrentTestRunnable(barrierOnStart, barrierOnEnd, nThreads, NDeletes, users, UsersTable::deleteUser);
+                = new ConcurrentTestRunnable(barrierOnStart, barrierOnEnd, nThreads, NDeletes, users, userDao::delete);
         for (int i = 1; i <= nThreads / nRunnables; ++i) {
             new Thread(getRunnable, "GetThread-" + i).start();
             new Thread(putRunnable, "PutThread-" + i).start();

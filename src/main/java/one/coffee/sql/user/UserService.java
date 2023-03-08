@@ -40,7 +40,7 @@ public class UserService
     @Override
     public void save(User user) {
         if (user.getId() <= 0) {
-            LOG.warn("Invalid User id! Got {}", user)
+            LOG.warn("Invalid User id! Got {}", user);
             return;
         }
 
@@ -57,6 +57,7 @@ public class UserService
         userDao.delete(user);
     }
 
+    // TODO Enhance
     private static boolean isValidCity(String city) {
         return city != null && !city.trim().isEmpty();
     }

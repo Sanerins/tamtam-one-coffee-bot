@@ -1,17 +1,16 @@
 package one.coffee.sql;
 
 import one.coffee.DBTest;
-import one.coffee.sql.tables.TableTest;
 import one.coffee.utils.StaticContext;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class BasicDBTest
-        extends TableTest {
+        extends ResourceTest {
 
     @DBTest(nUsers = 0)
     void putNull() {
-        assertThrows(Exception.class, () -> DB.putEntity(getTable(), null));
+        assertThrows(Exception.class, () -> DB.putEntity(getDao(), null));
     }
 
     @DBTest(nUsers = 0)
@@ -20,8 +19,8 @@ public class BasicDBTest
     }
 
     @DBTest(nUsers = 0)
-    protected Table getTable() {
-        return StaticContext.USERS_TABLE;
+    protected Dao<?> getDao() {
+        return StaticContext.USER_DAO;
     }
 
 }

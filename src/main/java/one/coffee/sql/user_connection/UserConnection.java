@@ -32,7 +32,7 @@ public class UserConnection
 
     @Override
     public boolean isCreated() {
-        return StaticContext.USER_CONNECTION_SERVICE.get;
+        return StaticContext.USER_CONNECTION_SERVICE.getByUserId(user1Id, user2Id).isPresent();
     }
 
     @Override

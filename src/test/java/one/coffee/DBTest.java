@@ -1,7 +1,11 @@
 package one.coffee;
 
 import one.coffee.sql.UserState;
+import one.coffee.sql.user.User;
+import one.coffee.sql.user.UserDao;
+import one.coffee.sql.user.UserService;
 import one.coffee.sql.utils.SQLUtils;
+import one.coffee.utils.StaticContext;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -29,8 +33,10 @@ public @interface DBTest {
     class UserList
             implements ArgumentsProvider {
 
+        private static final UserService userService = StaticContext.USER_SERVICE;
+
         @Override
-        public Stream<? extends Arguments> provideArguments(ExtensionContext extensionContext) throws Exception {
+        public Stream<? extends Arguments> provideArguments(ExtensionContext extensionContext) {
             int nUsers = extensionContext.getTestMethod().get().getAnnotation(DBTest.class).nUsers();
             List<User> users = new ArrayList<>();
             for (int i = 0; i < nUsers; ++i) {
@@ -41,7 +47,7 @@ public @interface DBTest {
                         UserState.DEFAULT,
                         SQLUtils.NO_ID
                 );
-                user.commit();
+                userService.save(user);
                 users.add(user);
             }
             return Stream.of(Arguments.of(users));
