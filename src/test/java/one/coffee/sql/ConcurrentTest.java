@@ -87,6 +87,10 @@ public class ConcurrentTest {
         barrierOnEnd.await();
     }
 
+    public interface SQLOperation {
+        void execute(User user) throws SQLException;
+    }
+
     static class ConcurrentTestRunnable implements Runnable {
 
         private final CyclicBarrier barrierOnStart;
@@ -122,10 +126,6 @@ public class ConcurrentTest {
                 throw new RuntimeException(e);
             }
         }
-    }
-
-    public interface SQLOperation {
-        void execute(User user) throws SQLException;
     }
 
 }

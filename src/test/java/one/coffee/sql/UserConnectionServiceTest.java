@@ -8,12 +8,9 @@ import one.coffee.sql.user_connection.UserConnectionService;
 import one.coffee.sql.utils.SQLUtils;
 import one.coffee.utils.StaticContext;
 
-import java.sql.SQLException;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class UserConnectionServiceTest
@@ -30,7 +27,7 @@ public class UserConnectionServiceTest
         UserConnection userConnection = new UserConnection(user1Id, user2Id);
         userConnectionService.save(userConnection);
 
-        UserConnection savedUserConnection = userConnectionService.getByUserId(user1Id, user2Id).get();
+        UserConnection savedUserConnection = userConnectionService.getByUserId(user1Id).get();
         User savedUser1 = userService.get(user1Id).get();
         User savedUser2 = userService.get(user2Id).get();
 
@@ -57,9 +54,9 @@ public class UserConnectionServiceTest
         User savedUser2 = userService.get(user2Id).get();
         User savedUser3 = userService.get(user3Id).get();
 
-        UserConnection savedUsers12Connection = userConnectionService.getByUserId(user1Id, user2Id).get();
+        UserConnection savedUsers12Connection = userConnectionService.getByUserId(user1Id).get();
 
-        assertTrue(userConnectionService.getByUserId(user2Id, user3Id).isEmpty());
+        assertTrue(userConnectionService.getByUserId(user2Id).isEmpty());
 
         assertEquals(savedUser1.getState(), UserState.CHATTING);
         assertEquals(savedUser1.getConnectionId(), savedUsers12Connection.getId());

@@ -39,6 +39,15 @@ public class UserDao extends Dao<User> {
         return INSTANCE;
     }
 
+    private static User parseUser(ResultSet rs) throws SQLException {
+        return new User(
+                rs.getLong("id"),
+                rs.getString("city"),
+                rs.getLong("stateId"),
+                rs.getLong("connectionId")
+        );
+    }
+
     @Override
     public Optional<User> get(long id) {
         AtomicReference<User> user = new AtomicReference<>();
@@ -83,15 +92,6 @@ public class UserDao extends Dao<User> {
     @Override
     public void delete(User user) {
         DB.deleteEntity(this, user);
-    }
-
-    private static User parseUser(ResultSet rs) throws SQLException {
-        return new User(
-                rs.getLong("id"),
-                rs.getString("city"),
-                rs.getLong("stateId"),
-                rs.getLong("connectionId")
-        );
     }
 
 }

@@ -1,9 +1,9 @@
 package one.coffee.utils;
 
 import chat.tamtam.botapi.client.TamTamClient;
+import one.coffee.sql.user.UserDao;
 import one.coffee.sql.user.UserService;
 import one.coffee.sql.user_connection.UserConnectionDao;
-import one.coffee.sql.user.UserDao;
 import one.coffee.sql.user_connection.UserConnectionService;
 
 public class StaticContext {

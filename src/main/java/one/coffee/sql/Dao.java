@@ -2,7 +2,6 @@ package one.coffee.sql;
 
 import one.coffee.sql.utils.SQLUtils;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -16,7 +15,9 @@ public abstract class Dao<T extends Entity> {
     }
 
     abstract public Optional<T> get(long id);
+
     abstract public void save(T t);
+
     abstract public void delete(T t);
 
     protected final void init() {

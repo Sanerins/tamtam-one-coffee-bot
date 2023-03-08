@@ -2,7 +2,6 @@ package one.coffee;
 
 import one.coffee.sql.UserState;
 import one.coffee.sql.user.User;
-import one.coffee.sql.user.UserDao;
 import one.coffee.sql.user.UserService;
 import one.coffee.sql.utils.SQLUtils;
 import one.coffee.utils.StaticContext;

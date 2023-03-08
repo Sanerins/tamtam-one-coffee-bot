@@ -2,12 +2,10 @@ package one.coffee.sql.user_connection;
 
 import one.coffee.sql.DB;
 import one.coffee.sql.Dao;
-import one.coffee.sql.user.UserDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
-import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
@@ -42,15 +40,15 @@ public class UserConnectionDao
         throw new UnsupportedOperationException("Still there is no support for indexing of connections!");
     }
 
-    public Optional<UserConnection> getByUserId(long user1Id, long /*unused*/ user2Id) {
+    public Optional<UserConnection> getByUserId(long userId) {
         AtomicReference<UserConnection> userConnection = new AtomicReference<>();
         String query = MessageFormat.format("SELECT *" +
                         " FROM {0}" +
-                        " WHERE user1Id = " + user1Id + " OR user2Id = " + user1Id,
+                        " WHERE user1Id = " + userId + " OR user2Id = " + userId,
                 getInstance().getShortName());
         DB.executeQuery(query, rs -> {
             if (!rs.next()) {
-                LOG.warn("User {} has no connections!", user1Id);
+                LOG.warn("User {} has no connections!", userId);
                 return;
             }
             long id = rs.getLong("id");

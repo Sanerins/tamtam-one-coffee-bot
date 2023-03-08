@@ -1,7 +1,5 @@
 package one.coffee.sql;
 
-import one.coffee.sql.DB;
-import one.coffee.sql.Dao;
 import one.coffee.utils.StaticContext;
 import org.junit.jupiter.api.AfterEach;
 

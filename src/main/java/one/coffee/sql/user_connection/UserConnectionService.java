@@ -1,27 +1,22 @@
 package one.coffee.sql.user_connection;
 
-import one.coffee.sql.DB;
 import one.coffee.sql.Service;
 import one.coffee.sql.UserState;
 import one.coffee.sql.user.User;
-import one.coffee.sql.user.UserDao;
-import one.coffee.sql.user.UserService;
 import one.coffee.sql.utils.SQLUtils;
 import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
-import java.sql.SQLException;
-import java.util.List;
 import java.util.Optional;
 
 public class UserConnectionService
         implements Service<UserConnection> {
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static UserConnectionService INSTANCE;
     private static final UserConnectionDao userConnectionDao = StaticContext.USER_CONNECTION_DAO;
+    private static UserConnectionService INSTANCE;
 
     private UserConnectionService() {
     }
@@ -38,8 +33,17 @@ public class UserConnectionService
         return userConnectionDao.get(id);
     }
 
-    public Optional<UserConnection> getByUserId(long user1Id, long /*unused*/ user2Id) {
-        return userConnectionDao.getByUserId(user1Id, user2Id);
+    public Optional<UserConnection> getByUserId(long userId) {
+        return userConnectionDao.getByUserId(userId);
+    }
+
+    public long getConnectedUserId(long userId) {
+        Optional<UserConnection> optionalUserConnection = userConnectionDao.getByUserId(userId);
+        if (optionalUserConnection.isEmpty()) {
+            return SQLUtils.NO_ID;
+        }
+        UserConnection userConnection = optionalUserConnection.get();
+        return userConnection.getUser1Id() == userId ? userConnection.getUser2Id() : userConnection.getUser1Id();
     }
 
     // TODO Мб тут возвращать флажок состояния, получилось сохранить или нет?
@@ -49,7 +53,7 @@ public class UserConnectionService
         long user2Id = userConnection.getUser2Id();
         if (userConnection.getId() <= 0) {
             if (isConnected(user1Id) || isConnected(user2Id)) { // Но не факт, что они сконнекчены друг с другом.
-                                                                // Можно попытаться выпарсить этот случай.
+                // Можно попытаться выпарсить этот случай.
                 LOG.warn("{} or {} has already connected!", user1Id, user2Id);
                 return;
             }
@@ -61,7 +65,7 @@ public class UserConnectionService
         }
 
         userConnectionDao.save(userConnection);
-        long conId = userConnectionDao.getByUserId(user1Id, SQLUtils.NO_ID).get().getId();
+        long conId = userConnectionDao.getByUserId(user1Id).get().getId();
         commitUsersConnection(conId, user1Id, user2Id, UserState.CHATTING);
     }
 
@@ -74,7 +78,7 @@ public class UserConnectionService
     }
 
     private boolean isConnected(long userId) {
-        return getByUserId(userId, SQLUtils.NO_ID).isPresent();
+        return getByUserId(userId).isPresent();
     }
 
     private void commitUsersConnection(long connectionId, long user1Id, long user2Id, UserState state) {

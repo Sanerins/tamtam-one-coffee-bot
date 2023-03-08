@@ -1,13 +1,11 @@
 package one.coffee.sql.user;
 
-import one.coffee.sql.DB;
 import one.coffee.sql.Service;
 import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,8 +13,8 @@ public class UserService
         implements Service<User> {
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static UserService INSTANCE;
     private static final UserDao userDao = StaticContext.USER_DAO;
+    private static UserService INSTANCE;
 
     private UserService() {
     }
@@ -26,6 +24,11 @@ public class UserService
             INSTANCE = new UserService();
         }
         return INSTANCE;
+    }
+
+    // TODO Enhance
+    private static boolean isValidCity(String city) {
+        return city != null && !city.trim().isEmpty();
     }
 
     @Override
@@ -55,11 +58,6 @@ public class UserService
     @Override
     public void delete(User user) {
         userDao.delete(user);
-    }
-
-    // TODO Enhance
-    private static boolean isValidCity(String city) {
-        return city != null && !city.trim().isEmpty();
     }
 
 }

@@ -1,7 +1,5 @@
 package one.coffee.sql;
 
-import java.sql.SQLException;
-
 public interface Entity {
 
     boolean isCreated();
