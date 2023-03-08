@@ -48,7 +48,6 @@ public class UserConnectionDao
                 getInstance().getShortName());
         DB.executeQuery(query, rs -> {
             if (!rs.next()) {
-                LOG.warn("User {} has no connections!", userId);
                 return;
             }
             long id = rs.getLong("id");
@@ -56,7 +55,7 @@ public class UserConnectionDao
             long actualUser2Id = rs.getLong("user2Id");
             userConnection.set(new UserConnection(id, actualUser1Id, actualUser2Id));
         });
-        return Optional.of(userConnection.get());
+        return Optional.ofNullable(userConnection.get());
     }
 
     @Override

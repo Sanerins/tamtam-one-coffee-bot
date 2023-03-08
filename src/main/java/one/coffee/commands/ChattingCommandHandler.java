@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
 import java.sql.SQLException;
+import java.util.Optional;
 
 public class ChattingCommandHandler extends CommandHandler {
 
@@ -79,20 +80,29 @@ public class ChattingCommandHandler extends CommandHandler {
     }
 
     private User getRecipient(Message message) {
-        long recipientId = userConnectionService.getConnectedUserId(message.getSender().getUserId());
+        long senderId = message.getSender().getUserId();
+        long recipientId = userConnectionService.getConnectedUserId(senderId);
         if (recipientId == SQLUtils.NO_ID) {
             return null;
         }
-        User recipient = userService.get(recipientId).get();
+
+        Optional<User> optionalRecipient = userService.get(recipientId);
+        User recipient;
+        if (optionalRecipient.isEmpty()) { // TODO Восстановление инфы
+            recipient = new User(recipientId, "Cyberpunk2077", UserState.DEFAULT);
+            userService.save(recipient);
+        } else {
+            recipient = optionalRecipient.get();
+        }
 
         if (recipient.getState() != UserState.CHATTING) {
-            LOG.error("The recipient " + recipient + " is not in chatting state for user " + message.getSender().getUserId());
+            LOG.error("The recipient " + recipient + " is not in chatting state for user " + senderId);
             handleConnectionError(message);
             return null;
         }
 
         if (userConnectionService.getConnectedUserId(recipientId) != message.getSender().getUserId()) {
-            LOG.error("The recipient " + recipient + " is chatting with other person, not with " + message.getSender().getUserId());
+            LOG.error("The recipient " + recipient + " is chatting with other person, not with " + senderId);
             handleConnectionError(message);
             return null;
         }
@@ -103,7 +113,14 @@ public class ChattingCommandHandler extends CommandHandler {
     private void handleConnectionError(Message message) {
         long senderId = message.getSender().getUserId();
         messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText("Похоже соединение разорвалось...").build());
-        User sender = userService.get(senderId).get();
+        Optional<User> optionalSender = userService.get(senderId);
+        User sender;
+        if (optionalSender.isEmpty()) { // TODO Восстановление инфы
+            sender = new User(senderId, "Cyberpunk2077", UserState.DEFAULT);
+            userService.save(sender);
+        } else {
+            sender = optionalSender.get();
+        }
         sender.setState(UserState.DEFAULT);
         userService.save(sender);
     }

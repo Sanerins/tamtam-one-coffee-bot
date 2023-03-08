@@ -1,5 +1,6 @@
 package one.coffee.sql;
 
+import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,8 +19,8 @@ public class DB {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final String DB_NAME = "OneCoffee.db";
     private static final String CONNECTION_URL = "jdbc:sqlite:" + DB_NAME;
-    private static final Connection CONNECTION;
-    private static final Statement STATEMENT;
+    private static Connection CONNECTION;
+    private static Statement STATEMENT;
 
     static {
         try {
@@ -32,7 +33,8 @@ public class DB {
         } catch (SQLException e) {
             // Считаю, что зафейленная инициализация БД - критическая ситуация для приложения,
             // поэтому ложим всё приложение, если что-то пошло тут не так
-            throw new RuntimeException("DB creation is failed! Details: " + e.getMessage());
+            LOG.error("DB creation is failed!", e);
+            StaticContext.getBot().stop();
         }
     }
 

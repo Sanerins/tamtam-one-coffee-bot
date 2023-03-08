@@ -56,7 +56,7 @@ public class UserConnectionServiceTest
 
         UserConnection savedUsers12Connection = userConnectionService.getByUserId(user1Id).get();
 
-        assertTrue(userConnectionService.getByUserId(user2Id).isEmpty());
+        assertTrue(userConnectionService.getByUserId(user3Id).isEmpty());
 
         assertEquals(savedUser1.getState(), UserState.CHATTING);
         assertEquals(savedUser1.getConnectionId(), savedUsers12Connection.getId());

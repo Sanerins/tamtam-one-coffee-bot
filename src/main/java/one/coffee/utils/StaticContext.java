@@ -1,6 +1,9 @@
 package one.coffee.utils;
 
+import chat.tamtam.bot.longpolling.LongPollingBotOptions;
 import chat.tamtam.botapi.client.TamTamClient;
+import one.coffee.bot.OneCoffeeBot;
+import one.coffee.bot.OneCoffeeBotUpdateHandler;
 import one.coffee.sql.user.UserDao;
 import one.coffee.sql.user.UserService;
 import one.coffee.sql.user_connection.UserConnectionDao;
@@ -15,6 +18,7 @@ public class StaticContext {
 
     private static TamTamClient client;
     private static MessageSender sender;
+    private static OneCoffeeBot bot;
     private static boolean isSet = false;
 
     public static void initialize(String token) {
@@ -24,6 +28,7 @@ public class StaticContext {
 
         client = TamTamClient.create(token);
         sender = new MessageSender(client);
+        bot = new OneCoffeeBot(client, LongPollingBotOptions.DEFAULT, new OneCoffeeBotUpdateHandler());
         isSet = true;
     }
 
@@ -33,6 +38,10 @@ public class StaticContext {
 
     public static MessageSender getMessageSender() {
         return sender;
+    }
+
+    public static OneCoffeeBot getBot() {
+        return bot;
     }
 
 }

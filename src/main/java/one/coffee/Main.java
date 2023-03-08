@@ -20,11 +20,8 @@ public class Main {
         }
         String accessToken = args[0];
         StaticContext.initialize(accessToken);
-        OneCoffeeBotUpdateHandler handler = new OneCoffeeBotUpdateHandler();
-
-        OneCoffeeBot bot = new OneCoffeeBot(StaticContext.getClient(), LongPollingBotOptions.DEFAULT, handler);
         try {
-            bot.start();
+            StaticContext.getBot().start();
         } catch (TamTamBotException e) {
             LOG.error("Failed to start bot: " + e.getMessage());
             System.exit(1);

@@ -58,12 +58,11 @@ public class UserDao extends Dao<User> {
         );
         DB.executeQuery(query, rs -> {
             if (!rs.next()) {
-                LOG.warn("No user with 'id' = {} in DB!", id);
                 return;
             }
             user.set(parseUser(rs));
         });
-        return Optional.of(user.get());
+        return Optional.ofNullable(user.get());
     }
 
     public List<User> getWaitingUsers(long n) {

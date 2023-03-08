@@ -29,8 +29,9 @@ public abstract class Dao<T extends Entity> {
             throw new IllegalArgumentException("Not enough 'args'! Got: " + args);
         }
 
-        DB.dropTable(this);
-        DB.createTable(this);
+        // Включать, только если поменялась схема таблички
+        //DB.dropTable(this);
+        //DB.createTable(this);
     }
 
     // Returns full name of the table with specified types.

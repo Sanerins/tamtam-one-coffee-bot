@@ -4,7 +4,9 @@ import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.model.Message;
 import one.coffee.sql.UserState;
 import one.coffee.sql.user.User;
+import one.coffee.sql.user.UserService;
 import one.coffee.sql.user_connection.UserConnection;
+import one.coffee.sql.user_connection.UserConnectionService;
 import one.coffee.utils.CommandHandler;
 import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
@@ -13,9 +15,13 @@ import org.slf4j.LoggerFactory;
 import java.lang.invoke.MethodHandles;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 public class DefaultCommandHandler extends CommandHandler {
+
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final UserService userService = StaticContext.USER_SERVICE;
+    private static final UserConnectionService userConnectionService = StaticContext.USER_CONNECTION_SERVICE;
 
     public DefaultCommandHandler() {
         super(StaticContext.getMessageSender());
@@ -44,58 +50,54 @@ public class DefaultCommandHandler extends CommandHandler {
     }
 
     private void handleStart(Message message) {
-        try {
-            long senderId = message.getSender().getUserId();
-            User sender = UsersTable.getUserByUserId(senderId);
-            if (sender == null) {
-                // См. возможные причины в OneCoffeeUpdateHandler::visit(MessageCreatedUpdate)
-                sender = new User(senderId, "Cyberpunk2077", UserState.DEFAULT);
-                sender.commit();
-            }
-
-            List<User> userWaitList = UsersTable.getWaitingUsers(1);
-            if (userWaitList.isEmpty()) {
-                startTheWait(message);
-                return;
-            }
-
-            User recipient = userWaitList.get(0);
-            UserConnection userConnection = new UserConnection(senderId, recipient.getId());
-            userConnection.commit();
-
-            messageSender.sendMessage(senderId,
-                    NewMessageBodyBuilder.ofText("""
-                            Я нашел вам собеседника!
-                            Я буду передавать сообщения между вами, можете общаться сколько влезет!)
-                            Список команд, доступных во время беседы можно открыть на /help\s""").build());
-            messageSender.sendMessage(recipient.getId(),
-                    NewMessageBodyBuilder.ofText("""
-                            Я нашел вам собеседника!
-                            Я буду передавать сообщения между вами, можете общаться сколько влезет!)
-                            Список команд, доступных во время беседы можно открыть на /help\s""").build());
-        } catch (SQLException e) {
-            LOG.error(e.getMessage());
+        long senderId = message.getSender().getUserId();
+        Optional<User> optionalSender = userService.get(senderId);
+        User sender;
+        if (optionalSender.isEmpty()) {
+            // См. возможные причины в OneCoffeeUpdateHandler::visit(MessageCreatedUpdate)
+            sender = new User(senderId, "Cyberpunk2077", UserState.DEFAULT);
+            userService.save(sender);
+        } else {
+            sender = optionalSender.get();
         }
+
+        List<User> userWaitList = userService.getWaitingUsers(1);
+        if (userWaitList.isEmpty()) {
+            startTheWait(message);
+            return;
+        }
+
+        User recipient = userWaitList.get(0);
+        UserConnection userConnection = new UserConnection(senderId, recipient.getId());
+        userConnectionService.save(userConnection);
+
+        messageSender.sendMessage(senderId,
+                NewMessageBodyBuilder.ofText("""
+                            Я нашел вам собеседника!
+                            Я буду передавать сообщения между вами, можете общаться сколько влезет!)
+                            Список команд, доступных во время беседы можно открыть на /help\s""").build());
+        messageSender.sendMessage(recipient.getId(),
+                NewMessageBodyBuilder.ofText("""
+                            Я нашел вам собеседника!
+                            Я буду передавать сообщения между вами, можете общаться сколько влезет!)
+                            Список команд, доступных во время беседы можно открыть на /help\s""").build());
     }
 
     private void startTheWait(Message message) {
         long senderId = message.getSender().getUserId();
 
-        try {
-            User sender = UsersTable.getUserByUserId(senderId);
-            if (sender == null) {
-                // См. возможные причины в OneCoffeeUpdateHandler::visit(MessageCreatedUpdate)
-                sender = new User(senderId, "Cyberpunk2077", UserState.DEFAULT);
-            }
-            sender.setState(UserState.WAITING);
-            sender.commit();
-            messageSender.sendMessage(message.getSender().getUserId(),
-                    NewMessageBodyBuilder.ofText("Вы успешно добавлены в список ждущий пользователей! Ожидайте начала диалога! ").build());
-        } catch (SQLException e) {
-            LOG.warn("Putting user " + senderId + " in waiting list was interrupted");
-            messageSender.sendMessage(senderId,
-                    NewMessageBodyBuilder.ofText("Встать в список ждущих пользователей не получилось, попробуй чуть позже :( ").build());
+        Optional<User> optionalSender = userService.get(senderId);
+        User sender;
+        if (optionalSender.isEmpty()) { // НЕ РЕФАКТОРИТЬ!!! TODO
+            // См. возможные причины в OneCoffeeUpdateHandler::visit(MessageCreatedUpdate)
+            sender = new User(senderId, "Cyberpunk2077", UserState.DEFAULT);
+        } else {
+            sender = optionalSender.get();
         }
+        sender.setState(UserState.WAITING);
+        userService.save(sender);
+        messageSender.sendMessage(message.getSender().getUserId(),
+                NewMessageBodyBuilder.ofText("Вы успешно добавлены в список ждущий пользователей! Ожидайте начала диалога! ").build());
     }
 
 }

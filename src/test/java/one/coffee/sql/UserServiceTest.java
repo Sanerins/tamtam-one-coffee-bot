@@ -18,7 +18,7 @@ public class UserServiceTest
     private static final UserService userService = StaticContext.USER_SERVICE;
 
     @Test
-    void ok1() throws SQLException {
+    void ok1() {
         final long userId = 123;
         final String userCity = "St. Petersburg";
         final UserState state = UserState.DEFAULT;

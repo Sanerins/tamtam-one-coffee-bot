@@ -52,16 +52,16 @@ public class OneCoffeeBotUpdateHandler extends NoopUpdateVisitor {
 
         Optional<User> optionalUser = userService.get(userId);
         User user;
-        if (optionalUser.isEmpty()) { // НЕ РЕФАКТОРИТЬ!!! TODO ТУТ БУДЕТ ПОВТОРНЫЙ ОПРОС ПОЛЬЗОВАТЕЛЯ О ЕГО ДАННЫХ.
+        if (optionalUser.isEmpty()) { // НЕ РЕФАКТОРИТЬ!!! TODO Тут будет повтороный опрос пользователя о его данных.
             // Это возможно в двух случаях:
             // 1. Работяга до этого уже переписывался с ботом, разорвал соединение, мы потеряли о нём данные чудесным образом
             // (дропнули или просто почистили таблички, или же хацкер оставил нас у разбитого корыта...), а потом написал /start;
             // 2. Невалидный запрос (на любой стадии).
             // Действия:
-            // 1. Пересоздание пользователя (реализуется);
-            // 2. Описано в OneCoffeeBotUpdateHandler::visit(MessageCreatedUpdate).
-            // В логи инфа уже поступит на уровне DB по поводу ошибочки.
+            // 1. Пересоздание пользователя (реализуется).
+            LOG.warn("No user with id {} in DB! It will be recreated.", userId);
             user = new User(userId, "Cyberpunk2077", UserState.DEFAULT);
+            userService.save(user);
         } else {
             user = optionalUser.get();
         }

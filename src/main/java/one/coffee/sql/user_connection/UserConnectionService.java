@@ -38,7 +38,7 @@ public class UserConnectionService
     }
 
     public long getConnectedUserId(long userId) {
-        Optional<UserConnection> optionalUserConnection = userConnectionDao.getByUserId(userId);
+        Optional<UserConnection> optionalUserConnection = getByUserId(userId);
         if (optionalUserConnection.isEmpty()) {
             return SQLUtils.NO_ID;
         }
@@ -46,7 +46,6 @@ public class UserConnectionService
         return userConnection.getUser1Id() == userId ? userConnection.getUser2Id() : userConnection.getUser1Id();
     }
 
-    // TODO Мб тут возвращать флажок состояния, получилось сохранить или нет?
     @Override
     public void save(UserConnection userConnection) {
         long user1Id = userConnection.getUser1Id();
@@ -65,8 +64,13 @@ public class UserConnectionService
         }
 
         userConnectionDao.save(userConnection);
-        long conId = userConnectionDao.getByUserId(user1Id).get().getId();
-        commitUsersConnection(conId, user1Id, user2Id, UserState.CHATTING);
+        Optional<UserConnection> optionalConnection = getByUserId(user1Id);
+        if (optionalConnection.isEmpty()) {
+            LOG.warn("Can't save user connection: {}", userConnection);
+        } else {
+            long conId = optionalConnection.get().getId();
+            commitUsersConnection(conId, user1Id, user2Id, UserState.CHATTING);
+        }
     }
 
     @Override
@@ -82,12 +86,22 @@ public class UserConnectionService
     }
 
     private void commitUsersConnection(long connectionId, long user1Id, long user2Id, UserState state) {
-        User user1 = StaticContext.USER_SERVICE.get(user1Id).get();
+        Optional<User> optionalUser1 = StaticContext.USER_SERVICE.get(user1Id);
+        if (optionalUser1.isEmpty()) {
+            LOG.warn("User with id {} is absent in DB!", user1Id);
+            return; // TODO Тут нет никакой возможности восстановить данные юзера, поэтому надо бы придумать, как сообщить пользователю, что ничего не получилось...
+        }
+        User user1 = optionalUser1.get();
         user1.setState(state);
         user1.setConnectionId(connectionId);
         StaticContext.USER_SERVICE.save(user1);
 
-        User user2 = StaticContext.USER_SERVICE.get(user2Id).get();
+        Optional<User> optionalUser2 = StaticContext.USER_SERVICE.get(user2Id);
+        if (optionalUser2.isEmpty()) {
+            LOG.warn("User with id {} is absent in DB!", user2Id);
+            return; // TODO Тут нет никакой возможности восстановить данные юзера, поэтому надо бы придумать, как сообщить пользователю, что ничего не получилось...
+        }
+        User user2 = optionalUser2.get();
         user2.setState(state);
         user2.setConnectionId(connectionId);
         StaticContext.USER_SERVICE.save(user2);
