@@ -1,36 +1,34 @@
 package one.coffee.utils;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.LinkedBlockingQueue;
-
+import chat.tamtam.bot.longpolling.LongPollingBotOptions;
 import chat.tamtam.botapi.client.TamTamClient;
+import one.coffee.bot.OneCoffeeBot;
+import one.coffee.bot.OneCoffeeBotUpdateHandler;
+import one.coffee.sql.user.UserDao;
+import one.coffee.sql.user.UserService;
+import one.coffee.sql.user_connection.UserConnectionDao;
+import one.coffee.sql.user_connection.UserConnectionService;
 
 public class StaticContext {
 
+    public static final UserDao USER_DAO = UserDao.getInstance();
+    public static final UserService USER_SERVICE = UserService.getInstance();
+    public static final UserConnectionDao USER_CONNECTION_DAO = UserConnectionDao.getInstance();
+    public static final UserConnectionService USER_CONNECTION_SERVICE = UserConnectionService.getInstance();
+
     private static TamTamClient client;
     private static MessageSender sender;
-    //TODO: userStateMap, userWaitList, userConnections надо будет сделать при помощи SQL бд. Сейчас мы теряем все стейты, диалоги и очередь при перезагрузке
-    //TODO: userWaitList должен учитывать из какого города юзер
-    //TODO: userConnections сейчас - полный кринж, ибо храним две инвентированные пары ключ-значение, чтобы собеседники общались
-    //TODO: сделал так, ибо сделаем нормально в SQL бд, будет табличка connection с двумя лонгами и id.
-    private static ConcurrentMap<Long, UserState> userStateMap;
-    private static ConcurrentMap<Long, Long> userConnections;
-    private static BlockingQueue<Long> userWaitList;
-
+    private static OneCoffeeBot bot;
     private static boolean isSet = false;
 
     public static void initialize(String token) {
         if (isSet) {
             throw new UnsupportedOperationException();
         }
+
         client = TamTamClient.create(token);
         sender = new MessageSender(client);
-        userStateMap = new ConcurrentHashMap<>();
-        userConnections = new ConcurrentHashMap<>();
-        userWaitList = new LinkedBlockingQueue<>();
-
+        bot = new OneCoffeeBot(client, LongPollingBotOptions.DEFAULT, new OneCoffeeBotUpdateHandler());
         isSet = true;
     }
 
@@ -42,13 +40,8 @@ public class StaticContext {
         return sender;
     }
 
-    public static ConcurrentMap<Long, UserState> getUserStateMap() {
-        return userStateMap;
+    public static OneCoffeeBot getBot() {
+        return bot;
     }
 
-    public static ConcurrentMap<Long, Long> getConnections() { return userConnections; }
-
-    public static BlockingQueue<Long> getUserWaitList() {
-        return userWaitList;
-    }
 }
