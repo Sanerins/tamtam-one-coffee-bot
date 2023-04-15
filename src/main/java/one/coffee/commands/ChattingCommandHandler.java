@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
-import java.sql.SQLException;
 import java.util.Optional;
 
 public class ChattingCommandHandler extends CommandHandler {
@@ -68,6 +67,18 @@ public class ChattingCommandHandler extends CommandHandler {
 
         UserConnection userConnection = userConnectionService.getByUserId(senderId).get();
         userConnectionService.delete(userConnection);
+        Optional<User> senderOpt = userService.get(userConnection.getUser1Id());
+        if (senderOpt.isEmpty()) {
+            LOG.warn("Can't handleEnd because sender is null");
+            return;
+        }
+        User sender = senderOpt.get();
+
+        recipient.setState(UserState.DEFAULT);
+        sender.setState(UserState.DEFAULT);
+
+        userService.save(recipient);
+        userService.save(sender);
 
         messageSender.sendMessage(
                 senderId,

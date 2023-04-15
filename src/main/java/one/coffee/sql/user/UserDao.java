@@ -70,6 +70,7 @@ public class UserDao extends Dao<User> {
         String query = MessageFormat.format("SELECT *" +
                         " FROM {0}" +
                         " WHERE stateId = " + UserState.WAITING.ordinal() +
+                        " ORDER BY RANDOM()" +
                         " LIMIT " + n,
                 getInstance().getShortName()
         );
