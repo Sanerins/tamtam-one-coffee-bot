@@ -67,7 +67,7 @@ public class ChattingCommandHandler extends CommandHandler {
 
         UserConnection userConnection = userConnectionService.getByUserId(senderId).get();
         userConnectionService.delete(userConnection);
-        Optional<User> senderOpt = userService.get(userConnection.getUser1Id());
+        Optional<User> senderOpt = userService.get(senderId);
         if (senderOpt.isEmpty()) {
             LOG.warn("Can't handleEnd because sender is null");
             return;
