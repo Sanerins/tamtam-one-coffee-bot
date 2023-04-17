@@ -2,6 +2,7 @@ package one.coffee.utils;
 
 import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.model.Message;
+import org.eclipse.jetty.util.StringUtil;
 
 public abstract class CommandHandler {
 
@@ -13,7 +14,7 @@ public abstract class CommandHandler {
 
     public void handle(Message message) {
         String text = message.getBody().getText();
-        if (text == null || text.isEmpty() || text.charAt(0) != '/') {
+        if (StringUtil.isEmpty(text) || text.charAt(0) != '/') {
             handleText(message);
             return;
         }
