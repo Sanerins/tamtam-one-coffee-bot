@@ -74,7 +74,7 @@ public class ChattingCommandHandler extends CommandHandler {
         }
         User sender = senderOpt.get();
 
-        recipient.setState(UserState.DEFAULT);
+        recipient.setState(UserState.WAITING);
         sender.setState(UserState.DEFAULT);
 
         userService.save(recipient);
