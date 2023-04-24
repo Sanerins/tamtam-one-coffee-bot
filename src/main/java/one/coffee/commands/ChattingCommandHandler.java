@@ -60,7 +60,7 @@ public class ChattingCommandHandler extends CommandHandler {
     }
 
     private void sendContactInfo(long senderId, User recipient) {
-        messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText("Оба участника подтвердили дружбу, поэтому получите контакты друг друга:").build());
+        messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText("Вы понравились Вашему собеседнику, поэтому он решил поделиться с Вами своими контактами:").build());
         String username = "К сожалению, собеседник не заполнил имя пользователя";
         if (recipient.getUsername() != null) {
             username = recipient.getUsername();
