@@ -33,7 +33,7 @@ public class WaitingCommandHandler extends CommandHandler {
                 User sender;
                 if (optionalSender.isEmpty()) {
                     // См. возможные причины в OneCoffeeUpdateHandler::visit(MessageCreatedUpdate)
-                    sender = new User(senderId, "Cyberpunk2077", UserState.DEFAULT);
+                    sender = new User(senderId, "Cyberpunk2077", UserState.DEFAULT, message.getSender().getUsername());
                 } else {
                     sender = optionalSender.get();
                 }

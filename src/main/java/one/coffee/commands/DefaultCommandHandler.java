@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,7 +54,7 @@ public class DefaultCommandHandler extends CommandHandler {
         User sender;
         if (optionalSender.isEmpty()) {
             // См. возможные причины в OneCoffeeUpdateHandler::visit(MessageCreatedUpdate)
-            sender = new User(senderId, "Cyberpunk2077", UserState.DEFAULT);
+            sender = new User(senderId, "Cyberpunk2077", UserState.DEFAULT, message.getSender().getUsername());
             userService.save(sender);
         } else {
             sender = optionalSender.get();
@@ -90,7 +89,7 @@ public class DefaultCommandHandler extends CommandHandler {
         User sender;
         if (optionalSender.isEmpty()) { // НЕ РЕФАКТОРИТЬ!!! TODO
             // См. возможные причины в OneCoffeeUpdateHandler::visit(MessageCreatedUpdate)
-            sender = new User(senderId, "Cyberpunk2077", UserState.DEFAULT);
+            sender = new User(senderId, "Cyberpunk2077", UserState.DEFAULT, message.getSender().getUsername());
         } else {
             sender = optionalSender.get();
         }

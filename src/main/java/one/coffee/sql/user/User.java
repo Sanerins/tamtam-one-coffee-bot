@@ -16,24 +16,34 @@ public class User implements Entity {
     private String city;
     private UserState state;
     private long connectionId;
+    private String username;
 
     public User(long id, String city, long stateId) {
         this(id, city, stateId, SQLUtils.NO_ID);
     }
 
     public User(long id, String city, long stateId, long connectionId) {
-        this(id, city, UserState.fromId(stateId), connectionId);
+        this(id, city, UserState.fromId(stateId), connectionId, null);
+    }
+
+    public User(long id, String city, long stateId, long connectionId, String username) {
+        this(id, city, UserState.fromId(stateId), connectionId, username);
     }
 
     public User(long id, String city, UserState state) {
-        this(id, city, state, SQLUtils.NO_ID);
+        this(id, city, state, SQLUtils.NO_ID, null);
     }
 
-    public User(long id, String city, UserState state, long connectionId) {
+    public User(long id, String city, UserState state, String username) {
+        this(id, city, state, SQLUtils.NO_ID, username);
+    }
+
+    public User(long id, String city, UserState state, long connectionId, String username) {
         this.id = id;
         this.city = city;
         this.state = state;
         this.connectionId = connectionId;
+        this.username = username;
     }
 
     public String getCity() {
@@ -80,13 +90,26 @@ public class User implements Entity {
         return id;
     }
 
+    public String getUsername() {
+        return username;
+    }
+
     @Override
     public String sqlArgValues() {
         return new StringBuilder(SQLUtils.TABLE_SIGNATURE_START)
-                .append(id).append(SQLUtils.ARGS_SEPARATOR)
-                .append(SQLUtils.STRING_QUOTTER).append(city).append(SQLUtils.STRING_QUOTTER).append(SQLUtils.ARGS_SEPARATOR)
-                .append(state.ordinal()).append(SQLUtils.ARGS_SEPARATOR)
+                .append(id)
+                .append(SQLUtils.ARGS_SEPARATOR)
+                .append(SQLUtils.STRING_QUOTTER)
+                .append(city)
+                .append(SQLUtils.STRING_QUOTTER)
+                .append(SQLUtils.ARGS_SEPARATOR)
+                .append(state.ordinal())
+                .append(SQLUtils.ARGS_SEPARATOR)
                 .append(connectionId)
+                .append(SQLUtils.ARGS_SEPARATOR)
+                .append(SQLUtils.STRING_QUOTTER)
+                .append(username)
+                .append(SQLUtils.STRING_QUOTTER)
                 .append(SQLUtils.TABLE_SIGNATURE_END).toString();
     }
 

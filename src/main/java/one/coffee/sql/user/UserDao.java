@@ -27,7 +27,8 @@ public class UserDao extends Dao<User> {
                 Map.entry("id", "INTEGER PRIMARY KEY"),
                 Map.entry("city", "VARCHAR(20)"),
                 Map.entry("stateId", "INT"),
-                Map.entry("connectionId", "INT REFERENCES userConnections(id) ON DELETE SET NULL")
+                Map.entry("connectionId", "INT REFERENCES userConnections(id) ON DELETE SET NULL"),
+                Map.entry("username", "VARCHAR(64)")
         );
         init();
     }
@@ -44,7 +45,8 @@ public class UserDao extends Dao<User> {
                 rs.getLong("id"),
                 rs.getString("city"),
                 rs.getLong("stateId"),
-                rs.getLong("connectionId")
+                rs.getLong("connectionId"),
+                rs.getString("username")
         );
     }
 

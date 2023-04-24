@@ -14,16 +14,28 @@ public class UserConnection
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final long user1Id;
     private final long user2Id;
-    private long id;
+    private final long id;
+    private boolean approve1;
+    private boolean approve2;
 
     public UserConnection(long user1Id, long user2Id) {
-        this(SQLUtils.NO_ID, user1Id, user2Id);
+        this(SQLUtils.NO_ID, user1Id, user2Id, false, false);
     }
 
-    public UserConnection(long id, long user1Id, long user2Id) {
+    public UserConnection(long id, long user1Id, long user2Id, boolean approve1, boolean approve2) {
         this.id = id;
         this.user1Id = user1Id;
         this.user2Id = user2Id;
+        this.approve1 = approve1;
+        this.approve2 = approve2;
+    }
+
+    public boolean isApprove1() {
+        return approve1;
+    }
+
+    public boolean isApprove2() {
+        return approve2;
     }
 
     @Override
@@ -44,12 +56,22 @@ public class UserConnection
         return user2Id;
     }
 
+    public void setApprove1(boolean approve1) {
+        this.approve1 = approve1;
+    }
+
+    public void setApprove2(boolean approve2) {
+        this.approve2 = approve2;
+    }
+
     @Override
     public String toString() {
         return "UserConnection{" +
-                "id=" + id +
-                ", user1Id=" + user1Id +
+                "user1Id=" + user1Id +
                 ", user2Id=" + user2Id +
+                ", id=" + id +
+                ", approve1=" + approve1 +
+                ", approve2=" + approve2 +
                 '}';
     }
 
@@ -61,8 +83,14 @@ public class UserConnection
             sqlValues.append(id).append(SQLUtils.ARGS_SEPARATOR);
         }
 
-        return sqlValues.append(user1Id).append(SQLUtils.ARGS_SEPARATOR)
-                .append(user2Id).append(SQLUtils.TABLE_SIGNATURE_END).toString();
+        return sqlValues
+                .append(user1Id)
+                .append(SQLUtils.ARGS_SEPARATOR)
+                .append(user2Id)
+                .append(SQLUtils.ARGS_SEPARATOR)
+                .append(approve1)
+                .append(SQLUtils.ARGS_SEPARATOR)
+                .append(approve2)
+                .append(SQLUtils.TABLE_SIGNATURE_END).toString();
     }
-
 }
