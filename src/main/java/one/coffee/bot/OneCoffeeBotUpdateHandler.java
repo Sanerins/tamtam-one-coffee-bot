@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
-import java.sql.SQLException;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -39,7 +38,7 @@ public class OneCoffeeBotUpdateHandler extends NoopUpdateVisitor {
     @Override
     public void visit(BotStartedUpdate model) {
         long userId = Objects.requireNonNull(model.getUser().getUserId(), "UserId is null");
-        User user = new User(userId, "Cyberpunk2077", UserState.DEFAULT);
+        User user = new User(userId, "Cyberpunk2077", UserState.DEFAULT, model.getUser().getUsername());
         userService.save(user);
         messageSender.sendMessage(userId,
                 NewMessageBodyBuilder.ofText("Бот, призванный помочь одиноким или скучающим людям найти компанию и славно провести время вместе \n" +
@@ -60,7 +59,7 @@ public class OneCoffeeBotUpdateHandler extends NoopUpdateVisitor {
             // Действия:
             // 1. Пересоздание пользователя (реализуется).
             LOG.warn("No user with id {} in DB! It will be recreated.", userId);
-            user = new User(userId, "Cyberpunk2077", UserState.DEFAULT);
+            user = new User(userId, "Cyberpunk2077", UserState.DEFAULT, update.getMessage().getSender().getUsername());
             userService.save(user);
         } else {
             user = optionalUser.get();

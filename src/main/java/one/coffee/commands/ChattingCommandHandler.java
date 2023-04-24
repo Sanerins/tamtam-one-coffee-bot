@@ -29,16 +29,43 @@ public class ChattingCommandHandler extends CommandHandler {
     @Override
     protected void handleCommand(Message message, String[] commandWithArgs) {
         switch (commandWithArgs[0]) {
-            case ("/help") -> {
-                handleHelp(message);
-            }
-            case ("/end") -> {
-                handleEnd(message);
-            }
-            default -> {
-                handleDefault(message);
-            }
+            case ("/help") -> handleHelp(message);
+            case ("/end") -> handleEnd(message);
+            case ("/approve") -> handleApprove(message);
+            default -> handleDefault(message);
         }
+    }
+
+    private void handleApprove(Message message) {
+        long senderId = message.getSender().getUserId();
+        UserConnection userConnection = userConnectionService.getByUserId(senderId).get();
+        if (userConnection.getUser1Id() == senderId) {
+            userConnection.setApprove1(true);
+        } else {
+            userConnection.setApprove2(true);
+        }
+        userConnectionService.save(userConnection);
+        boolean allApprove = userConnection.isApprove1() && userConnection.isApprove2();
+        if (allApprove) {
+            processAllApprove(senderId);
+        }
+    }
+
+    private void processAllApprove(long senderId) {
+        User recipient = userService.get(userConnectionService.getConnectedUserId(senderId)).get();
+        User sender = userService.get(senderId).get();
+
+        sendContactInfo(senderId, recipient);
+        sendContactInfo(recipient.getId(), sender);
+    }
+
+    private void sendContactInfo(long senderId, User recipient) {
+        messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText("Вы понравились Вашему собеседнику, поэтому он решил поделиться с Вами своими контактами:").build());
+        String username = "К сожалению, собеседник не заполнил имя пользователя";
+        if (recipient.getUsername() != null) {
+            username = recipient.getUsername();
+        }
+        messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText(username).build());
     }
 
     @Override
@@ -100,7 +127,7 @@ public class ChattingCommandHandler extends CommandHandler {
         Optional<User> optionalRecipient = userService.get(recipientId);
         User recipient;
         if (optionalRecipient.isEmpty()) { // TODO Восстановление инфы
-            recipient = new User(recipientId, "Cyberpunk2077", UserState.DEFAULT);
+            recipient = new User(recipientId, "Cyberpunk2077", UserState.DEFAULT, null);
             userService.save(recipient);
         } else {
             recipient = optionalRecipient.get();
@@ -127,7 +154,7 @@ public class ChattingCommandHandler extends CommandHandler {
         Optional<User> optionalSender = userService.get(senderId);
         User sender;
         if (optionalSender.isEmpty()) { // TODO Восстановление инфы
-            sender = new User(senderId, "Cyberpunk2077", UserState.DEFAULT);
+            sender = new User(senderId, "Cyberpunk2077", UserState.DEFAULT, message.getSender().getUsername());
             userService.save(sender);
         } else {
             sender = optionalSender.get();

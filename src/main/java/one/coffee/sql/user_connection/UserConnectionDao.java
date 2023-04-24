@@ -23,7 +23,9 @@ public class UserConnectionDao
         args = List.of(
                 Map.entry("id", "INTEGER PRIMARY KEY AUTOINCREMENT"),
                 Map.entry("user1Id", "INT REFERENCES users(userId) ON DELETE CASCADE"),
-                Map.entry("user2Id", "INT REFERENCES users(userId) ON DELETE CASCADE")
+                Map.entry("user2Id", "INT REFERENCES users(userId) ON DELETE CASCADE"),
+                Map.entry("approve1", "BIT"),
+                Map.entry("approve2", "BIT")
         );
         init();
     }
@@ -37,12 +39,27 @@ public class UserConnectionDao
 
     @Override
     public Optional<UserConnection> get(long id) {
-        throw new UnsupportedOperationException("Still there is no support for indexing of connections!");
+        final AtomicReference<UserConnection> userConnection = new AtomicReference<>();
+        final String query = MessageFormat.format("SELECT *" +
+                        " FROM {0}" +
+                        " WHERE id = " + id,
+                getInstance().getShortName());
+        DB.executeQuery(query, rs -> {
+            if (!rs.next()) {
+                return;
+            }
+            final long actualUser1Id = rs.getLong("user1Id");
+            final long actualUser2Id = rs.getLong("user2Id");
+            final boolean approve1 = rs.getBoolean("approve1");
+            final boolean approve2 = rs.getBoolean("approve2");
+            userConnection.set(new UserConnection(id, actualUser1Id, actualUser2Id, approve1, approve2));
+        });
+        return Optional.ofNullable(userConnection.get());
     }
 
     public Optional<UserConnection> getByUserId(long userId) {
-        AtomicReference<UserConnection> userConnection = new AtomicReference<>();
-        String query = MessageFormat.format("SELECT *" +
+        final AtomicReference<UserConnection> userConnection = new AtomicReference<>();
+        final String query = MessageFormat.format("SELECT *" +
                         " FROM {0}" +
                         " WHERE user1Id = " + userId + " OR user2Id = " + userId,
                 getInstance().getShortName());
@@ -50,10 +67,12 @@ public class UserConnectionDao
             if (!rs.next()) {
                 return;
             }
-            long id = rs.getLong("id");
-            long actualUser1Id = rs.getLong("user1Id");
-            long actualUser2Id = rs.getLong("user2Id");
-            userConnection.set(new UserConnection(id, actualUser1Id, actualUser2Id));
+            final long id = rs.getLong("id");
+            final long actualUser1Id = rs.getLong("user1Id");
+            final long actualUser2Id = rs.getLong("user2Id");
+            final boolean approve1 = rs.getBoolean("approve1");
+            final boolean approve2 = rs.getBoolean("approve2");
+            userConnection.set(new UserConnection(id, actualUser1Id, actualUser2Id, approve1, approve2));
         });
         return Optional.ofNullable(userConnection.get());
     }
