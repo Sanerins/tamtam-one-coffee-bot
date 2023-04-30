@@ -2,7 +2,7 @@ package one.coffee.sql.user;
 
 import one.coffee.sql.DB;
 import one.coffee.sql.Dao;
-import one.coffee.sql.UserState;
+import one.coffee.sql.utils.UserState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +28,8 @@ public class UserDao extends Dao<User> {
                 Map.entry("city", "VARCHAR(20)"),
                 Map.entry("stateId", "INT"),
                 Map.entry("connectionId", "INT REFERENCES userConnections(id) ON DELETE SET NULL"),
-                Map.entry("username", "VARCHAR(64)")
+                Map.entry("username", "VARCHAR(64)"),
+                Map.entry("userInfo", "TEXT")
         );
         init();
     }
@@ -44,9 +45,10 @@ public class UserDao extends Dao<User> {
         return new User(
                 rs.getLong("id"),
                 rs.getString("city"),
-                rs.getLong("stateId"),
+                UserState.fromId(rs.getLong("stateId")),
                 rs.getLong("connectionId"),
-                rs.getString("username")
+                rs.getString("username"),
+                rs.getString("userInfo")
         );
     }
 
@@ -58,7 +60,7 @@ public class UserDao extends Dao<User> {
                         " WHERE id = " + id,
                 getInstance().getShortName()
         );
-        DB.executeQuery(query, rs -> {
+        DB.executeQueryWithActionForResult(query, rs -> {
             if (!rs.next()) {
                 return;
             }
@@ -77,7 +79,7 @@ public class UserDao extends Dao<User> {
                 getInstance().getShortName()
         );
 
-        DB.executeQuery(query, rs -> {
+        DB.executeQueryWithActionForResult(query, rs -> {
             while (rs.next()) {
                 users.add(parseUser(rs));
             }

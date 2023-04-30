@@ -1,6 +1,7 @@
 package one.coffee.sql;
 
 import one.coffee.sql.utils.SQLUtils;
+import one.coffee.utils.StaticContext;
 
 import java.util.List;
 import java.util.Map;
@@ -29,12 +30,13 @@ public abstract class Dao<T extends Entity> {
             throw new IllegalArgumentException("Not enough 'args'! Got: " + args);
         }
 
-        // Включать, только если поменялась схема таблички
-        //DB.dropTable(this);
-        //DB.createTable(this);
+        if (StaticContext.getIsRecreatingTablesNeeded().get()) {
+            DB.dropTable(this);
+            DB.createTable(this);
+        }
     }
 
-    // Returns full name of the table with specified types.
+    // Возвращает полное название таблицы с указанием типов данных для каждого представленного поля.
     @Override
     public final String toString() {
         StringBuilder fullName = new StringBuilder(shortName);

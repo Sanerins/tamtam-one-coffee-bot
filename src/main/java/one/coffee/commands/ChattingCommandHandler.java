@@ -1,20 +1,20 @@
 package one.coffee.commands;
 
+import java.lang.invoke.MethodHandles;
+import java.util.Optional;
+
 import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.model.Message;
-import one.coffee.sql.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user.UserService;
 import one.coffee.sql.user_connection.UserConnection;
 import one.coffee.sql.user_connection.UserConnectionService;
 import one.coffee.sql.utils.SQLUtils;
+import one.coffee.sql.utils.UserState;
 import one.coffee.utils.CommandHandler;
 import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
-import java.util.Optional;
 
 public class ChattingCommandHandler extends CommandHandler {
 
@@ -48,6 +48,15 @@ public class ChattingCommandHandler extends CommandHandler {
         boolean allApprove = userConnection.isApprove1() && userConnection.isApprove2();
         if (allApprove) {
             processAllApprove(senderId);
+        } else {
+            messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText(
+                    "Вы подтвердили свою симпатию к собеседнику! Ожидайте, пока он примет решение"
+            ).build());
+            StaticContext.USER_CONNECTION_SERVICE.getConnectedUser(senderId).ifPresentOrElse(connectedUser -> {
+                messageSender.sendMessage(connectedUser.getId(), NewMessageBodyBuilder.ofText(
+                        "Ваш собеседник проявил к Вам интерес! Ответьте взаимностью или прервите переписку"
+                ).build());
+            }, () -> {});
         }
     }
 
@@ -60,12 +69,9 @@ public class ChattingCommandHandler extends CommandHandler {
     }
 
     private void sendContactInfo(long senderId, User recipient) {
-        messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText("Вы понравились Вашему собеседнику, поэтому он решил поделиться с Вами своими контактами:").build());
-        String username = "К сожалению, собеседник не заполнил имя пользователя";
-        if (recipient.getUsername() != null) {
-            username = recipient.getUsername();
-        }
-        messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText(username).build());
+        messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText(
+                "Вы понравились Вашему собеседнику, поэтому он решил поделиться с Вами своими контактами: " + recipient.getUserInfo()
+        ).build());
     }
 
     @Override
@@ -82,7 +88,8 @@ public class ChattingCommandHandler extends CommandHandler {
         messageSender.sendMessage(message.getSender().getUserId(), NewMessageBodyBuilder.ofText("""
                 Список команд бота, доступных для использования:
                 /help - список всех команд
-                /end - закончить диалог с пользователем""").build());
+                /end - закончить диалог с пользователем
+                """).build());
     }
 
     private void handleEnd(Message message) {
@@ -120,14 +127,15 @@ public class ChattingCommandHandler extends CommandHandler {
     private User getRecipient(Message message) {
         long senderId = message.getSender().getUserId();
         long recipientId = userConnectionService.getConnectedUserId(senderId);
-        if (recipientId == SQLUtils.NO_ID) {
+        if (recipientId == SQLUtils.DEFAULT_ID) {
             return null;
         }
 
         Optional<User> optionalRecipient = userService.get(recipientId);
         User recipient;
-        if (optionalRecipient.isEmpty()) { // TODO Восстановление инфы
-            recipient = new User(recipientId, "Cyberpunk2077", UserState.DEFAULT, null);
+        //TODO NULL_USER
+        if (optionalRecipient.isEmpty()) {
+            recipient = User.build().setId(recipientId).get();
             userService.save(recipient);
         } else {
             recipient = optionalRecipient.get();
@@ -150,15 +158,10 @@ public class ChattingCommandHandler extends CommandHandler {
 
     private void handleConnectionError(Message message) {
         long senderId = message.getSender().getUserId();
-        messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText("Похоже соединение разорвалось...").build());
-        Optional<User> optionalSender = userService.get(senderId);
-        User sender;
-        if (optionalSender.isEmpty()) { // TODO Восстановление инфы
-            sender = new User(senderId, "Cyberpunk2077", UserState.DEFAULT, message.getSender().getUsername());
-            userService.save(sender);
-        } else {
-            sender = optionalSender.get();
-        }
+        messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText(
+                "Похоже соединение разорвалось..."
+        ).build());
+        User sender = userService.get(senderId).orElseGet(() -> /*TODO NULL_USER*/ SQLUtils.recoverSender(message));
         sender.setState(UserState.DEFAULT);
         userService.save(sender);
     }

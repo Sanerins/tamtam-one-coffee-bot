@@ -6,7 +6,7 @@ public interface Service<T> {
 
     Optional<T> get(long id);
 
-    void save(T t);
+    Optional<T> save(T t);
 
     void delete(T t);
 

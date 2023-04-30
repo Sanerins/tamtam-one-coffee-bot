@@ -1,15 +1,15 @@
 package one.coffee.sql.user_connection;
 
+import java.lang.invoke.MethodHandles;
+import java.util.Optional;
+
 import one.coffee.sql.Service;
-import one.coffee.sql.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.sql.utils.SQLUtils;
+import one.coffee.sql.utils.UserState;
 import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
-import java.util.Optional;
 
 public class UserConnectionService
         implements Service<UserConnection> {
@@ -40,26 +40,31 @@ public class UserConnectionService
     public long getConnectedUserId(long userId) {
         Optional<UserConnection> optionalUserConnection = getByUserId(userId);
         if (optionalUserConnection.isEmpty()) {
-            return SQLUtils.NO_ID;
+            return SQLUtils.DEFAULT_ID;
         }
         UserConnection userConnection = optionalUserConnection.get();
         return userConnection.getUser1Id() == userId ? userConnection.getUser2Id() : userConnection.getUser1Id();
     }
 
+    public Optional<User> getConnectedUser(long userId) {
+        long connectedUserId = getConnectedUserId(userId);
+        return StaticContext.USER_SERVICE.get(connectedUserId);
+    }
+
     @Override
-    public void save(UserConnection userConnection) {
+    public Optional<UserConnection> save(UserConnection userConnection) {
         long user1Id = userConnection.getUser1Id();
         long user2Id = userConnection.getUser2Id();
         if (userConnection.getId() <= 0) {
             if (isConnected(user1Id) || isConnected(user2Id)) { // Но не факт, что они сконнекчены друг с другом.
                 // Можно попытаться выпарсить этот случай.
                 LOG.warn("{} or {} has already connected!", user1Id, user2Id);
-                return;
+                return Optional.empty();
             }
         } else {
             if (userConnectionDao.get(userConnection.getId()).isEmpty()) {
                 LOG.warn("No UserConnection with id {}", userConnection.getId());
-                return;
+                return Optional.empty();
             }
         }
 
@@ -67,9 +72,11 @@ public class UserConnectionService
         Optional<UserConnection> optionalConnection = getByUserId(user1Id);
         if (optionalConnection.isEmpty()) {
             LOG.warn("Can't save user connection: {}", userConnection);
+            return Optional.empty();
         } else {
             long conId = optionalConnection.get().getId();
             commitUsersConnection(conId, user1Id, user2Id, UserState.CHATTING);
+            return optionalConnection;
         }
     }
 
@@ -77,7 +84,7 @@ public class UserConnectionService
     public void delete(UserConnection userConnection) {
         long user1Id = userConnection.getUser1Id();
         long user2Id = userConnection.getUser2Id();
-        commitUsersConnection(SQLUtils.NO_ID, user1Id, user2Id, UserState.WAITING);
+        commitUsersConnection(SQLUtils.DEFAULT_ID, user1Id, user2Id, UserState.WAITING);
         userConnectionDao.delete(userConnection);
     }
 

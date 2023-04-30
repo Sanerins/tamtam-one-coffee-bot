@@ -13,7 +13,8 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class UserConnectionDao
-        extends Dao<UserConnection> {
+        extends Dao<UserConnection>
+{
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static UserConnectionDao INSTANCE;
@@ -44,7 +45,7 @@ public class UserConnectionDao
                         " FROM {0}" +
                         " WHERE id = " + id,
                 getInstance().getShortName());
-        DB.executeQuery(query, rs -> {
+        DB.executeQueryWithActionForResult(query, rs -> {
             if (!rs.next()) {
                 return;
             }
@@ -63,7 +64,7 @@ public class UserConnectionDao
                         " FROM {0}" +
                         " WHERE user1Id = " + userId + " OR user2Id = " + userId,
                 getInstance().getShortName());
-        DB.executeQuery(query, rs -> {
+        DB.executeQueryWithActionForResult(query, rs -> {
             if (!rs.next()) {
                 return;
             }
