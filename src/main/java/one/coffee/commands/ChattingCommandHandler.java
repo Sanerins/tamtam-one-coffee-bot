@@ -82,7 +82,8 @@ public class ChattingCommandHandler extends CommandHandler {
         messageSender.sendMessage(message.getSender().getUserId(), NewMessageBodyBuilder.ofText("""
                 Список команд бота, доступных для использования:
                 /help - список всех команд
-                /end - закончить диалог с пользователем""").build());
+                /end - закончить диалог с пользователем
+                """).build());
     }
 
     private void handleEnd(Message message) {

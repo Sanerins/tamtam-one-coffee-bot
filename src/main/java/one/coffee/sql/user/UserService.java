@@ -48,7 +48,7 @@ public class UserService
         }
 
         if (!isValidCity(user.getCity())) {
-            LOG.warn("Invalid user city!! Got {}", user.getCity());
+            LOG.warn("Invalid user city! Got {}", user.getCity());
             return Optional.empty();
         }
 

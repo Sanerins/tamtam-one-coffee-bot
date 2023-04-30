@@ -27,8 +27,8 @@ public class SQLUtils {
     public static User recoverSender(Message msg) {
         chat.tamtam.botapi.model.User sender = msg.getSender();
         long senderId = sender.getUserId();
-        String senderUsername = sender.getUsername();
-        LOG.warn("No user with id {} in DB! It will be recreated.", senderId);
+        String senderUsername = sender.getName();
+        LOG.warn("No user with id {} in DB! Recovering his...", senderId);
         return User.build()
                 .setId(senderId)
                 .setUsername(senderUsername)

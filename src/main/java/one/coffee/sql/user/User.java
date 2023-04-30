@@ -130,7 +130,7 @@ public class User implements Entity {
         private static final UserState DEFAULT_STATE = UserState.DEFAULT;
         private static final long DEFAULT_CONNECTION_ID = SQLUtils.DEFAULT_ID;
         private static final String DEFAULT_USERNAME = "Вася Пупкин";
-        private static final String DEFAULT_USERINFO = "Живу на болоте.";
+        private static final String DEFAULT_USERINFO = "Живу на болоте";
 
         private final User user =
                 new User(DEFAULT_ID, DEFAULT_CITY, DEFAULT_STATE, DEFAULT_CONNECTION_ID, DEFAULT_USERNAME, DEFAULT_USERINFO);

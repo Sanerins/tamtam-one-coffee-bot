@@ -30,15 +30,9 @@ public class DefaultCommandHandler extends CommandHandler {
     @Override
     protected void handleCommand(Message message, String[] commandWithArgs) {
         switch (commandWithArgs[0]) {
-            case ("/help") -> {
-                handleHelp(message);
-            }
-            case ("/start") -> {
-                handleStart(message);
-            }
-            default -> {
-                handleDefault(message);
-            }
+            case ("/help") -> handleHelp(message);
+            case ("/start") -> handleStart(message);
+            default -> handleDefault(message);
         }
     }
 
@@ -46,7 +40,8 @@ public class DefaultCommandHandler extends CommandHandler {
         messageSender.sendMessage(message.getSender().getUserId(), NewMessageBodyBuilder.ofText("""
                 Список команд бота, доступных для использования:
                 /help - список всех команд
-                /start - начать диалог с пользователем""").build());
+                /start - начать диалог с пользователем
+                """).build());
     }
 
     private void handleStart(Message message) {
