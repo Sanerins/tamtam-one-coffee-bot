@@ -1,14 +1,20 @@
 package one.coffee.sql.user;
 
 import one.coffee.sql.Entity;
-import one.coffee.sql.UserState;
+import one.coffee.sql.utils.UserState;
 import one.coffee.sql.utils.SQLUtils;
+import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
 
 public class User implements Entity {
+
+    public static final String DEFAULT_CITY = "Cyberpunk2077";
+    public static final UserState DEFAULT_STATE = UserState.DEFAULT;
+    public static final String DEFAULT_USERNAME = "Вася Пупкин";
+    public static final String DEFAULT_USERINFO = "Живу на болоте.";
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -17,33 +23,35 @@ public class User implements Entity {
     private UserState state;
     private long connectionId;
     private String username;
+    private String userInfo;
 
-    public User(long id, String city, long stateId) {
-        this(id, city, stateId, SQLUtils.NO_ID);
+    public User(long id) {
+        this(id, DEFAULT_CITY);
     }
 
-    public User(long id, String city, long stateId, long connectionId) {
-        this(id, city, UserState.fromId(stateId), connectionId, null);
-    }
-
-    public User(long id, String city, long stateId, long connectionId, String username) {
-        this(id, city, UserState.fromId(stateId), connectionId, username);
+    public User(long id, String city) {
+        this(id, city, DEFAULT_STATE);
     }
 
     public User(long id, String city, UserState state) {
-        this(id, city, state, SQLUtils.NO_ID, null);
+        this(id, city, state, SQLUtils.DEFAULT_ID);
     }
 
-    public User(long id, String city, UserState state, String username) {
-        this(id, city, state, SQLUtils.NO_ID, username);
+    public User(long id, String city, UserState state, long connectionId) {
+        this(id, city, state, connectionId, DEFAULT_USERNAME);
     }
 
     public User(long id, String city, UserState state, long connectionId, String username) {
+        this(id, city, state, connectionId, username, buildDefaultUserInfo(username));
+    }
+
+    public User(long id, String city, UserState state, long connectionId, String username, String userInfo) {
         this.id = id;
         this.city = city;
         this.state = state;
         this.connectionId = connectionId;
         this.username = username;
+        this.userInfo = userInfo;
     }
 
     public String getCity() {
@@ -70,15 +78,25 @@ public class User implements Entity {
         this.connectionId = connectionId;
     }
 
-//    public long getConnectedUserId() throws SQLException {
-//        if (connectionId <= 0) {
-//            LOG.warn(this + " has not connected user!");
-//            return SQLUtils.NO_ID;
-//        }
-//
-//        UserConnection userConnection = UserConnectionsTable.getUserConnectionUserById(id);
-//        return userConnection.getUser1Id() == id ? userConnection.getUser2Id() : userConnection.getUser1Id();
-//    }
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getUserInfo() {
+        return userInfo;
+    }
+
+    public void setUserInfo(String userInfo) {
+        this.userInfo = userInfo;
+    }
+
+    private static String buildDefaultUserInfo(String username) {
+        return username + ". " + DEFAULT_USERINFO;
+    }
 
     @Override
     public boolean isCreated() {
@@ -90,36 +108,39 @@ public class User implements Entity {
         return id;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
     @Override
     public String sqlArgValues() {
         return new StringBuilder(SQLUtils.TABLE_SIGNATURE_START)
                 .append(id)
                 .append(SQLUtils.ARGS_SEPARATOR)
-                .append(SQLUtils.STRING_QUOTTER)
+                .append(StaticContext.STRING_QUOTTER)
                 .append(city)
-                .append(SQLUtils.STRING_QUOTTER)
+                .append(StaticContext.STRING_QUOTTER)
                 .append(SQLUtils.ARGS_SEPARATOR)
                 .append(state.ordinal())
                 .append(SQLUtils.ARGS_SEPARATOR)
                 .append(connectionId)
                 .append(SQLUtils.ARGS_SEPARATOR)
-                .append(SQLUtils.STRING_QUOTTER)
+                .append(StaticContext.STRING_QUOTTER)
                 .append(username)
-                .append(SQLUtils.STRING_QUOTTER)
-                .append(SQLUtils.TABLE_SIGNATURE_END).toString();
+                .append(StaticContext.STRING_QUOTTER)
+                .append(SQLUtils.ARGS_SEPARATOR)
+                .append(StaticContext.STRING_QUOTTER)
+                .append(userInfo)
+                .append(StaticContext.STRING_QUOTTER)
+                .append(SQLUtils.TABLE_SIGNATURE_END)
+                .toString();
     }
 
     @Override
     public String toString() {
         return "User{" +
                 "id=" + id +
-                ", city='" + city + '\'' +
+                ", city=" + StaticContext.STRING_QUOTTER + city + StaticContext.STRING_QUOTTER +
                 ", state=" + state +
                 ", connectionId=" + connectionId +
+                ", username=" + username +
+                ", userInfo=" + userInfo +
                 '}';
     }
 

@@ -1,7 +1,7 @@
 package one.coffee.sql.user_connection;
 
 import one.coffee.sql.Service;
-import one.coffee.sql.UserState;
+import one.coffee.sql.utils.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.sql.utils.SQLUtils;
 import one.coffee.utils.StaticContext;
@@ -40,7 +40,7 @@ public class UserConnectionService
     public long getConnectedUserId(long userId) {
         Optional<UserConnection> optionalUserConnection = getByUserId(userId);
         if (optionalUserConnection.isEmpty()) {
-            return SQLUtils.NO_ID;
+            return SQLUtils.DEFAULT_ID;
         }
         UserConnection userConnection = optionalUserConnection.get();
         return userConnection.getUser1Id() == userId ? userConnection.getUser2Id() : userConnection.getUser1Id();
@@ -77,7 +77,7 @@ public class UserConnectionService
     public void delete(UserConnection userConnection) {
         long user1Id = userConnection.getUser1Id();
         long user2Id = userConnection.getUser2Id();
-        commitUsersConnection(SQLUtils.NO_ID, user1Id, user2Id, UserState.WAITING);
+        commitUsersConnection(SQLUtils.DEFAULT_ID, user1Id, user2Id, UserState.WAITING);
         userConnectionDao.delete(userConnection);
     }
 

@@ -2,7 +2,7 @@ package one.coffee.commands;
 
 import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.model.Message;
-import one.coffee.sql.UserState;
+import one.coffee.sql.utils.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user.UserService;
 import one.coffee.sql.user_connection.UserConnection;
@@ -120,7 +120,7 @@ public class ChattingCommandHandler extends CommandHandler {
     private User getRecipient(Message message) {
         long senderId = message.getSender().getUserId();
         long recipientId = userConnectionService.getConnectedUserId(senderId);
-        if (recipientId == SQLUtils.NO_ID) {
+        if (recipientId == SQLUtils.DEFAULT_ID) {
             return null;
         }
 

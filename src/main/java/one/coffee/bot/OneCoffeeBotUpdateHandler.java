@@ -7,7 +7,7 @@ import chat.tamtam.botapi.model.MessageCreatedUpdate;
 import one.coffee.commands.ChattingCommandHandler;
 import one.coffee.commands.DefaultCommandHandler;
 import one.coffee.commands.WaitingCommandHandler;
-import one.coffee.sql.UserState;
+import one.coffee.sql.utils.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user.UserService;
 import one.coffee.utils.MessageSender;

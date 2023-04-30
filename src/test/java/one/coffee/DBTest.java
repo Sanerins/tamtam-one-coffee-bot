@@ -1,6 +1,6 @@
 package one.coffee;
 
-import one.coffee.sql.UserState;
+import one.coffee.sql.utils.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user.UserService;
 import one.coffee.sql.utils.SQLUtils;
@@ -44,7 +44,7 @@ public @interface DBTest {
                         id,
                         "City" + id,
                         UserState.DEFAULT,
-                        SQLUtils.NO_ID
+                        SQLUtils.DEFAULT_ID
                 );
                 userService.save(user);
                 users.add(user);

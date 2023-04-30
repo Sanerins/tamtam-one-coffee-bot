@@ -3,11 +3,11 @@ package one.coffee.sql;
 import one.coffee.DBTest;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user.UserService;
+import one.coffee.sql.utils.UserState;
 import one.coffee.utils.StaticContext;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.sql.SQLException;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

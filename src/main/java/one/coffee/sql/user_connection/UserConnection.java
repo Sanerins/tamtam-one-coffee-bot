@@ -19,7 +19,7 @@ public class UserConnection
     private boolean approve2;
 
     public UserConnection(long user1Id, long user2Id) {
-        this(SQLUtils.NO_ID, user1Id, user2Id, false, false);
+        this(SQLUtils.DEFAULT_ID, user1Id, user2Id, false, false);
     }
 
     public UserConnection(long id, long user1Id, long user2Id, boolean approve1, boolean approve2) {
@@ -77,12 +77,13 @@ public class UserConnection
 
     @Override
     public String sqlArgValues() {
-        StringBuilder sqlValues = new StringBuilder(SQLUtils.TABLE_SIGNATURE_START);
-
+        StringBuilder sqlValues = new StringBuilder();
+        sqlValues.append(SQLUtils.TABLE_SIGNATURE_START);
         if (isCreated()) {
-            sqlValues.append(id).append(SQLUtils.ARGS_SEPARATOR);
+            sqlValues
+                    .append(id)
+                    .append(SQLUtils.ARGS_SEPARATOR);
         }
-
         return sqlValues
                 .append(user1Id)
                 .append(SQLUtils.ARGS_SEPARATOR)
@@ -91,6 +92,7 @@ public class UserConnection
                 .append(approve1)
                 .append(SQLUtils.ARGS_SEPARATOR)
                 .append(approve2)
-                .append(SQLUtils.TABLE_SIGNATURE_END).toString();
+                .append(SQLUtils.TABLE_SIGNATURE_END)
+                .toString();
     }
 }

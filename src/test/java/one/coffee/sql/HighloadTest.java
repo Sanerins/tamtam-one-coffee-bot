@@ -3,10 +3,10 @@ package one.coffee.sql;
 import one.coffee.DBTest;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user.UserDao;
+import one.coffee.sql.utils.UserState;
 import one.coffee.utils.StaticContext;
 import org.junit.jupiter.api.Disabled;
 
-import java.sql.SQLException;
 import java.util.List;
 
 public class HighloadTest

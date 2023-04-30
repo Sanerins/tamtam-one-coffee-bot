@@ -24,15 +24,9 @@ public class DB {
 
     static {
         try {
-            // Auto-commit mode with multithreading support
-            // TODO Проверить, что многопоток действительно поддерживается (дока, профилирование, тестирование).
-            // Если на самом деле он не поддерживается, то создать пул коннекшенов, как было на NoSQL.
             CONNECTION = DriverManager.getConnection(CONNECTION_URL);
             STATEMENT = CONNECTION.createStatement();
-
         } catch (SQLException e) {
-            // Считаю, что зафейленная инициализация БД - критическая ситуация для приложения,
-            // поэтому ложим всё приложение, если что-то пошло тут не так
             LOG.error("DB creation is failed!", e);
             StaticContext.getBot().stop();
         }
@@ -69,7 +63,7 @@ public class DB {
 
         executeQuery("INSERT OR REPLACE INTO " + dao.getSignature(entity)
                 + " VALUES " + entity.sqlArgValues());
-        //LOG.info("Put entity: {}", entity);
+        LOG.info("Put entity: {}", entity);
     }
 
     public static void deleteEntity(Dao<?> dao, Entity entity) {
@@ -78,12 +72,12 @@ public class DB {
             LOG.warn("Table {} has not entity with `id` = {}", dao.getSignature(entity), entity.getId());
         }
         executeQuery("DELETE FROM " + dao.getShortName() + " WHERE id = " + entity.getId());
-        //LOG.info("Delete entity from table '{}' with 'id' = {}", table.getShortName(), entity.getId());
+        LOG.info("Delete entity from table '{}' with 'id' = {}", dao.getShortName(), entity.getId());
     }
 
     public static boolean hasEntity(Dao<?> dao, Entity entity) {
         AtomicBoolean isPresent = new AtomicBoolean();
-        executeQuery("SELECT *" +
+        executeQueryWithActionForResult("SELECT *" +
                         " FROM " + dao.getShortName() +
                         " WHERE id = " + entity.getId(),
                 rs -> isPresent.set(rs.next()));
@@ -98,7 +92,7 @@ public class DB {
         }
     }
 
-    public static synchronized void executeQuery(String query, SQLAction sqlAction) {
+    public static synchronized void executeQueryWithActionForResult(String query, SQLAction sqlAction) {
         try (ResultSet rs = STATEMENT.executeQuery(query)) {
             sqlAction.run(rs);
         } catch (SQLException e) {
