@@ -1,7 +1,6 @@
 package one.coffee.commands;
 
 import java.lang.invoke.MethodHandles;
-import java.util.List;
 import java.util.Optional;
 
 import chat.tamtam.bot.builders.NewMessageBodyBuilder;
@@ -52,14 +51,14 @@ public class DefaultCommandHandler extends CommandHandler {
             userService.save(actualSender);
         });
 
-        List<User> userWaitList = userService.getWaitingUsers(1);
-        if (userWaitList.isEmpty()) {
+        Optional<User> chattingCandidateOptional = userService.getChattingCandidate(senderId);
+        if (chattingCandidateOptional.isEmpty()) {
             startTheWait(message);
             return;
         }
 
-        User recipient = userWaitList.get(0);
-        UserConnection userConnection = new UserConnection(senderId, recipient.getId());
+        User chattingCandidate = chattingCandidateOptional.get();
+        UserConnection userConnection = new UserConnection(senderId, chattingCandidate.getId());
         userConnectionService.save(userConnection);
 
         messageSender.sendMessage(senderId,
@@ -68,7 +67,7 @@ public class DefaultCommandHandler extends CommandHandler {
                             Я буду передавать сообщения между вами, можете общаться сколько влезет!)
                             Список команд, доступных во время беседы можно открыть на /help\s
                             """).build());
-        messageSender.sendMessage(recipient.getId(),
+        messageSender.sendMessage(chattingCandidate.getId(),
                 NewMessageBodyBuilder.ofText("""
                             Я нашел вам собеседника!
                             Я буду передавать сообщения между вами, можете общаться сколько влезет!)
