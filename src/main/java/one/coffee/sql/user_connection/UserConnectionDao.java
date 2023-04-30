@@ -55,9 +55,6 @@ public class UserConnectionDao
                 return;
             }
             userConnection.set(parseUserConnection(rs));
-            if (rs.next()) {
-                LOG.warn("Several userConnections with id {}", id);
-            }
         });
         return Optional.ofNullable(userConnection.get());
     }
