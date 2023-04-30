@@ -2,7 +2,6 @@ package one.coffee.bot;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Objects;
-import java.util.Optional;
 
 import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.bot.updates.NoopUpdateVisitor;
@@ -55,15 +54,12 @@ public class OneCoffeeBotUpdateHandler extends NoopUpdateVisitor {
         Message updateMessage = update.getMessage();
         long userId = Objects.requireNonNull(updateMessage.getSender().getUserId(), "UserId is null");
 
-        Optional<User> optionalUser = userService.get(userId);
-        User user;
-        if (optionalUser.isEmpty()) {
+        User user = userService.get(userId).orElseGet(() -> {
             //TODO NULL_USER
-            user = SQLUtils.recoverSender(updateMessage);
-            userService.save(user);
-        } else {
-            user = optionalUser.get();
-        }
+            User actualUser = SQLUtils.recoverSender(updateMessage);
+            userService.save(actualUser);
+            return actualUser;
+        });
 
         UserState userState = user.getState();
         switch (userState) {

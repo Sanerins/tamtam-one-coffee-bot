@@ -1,13 +1,13 @@
 package one.coffee.sql.user;
 
+import java.lang.invoke.MethodHandles;
+import java.util.List;
+import java.util.Optional;
+
 import one.coffee.sql.Service;
 import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
-import java.util.List;
-import java.util.Optional;
 
 public class UserService
         implements Service<User> {
@@ -41,18 +41,19 @@ public class UserService
     }
 
     @Override
-    public void save(User user) {
+    public Optional<User> save(User user) {
         if (user.getId() <= 0) {
             LOG.warn("Invalid User id! Got {}", user);
-            return;
+            return Optional.empty();
         }
 
         if (!isValidCity(user.getCity())) {
             LOG.warn("Invalid user city!! Got {}", user.getCity());
-            return;
+            return Optional.empty();
         }
 
         userDao.save(user);
+        return Optional.of(user);
     }
 
     @Override

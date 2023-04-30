@@ -5,6 +5,7 @@ import java.util.List;
 import one.coffee.DBTest;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user.UserService;
+import one.coffee.sql.utils.SQLUtils;
 import one.coffee.sql.utils.UserState;
 import one.coffee.utils.StaticContext;
 import org.junit.jupiter.api.Disabled;
@@ -20,41 +21,38 @@ public class UserServiceTest
 
     @Test
     void ok1() {
-        final long userId = 123;
-        final String userCity = "St. Petersburg";
-        final UserState state = UserState.DEFAULT;
-        final long connectionId = -1;
-        User user = new User(userId, userCity, state, connectionId);
+        long userId = 123;
+        String userCity = "St. Petersburg";
+        User user = User.build()
+                .setId(userId)
+                .setCity(userCity)
+                .get();
 
         userService.save(user);
 
         User savedUser = userService.get(userId).get();
 
         assertEquals(savedUser.getId(), userId);
-        assertEquals(savedUser.getState(), state);
+        assertEquals(savedUser.getState(), UserState.DEFAULT);
         assertEquals(savedUser.getCity(), userCity);
-        assertEquals(savedUser.getConnectionId(), connectionId);
+        assertEquals(savedUser.getConnectionId(), SQLUtils.DEFAULT_ID);
     }
 
     @Test
     void invalidUserId() {
-        final long userId = -1;
-        final String userCity = "St. Petersburg";
-        final UserState state = UserState.DEFAULT;
-        final long connectionId = -1;
-        User user = new User(userId, userCity, state, connectionId);
-
+        User user = User.build().get();
         userService.save(user);
-        assertTrue(userService.get(userId).isEmpty());
+        assertTrue(userService.get(SQLUtils.DEFAULT_ID).isEmpty());
     }
 
     @Test
     void invalidUserCity1() {
         final long userId = 123;
         final String userCity = null;
-        final UserState state = UserState.DEFAULT;
-        final long connectionId = -1;
-        User user = new User(userId, userCity, state, connectionId);
+        User user = User.build()
+                .setId(userId)
+                .setCity(userCity)
+                .get();
 
         userService.save(user);
         assertTrue(userService.get(userId).isEmpty());
@@ -64,9 +62,10 @@ public class UserServiceTest
     void invalidUserCity2() {
         final long userId = 123;
         final String userCity = "";
-        final UserState state = UserState.DEFAULT;
-        final long connectionId = -1;
-        User user = new User(userId, userCity, state, connectionId);
+        User user = User.build()
+                .setId(userId)
+                .setCity(userCity)
+                .get();
 
         userService.save(user);
         assertTrue(userService.get(userId).isEmpty());
@@ -77,10 +76,10 @@ public class UserServiceTest
     void invalidUserCity3() {
         final long userId = 123;
         final String userCity = "abc";
-        final UserState state = UserState.DEFAULT;
-        final long connectionId = -1;
-        User user = new User(userId, userCity, state, connectionId);
-
+        User user = User.build()
+                        .setId(userId)
+                        .setCity(userCity)
+                        .get();
         userService.save(user);
         assertTrue(userService.get(userId).isEmpty());
     }

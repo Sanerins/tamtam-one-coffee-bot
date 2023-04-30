@@ -141,6 +141,7 @@ public class User implements Entity {
         }
 
         public UserBuilder setCity(String city) {
+
             user.setCity(city);
             return this;
         }

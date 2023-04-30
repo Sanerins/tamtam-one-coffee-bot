@@ -18,5 +18,5 @@ sqlite3 OneCoffee.db
 ```
 java -jar <jar name> isRecreatingTablesNeeded=true
 ```
-- - Для запуска из идеи нужно раскомментировать последнюю строчку
-в StaticContext::initialize. После того, как функция перестала быть нужной, эту строчку кода надо закомментировать обратно.
+- - Для запуска из идеи нужно проставить значение `true` в StaticContext::isRecreatingTablesNeeded. 
+После пересоздания нужно вернуть все, как было.

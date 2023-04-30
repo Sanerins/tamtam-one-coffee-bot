@@ -51,12 +51,11 @@ public class DefaultCommandHandler extends CommandHandler {
 
     private void handleStart(Message message) {
         long senderId = message.getSender().getUserId();
-        Optional<User> optionalSender = userService.get(senderId);
-        if (optionalSender.isEmpty()) {
-            //TODO NULL_USER
-            User sender = SQLUtils.recoverSender(message);
-            userService.save(sender);
-        }
+        userService.get(senderId).ifPresentOrElse(sender -> {}, () -> {
+            /*TODO NULL_USER*/
+            User actualSender = SQLUtils.recoverSender(message);
+            userService.save(actualSender);
+        });
 
         List<User> userWaitList = userService.getWaitingUsers(1);
         if (userWaitList.isEmpty()) {

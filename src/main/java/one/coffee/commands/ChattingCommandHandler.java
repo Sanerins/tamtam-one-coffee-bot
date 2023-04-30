@@ -151,16 +151,10 @@ public class ChattingCommandHandler extends CommandHandler {
 
     private void handleConnectionError(Message message) {
         long senderId = message.getSender().getUserId();
-        messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText("Похоже соединение разорвалось...").build());
-        Optional<User> optionalSender = userService.get(senderId);
-        User sender;
-        if (optionalSender.isEmpty()) {
-            //TODO NULL_USER
-            sender = SQLUtils.recoverSender(message);
-            userService.save(sender);
-        } else {
-            sender = optionalSender.get();
-        }
+        messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText(
+                "Похоже соединение разорвалось..."
+        ).build());
+        User sender = userService.get(senderId).orElseGet(() -> /*TODO NULL_USER*/ SQLUtils.recoverSender(message));
         sender.setState(UserState.DEFAULT);
         userService.save(sender);
     }
