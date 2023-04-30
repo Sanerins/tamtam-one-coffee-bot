@@ -1,12 +1,12 @@
 package one.coffee.commands;
 
+import chat.tamtam.bot.annotations.CommandHandler;
 import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.model.Message;
 import one.coffee.sql.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user_connection.UserConnection;
 import one.coffee.sql.utils.SQLUtils;
-import one.coffee.utils.CommandHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -15,19 +15,15 @@ import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 
 @Component
-public class ChattingCommandHandler extends CommandHandler {
+public class ChattingStateHandler extends StateHandler {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Override
-    protected void handleCommand(Message message, String[] commandWithArgs) {
-        switch (commandWithArgs[0]) {
-            case ("/help") -> handleHelp(message);
-            case ("/end") -> handleEnd(message);
-            case ("/approve") -> handleApprove(message);
-            default -> handleDefault(message);
-        }
+    public UserState getHandlingState() {
+        return UserState.CHATTING;
     }
 
+    @CommandHandler("/approve")
     private void handleApprove(Message message) {
         long senderId = message.getSender().getUserId();
         UserConnection userConnection = userConnectionService.getByUserId(senderId).get();
@@ -70,6 +66,7 @@ public class ChattingCommandHandler extends CommandHandler {
         messageSender.sendMessage(recipient.getId(), NewMessageBodyBuilder.copyOf(message).build());
     }
 
+    @CommandHandler("/help")
     private void handleHelp(Message message) {
         messageSender.sendMessage(message.getSender().getUserId(), NewMessageBodyBuilder.ofText("""
                 Список команд бота, доступных для использования:
@@ -77,6 +74,7 @@ public class ChattingCommandHandler extends CommandHandler {
                 /end - закончить диалог с пользователем""").build());
     }
 
+    @CommandHandler("/end")
     private void handleEnd(Message message) {
         User recipient = getRecipient(message);
         if (recipient == null) {

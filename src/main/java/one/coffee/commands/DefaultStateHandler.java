@@ -1,11 +1,12 @@
 package one.coffee.commands;
 
+import chat.tamtam.bot.annotations.CommandHandler;
 import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.model.Message;
+import one.coffee.bot.UpdateResult;
 import one.coffee.sql.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user_connection.UserConnection;
-import one.coffee.utils.CommandHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -15,27 +16,26 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
-public class DefaultCommandHandler extends CommandHandler {
+public class DefaultStateHandler extends StateHandler {
     @SuppressWarnings("unused")
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Override
-    protected void handleCommand(Message message, String[] commandWithArgs) {
-        switch (commandWithArgs[0]) {
-            case ("/help")  -> handleHelp(message);
-            case ("/start") -> handleStart(message);
-            default         -> handleDefault(message);
-        }
+    public UserState getHandlingState() {
+        return UserState.DEFAULT;
     }
 
-    private void handleHelp(Message message) {
+    @CommandHandler("/help")
+    private UpdateResult handleHelp(Message message) {
         messageSender.sendMessage(message.getSender().getUserId(), NewMessageBodyBuilder.ofText("""
                 Список команд бота, доступных для использования:
                 /help - список всех команд
                 /start - начать диалог с пользователем""").build());
+        return new UpdateResult(UpdateResult.UpdateState.SUCCESS);
     }
 
-    private void handleStart(Message message) {
+    @CommandHandler("/start")
+    private UpdateResult handleStart(Message message) {
         long senderId = message.getSender().getUserId();
         Optional<User> optionalSender = userService.get(senderId);
         User sender;
@@ -50,7 +50,7 @@ public class DefaultCommandHandler extends CommandHandler {
         List<User> userWaitList = userService.getWaitingUsers(1);
         if (userWaitList.isEmpty()) {
             startTheWait(message);
-            return;
+            return new UpdateResult(UpdateResult.UpdateState.SUCCESS);
         }
 
         User recipient = userWaitList.get(0);
@@ -67,6 +67,7 @@ public class DefaultCommandHandler extends CommandHandler {
                             Я нашел вам собеседника!
                             Я буду передавать сообщения между вами, можете общаться сколько влезет!)
                             Список команд, доступных во время беседы можно открыть на /help\s""").build());
+        return new UpdateResult(UpdateResult.UpdateState.SUCCESS);
     }
 
     private void startTheWait(Message message) {

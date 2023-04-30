@@ -5,9 +5,7 @@ import chat.tamtam.bot.updates.DefaultUpdateMapper;
 import chat.tamtam.botapi.model.BotStartedUpdate;
 import chat.tamtam.botapi.model.MessageCreatedUpdate;
 import chat.tamtam.botapi.model.Update;
-import one.coffee.commands.ChattingCommandHandler;
-import one.coffee.commands.DefaultCommandHandler;
-import one.coffee.commands.WaitingCommandHandler;
+import one.coffee.commands.StateHandler;
 import one.coffee.sql.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user.UserService;
@@ -18,8 +16,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 public class OneCoffeeBotUpdateMapper extends DefaultUpdateMapper<UpdateResult> {
@@ -29,12 +31,13 @@ public class OneCoffeeBotUpdateMapper extends DefaultUpdateMapper<UpdateResult> 
     private UserService userService;
     @Autowired
     private MessageSender messageSender;
+
+    private final Map<UserState, StateHandler> handlersMap;
+
     @Autowired
-    private DefaultCommandHandler defaultHandler;
-    @Autowired
-    private ChattingCommandHandler chattingHandler;
-    @Autowired
-    private WaitingCommandHandler waitingHandler;
+    public OneCoffeeBotUpdateMapper(List<StateHandler> handlers) {
+        handlersMap = handlers.stream().collect(Collectors.toMap(StateHandler::getHandlingState, Function.identity()));
+    }
 
     @Override
     public UpdateResult map(BotStartedUpdate model) {
@@ -66,21 +69,9 @@ public class OneCoffeeBotUpdateMapper extends DefaultUpdateMapper<UpdateResult> 
         } else {
             user = optionalUser.get();
         }
-
+        
         UserState userState = user.getState();
-        switch (userState) {
-            case DEFAULT -> defaultHandler.handle(update.getMessage());
-            case WAITING -> waitingHandler.handle(update.getMessage());
-            case CHATTING -> chattingHandler.handle(update.getMessage());
-            default -> {
-                LOG.warn("State {} for user with 'id' = {} is not supported", userState, userId);
-                user.setState(UserState.DEFAULT);
-                userService.save(user);
-                messageSender.sendMessage(userId,
-                        NewMessageBodyBuilder.ofText("Оххх... Что-то ошибочка вышла... Попробуйте еще раз").build());
-            }
-        }
-        return new UpdateResult(UpdateResult.UpdateState.SUCCESS);
+        return handlersMap.get(userState).handle(update.getMessage());
     }
 
     @Override
