@@ -1,13 +1,12 @@
 package one.coffee.sql;
 
+import java.util.List;
+
 import one.coffee.DBTest;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user.UserDao;
-import one.coffee.sql.utils.UserState;
 import one.coffee.utils.StaticContext;
 import org.junit.jupiter.api.Disabled;
-
-import java.util.List;
 
 public class HighloadTest
         extends ResourceTest {
@@ -28,7 +27,10 @@ public class HighloadTest
     void putUsers() {
         final int N = 20;
         for (int i = 0; i < N; ++i) {
-            User user = new User(i + 1, "City" + (i + 1), UserState.DEFAULT, -1);
+            User user = User.build()
+                    .setId(i + 1)
+                    .setCity("City" + (i + 1))
+                    .get();
             userDao.save(user);
         }
     }
@@ -36,7 +38,6 @@ public class HighloadTest
     @Disabled("База поддерживает 100 DELETE-Rps в однопоток")
     @DBTest(nUsers = 100)
     void deleteUsers(List<User> users) {
-        final int N = users.size();
         for (User user : users) {
             userDao.delete(user);
         }

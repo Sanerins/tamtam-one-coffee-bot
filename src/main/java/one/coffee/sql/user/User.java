@@ -1,49 +1,24 @@
 package one.coffee.sql.user;
 
+import java.lang.invoke.MethodHandles;
+
 import one.coffee.sql.Entity;
-import one.coffee.sql.utils.UserState;
 import one.coffee.sql.utils.SQLUtils;
+import one.coffee.sql.utils.UserState;
 import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.invoke.MethodHandles;
-
 public class User implements Entity {
-
-    public static final String DEFAULT_CITY = "Cyberpunk2077";
-    public static final UserState DEFAULT_STATE = UserState.DEFAULT;
-    public static final String DEFAULT_USERNAME = "Вася Пупкин";
-    public static final String DEFAULT_USERINFO = "Живу на болоте.";
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final long id;
+    private long id;
     private String city;
     private UserState state;
     private long connectionId;
     private String username;
     private String userInfo;
-
-    public User(long id) {
-        this(id, DEFAULT_CITY);
-    }
-
-    public User(long id, String city) {
-        this(id, city, DEFAULT_STATE);
-    }
-
-    public User(long id, String city, UserState state) {
-        this(id, city, state, SQLUtils.DEFAULT_ID);
-    }
-
-    public User(long id, String city, UserState state, long connectionId) {
-        this(id, city, state, connectionId, DEFAULT_USERNAME);
-    }
-
-    public User(long id, String city, UserState state, long connectionId, String username) {
-        this(id, city, state, connectionId, username, buildDefaultUserInfo(username));
-    }
 
     public User(long id, String city, UserState state, long connectionId, String username, String userInfo) {
         this.id = id;
@@ -52,6 +27,10 @@ public class User implements Entity {
         this.connectionId = connectionId;
         this.username = username;
         this.userInfo = userInfo;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getCity() {
@@ -94,8 +73,8 @@ public class User implements Entity {
         this.userInfo = userInfo;
     }
 
-    private static String buildDefaultUserInfo(String username) {
-        return username + ". " + DEFAULT_USERINFO;
+    public static UserBuilder build() {
+        return new UserBuilder();
     }
 
     @Override
@@ -142,6 +121,53 @@ public class User implements Entity {
                 ", username=" + username +
                 ", userInfo=" + userInfo +
                 '}';
+    }
+
+    public static final class UserBuilder {
+
+        private static final long DEFAULT_ID = SQLUtils.DEFAULT_ID;
+        private static final String DEFAULT_CITY = "Cyberpunk2077";
+        private static final UserState DEFAULT_STATE = UserState.DEFAULT;
+        private static final long DEFAULT_CONNECTION_ID = SQLUtils.DEFAULT_ID;
+        private static final String DEFAULT_USERNAME = "Вася Пупкин";
+        private static final String DEFAULT_USERINFO = "Живу на болоте.";
+
+        private final User user =
+                new User(DEFAULT_ID, DEFAULT_CITY, DEFAULT_STATE, DEFAULT_CONNECTION_ID, DEFAULT_USERNAME, DEFAULT_USERINFO);
+
+        public UserBuilder setId(long id) {
+            user.setId(id);
+            return this;
+        }
+
+        public UserBuilder setCity(String city) {
+            user.setCity(city);
+            return this;
+        }
+
+        public UserBuilder setState(UserState state) {
+            user.setState(state);
+            return this;
+        }
+
+        public UserBuilder setConnectionId(long connectionId) {
+            user.setConnectionId(connectionId);
+            return this;
+        }
+
+        public UserBuilder setUsername(String username) {
+            user.setUsername(username == null ? DEFAULT_USERNAME : username);
+            return this;
+        }
+
+        public UserBuilder setUserInfo(String userInfo) {
+            user.setUserInfo(userInfo == null ? DEFAULT_USERNAME : userInfo);
+            return this;
+        }
+
+        public User get() {
+            return user;
+        }
     }
 
 }

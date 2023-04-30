@@ -1,23 +1,25 @@
 package one.coffee.bot;
 
+import java.lang.invoke.MethodHandles;
+import java.util.Objects;
+import java.util.Optional;
+
 import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.bot.updates.NoopUpdateVisitor;
 import chat.tamtam.botapi.model.BotStartedUpdate;
+import chat.tamtam.botapi.model.Message;
 import chat.tamtam.botapi.model.MessageCreatedUpdate;
 import one.coffee.commands.ChattingCommandHandler;
 import one.coffee.commands.DefaultCommandHandler;
 import one.coffee.commands.WaitingCommandHandler;
-import one.coffee.sql.utils.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user.UserService;
+import one.coffee.sql.utils.SQLUtils;
+import one.coffee.sql.utils.UserState;
 import one.coffee.utils.MessageSender;
 import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
-import java.util.Objects;
-import java.util.Optional;
 
 public class OneCoffeeBotUpdateHandler extends NoopUpdateVisitor {
 
@@ -38,28 +40,26 @@ public class OneCoffeeBotUpdateHandler extends NoopUpdateVisitor {
     @Override
     public void visit(BotStartedUpdate model) {
         long userId = Objects.requireNonNull(model.getUser().getUserId(), "UserId is null");
-        User user = new User(userId, "Cyberpunk2077", UserState.DEFAULT, model.getUser().getUsername());
+        User user = User.build()
+                .setUsername(model.getUser().getUsername())
+                .get();
         userService.save(user);
-        messageSender.sendMessage(userId,
-                NewMessageBodyBuilder.ofText("Бот, призванный помочь одиноким или скучающим людям найти компанию и славно провести время вместе \n" +
-                        "Напиши /help, чтобы получить список команд!").build());
+        messageSender.sendMessage(userId, NewMessageBodyBuilder.ofText("""
+                        Бот, призванный помочь одиноким или скучающим людям найти компанию и славно провести время вместе
+                        Напиши /help, чтобы получить список команд!
+                        """).build());
     }
 
     @Override
     public void visit(MessageCreatedUpdate update) {
-        long userId = Objects.requireNonNull(update.getMessage().getSender().getUserId(), "UserId is null");
+        Message updateMessage = update.getMessage();
+        long userId = Objects.requireNonNull(updateMessage.getSender().getUserId(), "UserId is null");
 
         Optional<User> optionalUser = userService.get(userId);
         User user;
-        if (optionalUser.isEmpty()) { // НЕ РЕФАКТОРИТЬ!!! TODO Тут будет повтороный опрос пользователя о его данных.
-            // Это возможно в двух случаях:
-            // 1. Работяга до этого уже переписывался с ботом, разорвал соединение, мы потеряли о нём данные чудесным образом
-            // (дропнули или просто почистили таблички, или же хацкер оставил нас у разбитого корыта...), а потом написал /start;
-            // 2. Невалидный запрос (на любой стадии).
-            // Действия:
-            // 1. Пересоздание пользователя (реализуется).
-            LOG.warn("No user with id {} in DB! It will be recreated.", userId);
-            user = new User(userId, "Cyberpunk2077", UserState.DEFAULT, update.getMessage().getSender().getUsername());
+        if (optionalUser.isEmpty()) {
+            //TODO NULL_USER
+            user = SQLUtils.recoverSender(updateMessage);
             userService.save(user);
         } else {
             user = optionalUser.get();

@@ -1,20 +1,21 @@
 package one.coffee.commands;
 
+import java.lang.invoke.MethodHandles;
+import java.util.List;
+import java.util.Optional;
+
 import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.model.Message;
-import one.coffee.sql.utils.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user.UserService;
 import one.coffee.sql.user_connection.UserConnection;
 import one.coffee.sql.user_connection.UserConnectionService;
+import one.coffee.sql.utils.SQLUtils;
+import one.coffee.sql.utils.UserState;
 import one.coffee.utils.CommandHandler;
 import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
-import java.util.List;
-import java.util.Optional;
 
 public class DefaultCommandHandler extends CommandHandler {
 
@@ -51,13 +52,10 @@ public class DefaultCommandHandler extends CommandHandler {
     private void handleStart(Message message) {
         long senderId = message.getSender().getUserId();
         Optional<User> optionalSender = userService.get(senderId);
-        User sender;
         if (optionalSender.isEmpty()) {
-            // См. возможные причины в OneCoffeeUpdateHandler::visit(MessageCreatedUpdate)
-            sender = new User(senderId, "Cyberpunk2077", UserState.DEFAULT, message.getSender().getUsername());
+            //TODO NULL_USER
+            User sender = SQLUtils.recoverSender(message);
             userService.save(sender);
-        } else {
-            sender = optionalSender.get();
         }
 
         List<User> userWaitList = userService.getWaitingUsers(1);
@@ -74,29 +72,25 @@ public class DefaultCommandHandler extends CommandHandler {
                 NewMessageBodyBuilder.ofText("""
                             Я нашел вам собеседника!
                             Я буду передавать сообщения между вами, можете общаться сколько влезет!)
-                            Список команд, доступных во время беседы можно открыть на /help\s""").build());
+                            Список команд, доступных во время беседы можно открыть на /help\s
+                            """).build());
         messageSender.sendMessage(recipient.getId(),
                 NewMessageBodyBuilder.ofText("""
                             Я нашел вам собеседника!
                             Я буду передавать сообщения между вами, можете общаться сколько влезет!)
-                            Список команд, доступных во время беседы можно открыть на /help\s""").build());
+                            Список команд, доступных во время беседы можно открыть на /help\s
+                            """).build());
     }
 
     private void startTheWait(Message message) {
         long senderId = message.getSender().getUserId();
-
         Optional<User> optionalSender = userService.get(senderId);
-        User sender;
-        if (optionalSender.isEmpty()) { // НЕ РЕФАКТОРИТЬ!!! TODO
-            // См. возможные причины в OneCoffeeUpdateHandler::visit(MessageCreatedUpdate)
-            sender = new User(senderId, "Cyberpunk2077", UserState.DEFAULT, message.getSender().getUsername());
-        } else {
-            sender = optionalSender.get();
-        }
+        User sender = optionalSender.orElseGet(() -> /*TODO NULL_USER*/ SQLUtils.recoverSender(message));
         sender.setState(UserState.WAITING);
         userService.save(sender);
-        messageSender.sendMessage(message.getSender().getUserId(),
-                NewMessageBodyBuilder.ofText("Вы успешно добавлены в список ждущий пользователей! Ожидайте начала диалога! ").build());
+        messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText(
+                "Вы успешно добавлены в список ждущий пользователей! Ожидайте начала диалога!"
+        ).build());
     }
 
 }

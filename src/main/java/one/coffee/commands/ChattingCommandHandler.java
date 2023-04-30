@@ -1,20 +1,20 @@
 package one.coffee.commands;
 
+import java.lang.invoke.MethodHandles;
+import java.util.Optional;
+
 import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.model.Message;
-import one.coffee.sql.utils.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user.UserService;
 import one.coffee.sql.user_connection.UserConnection;
 import one.coffee.sql.user_connection.UserConnectionService;
 import one.coffee.sql.utils.SQLUtils;
+import one.coffee.sql.utils.UserState;
 import one.coffee.utils.CommandHandler;
 import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
-import java.util.Optional;
 
 public class ChattingCommandHandler extends CommandHandler {
 
@@ -126,8 +126,9 @@ public class ChattingCommandHandler extends CommandHandler {
 
         Optional<User> optionalRecipient = userService.get(recipientId);
         User recipient;
-        if (optionalRecipient.isEmpty()) { // TODO Восстановление инфы
-            recipient = new User(recipientId, "Cyberpunk2077", UserState.DEFAULT, null);
+        //TODO NULL_USER
+        if (optionalRecipient.isEmpty()) {
+            recipient = User.build().setId(recipientId).get();
             userService.save(recipient);
         } else {
             recipient = optionalRecipient.get();
@@ -153,8 +154,9 @@ public class ChattingCommandHandler extends CommandHandler {
         messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText("Похоже соединение разорвалось...").build());
         Optional<User> optionalSender = userService.get(senderId);
         User sender;
-        if (optionalSender.isEmpty()) { // TODO Восстановление инфы
-            sender = new User(senderId, "Cyberpunk2077", UserState.DEFAULT, message.getSender().getUsername());
+        if (optionalSender.isEmpty()) {
+            //TODO NULL_USER
+            sender = SQLUtils.recoverSender(message);
             userService.save(sender);
         } else {
             sender = optionalSender.get();
