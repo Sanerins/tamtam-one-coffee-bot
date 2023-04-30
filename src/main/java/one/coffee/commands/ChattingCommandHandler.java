@@ -48,6 +48,15 @@ public class ChattingCommandHandler extends CommandHandler {
         boolean allApprove = userConnection.isApprove1() && userConnection.isApprove2();
         if (allApprove) {
             processAllApprove(senderId);
+        } else {
+            messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText(
+                    "Вы подтвердили свою симпатию к собеседнику! Ожидайте, пока он примет решение"
+            ).build());
+            StaticContext.USER_CONNECTION_SERVICE.getConnectedUser(senderId).ifPresentOrElse(connectedUser -> {
+                messageSender.sendMessage(connectedUser.getId(), NewMessageBodyBuilder.ofText(
+                        "Ваш собеседник проявил к Вам интерес! Ответьте взаимностью или прервите переписку"
+                ).build());
+            }, () -> {});
         }
     }
 
@@ -60,12 +69,9 @@ public class ChattingCommandHandler extends CommandHandler {
     }
 
     private void sendContactInfo(long senderId, User recipient) {
-        messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText("Вы понравились Вашему собеседнику, поэтому он решил поделиться с Вами своими контактами:").build());
-        String username = "К сожалению, собеседник не заполнил имя пользователя";
-        if (recipient.getUsername() != null) {
-            username = recipient.getUsername();
-        }
-        messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText(username).build());
+        messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText(
+                "Вы понравились Вашему собеседнику, поэтому он решил поделиться с Вами своими контактами: " + recipient.getUserInfo()
+        ).build());
     }
 
     @Override

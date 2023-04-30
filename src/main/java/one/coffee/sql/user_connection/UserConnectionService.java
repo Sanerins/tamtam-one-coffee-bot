@@ -46,6 +46,11 @@ public class UserConnectionService
         return userConnection.getUser1Id() == userId ? userConnection.getUser2Id() : userConnection.getUser1Id();
     }
 
+    public Optional<User> getConnectedUser(long userId) {
+        long connectedUserId = getConnectedUserId(userId);
+        return StaticContext.USER_SERVICE.get(connectedUserId);
+    }
+
     @Override
     public Optional<UserConnection> save(UserConnection userConnection) {
         long user1Id = userConnection.getUser1Id();
