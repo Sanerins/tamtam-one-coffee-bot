@@ -66,8 +66,8 @@ public class UserConnectionDao
         final String query = MessageFormat.format("""
                 SELECT *
                 FROM {0}
-                WHERE user1Id = {1} OR user2Id = {1} AND userStateId = {2}
-                """, getInstance().getShortName(), userId, UserConnectionState.IN_PROGRESS);
+                WHERE user1Id = {1} OR user2Id = {1}
+                """, getInstance().getShortName(), userId);
         DB.executeQueryWithActionForResult(query, rs -> {
             while (rs.next()) {
                 userConnections.add(parseUserConnection(rs));
