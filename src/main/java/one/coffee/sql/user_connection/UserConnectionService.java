@@ -83,10 +83,6 @@ public class UserConnectionService
         return StaticContext.USER_SERVICE.get(connectedUserId);
     }
 
-    public boolean isConnected(long user1Id, long user2Id) {
-        return isConnected(user1Id) && isConnected(user2Id);
-    }
-
     @Override
     public Optional<UserConnection> save(UserConnection userConnection) {
         long userConnectionId = userConnection.getId();
@@ -120,6 +116,10 @@ public class UserConnectionService
         long user1Id = userConnection.getUser1Id();
         long user2Id = userConnection.getUser2Id();
         commitUsersConnection(SQLUtils.DEFAULT_ID, user1Id, user2Id, UserState.WAITING);
+    }
+
+    private boolean isConnected(long user1Id, long user2Id) {
+        return isConnected(user1Id) && isConnected(user2Id);
     }
 
     private boolean isConnected(long userId) {
