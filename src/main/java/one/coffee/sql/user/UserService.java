@@ -1,30 +1,23 @@
 package one.coffee.sql.user;
 
 import one.coffee.sql.Service;
-import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Optional;
 
+@Component
 public class UserService
         implements Service<User> {
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final UserDao userDao = StaticContext.USER_DAO;
-    private static UserService INSTANCE;
 
-    private UserService() {
-    }
-
-    public static UserService getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new UserService();
-        }
-        return INSTANCE;
-    }
+    @Autowired
+    private UserDao userDao;
 
     // TODO Enhance
     private static boolean isValidCity(String city) {

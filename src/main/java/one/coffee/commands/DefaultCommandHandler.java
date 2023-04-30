@@ -4,40 +4,27 @@ import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.model.Message;
 import one.coffee.sql.UserState;
 import one.coffee.sql.user.User;
-import one.coffee.sql.user.UserService;
 import one.coffee.sql.user_connection.UserConnection;
-import one.coffee.sql.user_connection.UserConnectionService;
 import one.coffee.utils.CommandHandler;
-import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Optional;
 
+@Component
 public class DefaultCommandHandler extends CommandHandler {
-
+    @SuppressWarnings("unused")
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final UserService userService = StaticContext.USER_SERVICE;
-    private static final UserConnectionService userConnectionService = StaticContext.USER_CONNECTION_SERVICE;
-
-    public DefaultCommandHandler() {
-        super(StaticContext.getMessageSender());
-    }
 
     @Override
     protected void handleCommand(Message message, String[] commandWithArgs) {
         switch (commandWithArgs[0]) {
-            case ("/help") -> {
-                handleHelp(message);
-            }
-            case ("/start") -> {
-                handleStart(message);
-            }
-            default -> {
-                handleDefault(message);
-            }
+            case ("/help")  -> handleHelp(message);
+            case ("/start") -> handleStart(message);
+            default         -> handleDefault(message);
         }
     }
 
@@ -87,12 +74,9 @@ public class DefaultCommandHandler extends CommandHandler {
 
         Optional<User> optionalSender = userService.get(senderId);
         User sender;
-        if (optionalSender.isEmpty()) { // НЕ РЕФАКТОРИТЬ!!! TODO
-            // См. возможные причины в OneCoffeeUpdateHandler::visit(MessageCreatedUpdate)
-            sender = new User(senderId, "Cyberpunk2077", UserState.DEFAULT, message.getSender().getUsername());
-        } else {
-            sender = optionalSender.get();
-        }
+        // НЕ РЕФАКТОРИТЬ!!! TODO
+        // См. возможные причины в OneCoffeeUpdateHandler::map(MessageCreatedUpdate)
+        sender = optionalSender.orElseGet(() -> new User(senderId, "Cyberpunk2077", UserState.DEFAULT, message.getSender().getUsername()));
         sender.setState(UserState.WAITING);
         userService.save(sender);
         messageSender.sendMessage(message.getSender().getUserId(),

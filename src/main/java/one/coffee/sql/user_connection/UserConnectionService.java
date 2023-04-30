@@ -3,30 +3,26 @@ package one.coffee.sql.user_connection;
 import one.coffee.sql.Service;
 import one.coffee.sql.UserState;
 import one.coffee.sql.user.User;
+import one.coffee.sql.user.UserService;
 import one.coffee.sql.utils.SQLUtils;
-import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 
+
+@Component
 public class UserConnectionService
         implements Service<UserConnection> {
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final UserConnectionDao userConnectionDao = StaticContext.USER_CONNECTION_DAO;
-    private static UserConnectionService INSTANCE;
-
-    private UserConnectionService() {
-    }
-
-    public static UserConnectionService getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new UserConnectionService();
-        }
-        return INSTANCE;
-    }
+    @Autowired
+    private UserConnectionDao userConnectionDao;
+    @Autowired
+    private UserService userService;
 
     @Override
     public Optional<UserConnection> get(long id) {
@@ -86,7 +82,7 @@ public class UserConnectionService
     }
 
     private void commitUsersConnection(long connectionId, long user1Id, long user2Id, UserState state) {
-        Optional<User> optionalUser1 = StaticContext.USER_SERVICE.get(user1Id);
+        Optional<User> optionalUser1 = userService.get(user1Id);
         if (optionalUser1.isEmpty()) {
             LOG.warn("User with id {} is absent in DB!", user1Id);
             return; // TODO Тут нет никакой возможности восстановить данные юзера, поэтому надо бы придумать, как сообщить пользователю, что ничего не получилось...
@@ -94,9 +90,9 @@ public class UserConnectionService
         User user1 = optionalUser1.get();
         user1.setState(state);
         user1.setConnectionId(connectionId);
-        StaticContext.USER_SERVICE.save(user1);
+        userService.save(user1);
 
-        Optional<User> optionalUser2 = StaticContext.USER_SERVICE.get(user2Id);
+        Optional<User> optionalUser2 = userService.get(user2Id);
         if (optionalUser2.isEmpty()) {
             LOG.warn("User with id {} is absent in DB!", user2Id);
             return; // TODO Тут нет никакой возможности восстановить данные юзера, поэтому надо бы придумать, как сообщить пользователю, что ничего не получилось...
@@ -104,7 +100,7 @@ public class UserConnectionService
         User user2 = optionalUser2.get();
         user2.setState(state);
         user2.setConnectionId(connectionId);
-        StaticContext.USER_SERVICE.save(user2);
+        userService.save(user2);
     }
 
 }

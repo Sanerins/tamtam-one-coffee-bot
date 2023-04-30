@@ -4,27 +4,19 @@ import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.model.Message;
 import one.coffee.sql.UserState;
 import one.coffee.sql.user.User;
-import one.coffee.sql.user.UserService;
 import one.coffee.sql.user_connection.UserConnection;
-import one.coffee.sql.user_connection.UserConnectionService;
 import one.coffee.sql.utils.SQLUtils;
 import one.coffee.utils.CommandHandler;
-import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 
+@Component
 public class ChattingCommandHandler extends CommandHandler {
-
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final UserService userService = StaticContext.USER_SERVICE;
-    private static final UserConnectionService userConnectionService = StaticContext.USER_CONNECTION_SERVICE;
-
-    public ChattingCommandHandler() {
-        super(StaticContext.getMessageSender());
-    }
 
     @Override
     protected void handleCommand(Message message, String[] commandWithArgs) {

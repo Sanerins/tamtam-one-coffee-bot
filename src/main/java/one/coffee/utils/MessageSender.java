@@ -11,14 +11,18 @@ import chat.tamtam.botapi.model.TextFormat;
 import chat.tamtam.botapi.queries.SendMessageQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 /**
  * @author almaz.shakirov
- * This code was copied from https://github.com/tamtam-chat/tamtam-bot-sdk/pull/16
+ * This code was copied from <a href="https://github.com/tamtam-chat/tamtam-bot-sdk/pull/16">here</a>
  */
+
+@Component
 public class MessageSender {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -30,6 +34,7 @@ public class MessageSender {
 
     private final TamTamClient client;
 
+    @Autowired
     public MessageSender(TamTamClient client) {
         this.client = client;
     }

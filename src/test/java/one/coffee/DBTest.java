@@ -4,13 +4,14 @@ import one.coffee.sql.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user.UserService;
 import one.coffee.sql.utils.SQLUtils;
-import one.coffee.utils.StaticContext;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -29,10 +30,12 @@ public @interface DBTest {
 
     int nUsers();
 
+    @Component
     class UserList
             implements ArgumentsProvider {
 
-        private static final UserService userService = StaticContext.USER_SERVICE;
+        @Autowired
+        protected UserService userService;
 
         @Override
         public Stream<? extends Arguments> provideArguments(ExtensionContext extensionContext) {
@@ -44,7 +47,8 @@ public @interface DBTest {
                         id,
                         "City" + id,
                         UserState.DEFAULT,
-                        SQLUtils.NO_ID
+                        SQLUtils.NO_ID,
+                        null
                 );
                 userService.save(user);
                 users.add(user);

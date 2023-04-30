@@ -1,31 +1,34 @@
 package one.coffee;
 
 import chat.tamtam.bot.exceptions.TamTamBotException;
-import chat.tamtam.bot.longpolling.LongPollingBotOptions;
+import one.coffee.bot.ContextConf;
 import one.coffee.bot.OneCoffeeBot;
-import one.coffee.bot.OneCoffeeBotUpdateHandler;
-import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
 
+@Component
 public class Main {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public static void main(String[] args) {
-        if (args.length != 1) {
-            LOG.error("Wrong number of arguments on start");
-            System.exit(1);
-        }
-        String accessToken = args[0];
-        StaticContext.initialize(accessToken);
+        AnnotationConfigApplicationContext context = createContext();
+        context.refresh();
         try {
-            StaticContext.getBot().start();
+            context.getBean(OneCoffeeBot.class).start();
         } catch (TamTamBotException e) {
             LOG.error("Failed to start bot: " + e.getMessage());
             System.exit(1);
         }
     }
 
+    private static AnnotationConfigApplicationContext createContext() {
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+        context.getEnvironment().setActiveProfiles("prod");
+        context.register(ContextConf.class);
+        return context;
+    }
 }

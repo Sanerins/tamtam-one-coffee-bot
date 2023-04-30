@@ -1,9 +1,9 @@
 package one.coffee.sql.user_connection;
 
-import one.coffee.sql.DB;
 import one.coffee.sql.Dao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
 import java.text.MessageFormat;
@@ -12,13 +12,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
+@Component
 public class UserConnectionDao
         extends Dao<UserConnection> {
-
+    @SuppressWarnings("unused")
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static UserConnectionDao INSTANCE;
 
-    private UserConnectionDao() {
+    public UserConnectionDao() {
         shortName = "userConnections";
         args = List.of(
                 Map.entry("id", "INTEGER PRIMARY KEY AUTOINCREMENT"),
@@ -27,14 +27,6 @@ public class UserConnectionDao
                 Map.entry("approve1", "BIT"),
                 Map.entry("approve2", "BIT")
         );
-        init();
-    }
-
-    public static UserConnectionDao getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new UserConnectionDao();
-        }
-        return INSTANCE;
     }
 
     @Override
@@ -43,7 +35,7 @@ public class UserConnectionDao
         final String query = MessageFormat.format("SELECT *" +
                         " FROM {0}" +
                         " WHERE id = " + id,
-                getInstance().getShortName());
+                this.getShortName());
         DB.executeQuery(query, rs -> {
             if (!rs.next()) {
                 return;
@@ -62,7 +54,7 @@ public class UserConnectionDao
         final String query = MessageFormat.format("SELECT *" +
                         " FROM {0}" +
                         " WHERE user1Id = " + userId + " OR user2Id = " + userId,
-                getInstance().getShortName());
+                this.getShortName());
         DB.executeQuery(query, rs -> {
             if (!rs.next()) {
                 return;

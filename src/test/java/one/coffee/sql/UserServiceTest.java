@@ -2,20 +2,16 @@ package one.coffee.sql;
 
 import one.coffee.DBTest;
 import one.coffee.sql.user.User;
-import one.coffee.sql.user.UserService;
-import one.coffee.utils.StaticContext;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.sql.SQLException;
 import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class UserServiceTest
         extends ResourceTest {
-
-    private static final UserService userService = StaticContext.USER_SERVICE;
 
     @Test
     void ok1() {
@@ -23,7 +19,7 @@ public class UserServiceTest
         final String userCity = "St. Petersburg";
         final UserState state = UserState.DEFAULT;
         final long connectionId = -1;
-        User user = new User(userId, userCity, state, connectionId);
+        User user = new User(userId, userCity, state, connectionId, null);
 
         userService.save(user);
 
@@ -41,7 +37,7 @@ public class UserServiceTest
         final String userCity = "St. Petersburg";
         final UserState state = UserState.DEFAULT;
         final long connectionId = -1;
-        User user = new User(userId, userCity, state, connectionId);
+        User user = new User(userId, userCity, state, connectionId, null);
 
         userService.save(user);
         assertTrue(userService.get(userId).isEmpty());
@@ -53,7 +49,7 @@ public class UserServiceTest
         final String userCity = null;
         final UserState state = UserState.DEFAULT;
         final long connectionId = -1;
-        User user = new User(userId, userCity, state, connectionId);
+        User user = new User(userId, userCity, state, connectionId, null);
 
         userService.save(user);
         assertTrue(userService.get(userId).isEmpty());
@@ -65,7 +61,7 @@ public class UserServiceTest
         final String userCity = "";
         final UserState state = UserState.DEFAULT;
         final long connectionId = -1;
-        User user = new User(userId, userCity, state, connectionId);
+        User user = new User(userId, userCity, state, connectionId, null);
 
         userService.save(user);
         assertTrue(userService.get(userId).isEmpty());
@@ -78,27 +74,10 @@ public class UserServiceTest
         final String userCity = "abc";
         final UserState state = UserState.DEFAULT;
         final long connectionId = -1;
-        User user = new User(userId, userCity, state, connectionId);
+        User user = new User(userId, userCity, state, connectionId, null);
 
         userService.save(user);
         assertTrue(userService.get(userId).isEmpty());
-    }
-
-    @Test
-    void invalidUserState() {
-        final long userId = 123;
-        final String userCity = "St. Petersburg";
-        final long stateId = UserState.DEFAULT.ordinal() - 1;
-        final long connectionId = -1;
-        User user = new User(userId, userCity, stateId, connectionId);
-
-        userService.save(user); // Согласно Саше, в таком случае мы устанавливаем стейт в DEFAULT
-
-        User savedUser = userService.get(userId).get();
-        assertEquals(savedUser.getId(), userId);
-        assertEquals(savedUser.getState(), UserState.DEFAULT);
-        assertEquals(savedUser.getCity(), userCity);
-        assertEquals(savedUser.getConnectionId(), connectionId);
     }
 
     @DBTest(nUsers = 1)

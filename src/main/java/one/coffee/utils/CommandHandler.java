@@ -2,15 +2,21 @@ package one.coffee.utils;
 
 import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.model.Message;
+import one.coffee.sql.user.UserService;
+import one.coffee.sql.user_connection.UserConnectionService;
 import org.eclipse.jetty.util.StringUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public abstract class CommandHandler {
 
-    protected final MessageSender messageSender;
-
-    protected CommandHandler(MessageSender messageSender) {
-        this.messageSender = messageSender;
-    }
+    @Autowired
+    protected MessageSender messageSender;
+    @Autowired
+    protected UserService userService;
+    @Autowired
+    protected UserConnectionService userConnectionService;
 
     public void handle(Message message) {
         String text = message.getBody().getText();

@@ -1,9 +1,10 @@
 package one.coffee.bot;
 
 import chat.tamtam.bot.builders.NewMessageBodyBuilder;
-import chat.tamtam.bot.updates.NoopUpdateVisitor;
+import chat.tamtam.bot.updates.DefaultUpdateMapper;
 import chat.tamtam.botapi.model.BotStartedUpdate;
 import chat.tamtam.botapi.model.MessageCreatedUpdate;
+import chat.tamtam.botapi.model.Update;
 import one.coffee.commands.ChattingCommandHandler;
 import one.coffee.commands.DefaultCommandHandler;
 import one.coffee.commands.WaitingCommandHandler;
@@ -11,42 +12,43 @@ import one.coffee.sql.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user.UserService;
 import one.coffee.utils.MessageSender;
-import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 import java.util.Optional;
 
-public class OneCoffeeBotUpdateHandler extends NoopUpdateVisitor {
+@Component
+public class OneCoffeeBotUpdateMapper extends DefaultUpdateMapper<UpdateResult> {
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final UserService userService = StaticContext.USER_SERVICE;
-    private final MessageSender messageSender = StaticContext.getMessageSender();
-    private final DefaultCommandHandler defaultHandler;
-    private final ChattingCommandHandler chattingHandler;
-    private final WaitingCommandHandler waitingHandler;
-
-    public OneCoffeeBotUpdateHandler() {
-        super();
-        defaultHandler = new DefaultCommandHandler();
-        chattingHandler = new ChattingCommandHandler();
-        waitingHandler = new WaitingCommandHandler();
-    }
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private MessageSender messageSender;
+    @Autowired
+    private DefaultCommandHandler defaultHandler;
+    @Autowired
+    private ChattingCommandHandler chattingHandler;
+    @Autowired
+    private WaitingCommandHandler waitingHandler;
 
     @Override
-    public void visit(BotStartedUpdate model) {
+    public UpdateResult map(BotStartedUpdate model) {
         long userId = Objects.requireNonNull(model.getUser().getUserId(), "UserId is null");
         User user = new User(userId, "Cyberpunk2077", UserState.DEFAULT, model.getUser().getUsername());
         userService.save(user);
         messageSender.sendMessage(userId,
                 NewMessageBodyBuilder.ofText("Бот, призванный помочь одиноким или скучающим людям найти компанию и славно провести время вместе \n" +
                         "Напиши /help, чтобы получить список команд!").build());
+        return new UpdateResult(UpdateResult.UpdateState.SUCCESS);
     }
 
     @Override
-    public void visit(MessageCreatedUpdate update) {
+    public UpdateResult map(MessageCreatedUpdate update) {
         long userId = Objects.requireNonNull(update.getMessage().getSender().getUserId(), "UserId is null");
 
         Optional<User> optionalUser = userService.get(userId);
@@ -78,6 +80,11 @@ public class OneCoffeeBotUpdateHandler extends NoopUpdateVisitor {
                         NewMessageBodyBuilder.ofText("Оххх... Что-то ошибочка вышла... Попробуйте еще раз").build());
             }
         }
+        return new UpdateResult(UpdateResult.UpdateState.SUCCESS);
     }
 
+    @Override
+    public UpdateResult mapDefault(Update model) {
+        return new UpdateResult(UpdateResult.UpdateState.ERROR, "Unknown update type");
+    }
 }

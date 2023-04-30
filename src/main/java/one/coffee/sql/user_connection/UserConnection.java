@@ -2,7 +2,6 @@ package one.coffee.sql.user_connection;
 
 import one.coffee.sql.Entity;
 import one.coffee.sql.utils.SQLUtils;
-import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,6 +10,7 @@ import java.lang.invoke.MethodHandles;
 public class UserConnection
         implements Entity {
 
+    @SuppressWarnings("unused")
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final long user1Id;
     private final long user2Id;
@@ -40,7 +40,7 @@ public class UserConnection
 
     @Override
     public boolean isCreated() {
-        return StaticContext.USER_CONNECTION_SERVICE.getByUserId(user1Id).isPresent();
+        return id != SQLUtils.NO_ID;
     }
 
     @Override

@@ -3,8 +3,9 @@ package one.coffee.sql;
 import one.coffee.DBTest;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user.UserDao;
-import one.coffee.utils.StaticContext;
 import org.junit.jupiter.api.Disabled;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -12,9 +13,11 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Component
 public class ConcurrentTest {
 
-    private static final UserDao userDao = StaticContext.USER_DAO;
+    @Autowired
+    private UserDao userDao;
 
     @Disabled("База поддерживает 4.5K GET-Rps в многопоток")
     @DBTest(nUsers = 4500)

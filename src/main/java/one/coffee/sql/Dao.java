@@ -1,18 +1,22 @@
 package one.coffee.sql;
 
 import one.coffee.sql.utils.SQLUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@Component
 public abstract class Dao<T extends Entity> {
+
+    @Autowired
+    protected DB DB;
 
     protected String shortName;
     protected List<Map.Entry<String /*argNames*/, String /*argTypes*/>> args;
-
-    protected Dao() {
-    }
 
     abstract public Optional<T> get(long id);
 
@@ -20,6 +24,7 @@ public abstract class Dao<T extends Entity> {
 
     abstract public void delete(T t);
 
+    @PostConstruct
     protected final void init() {
         if (shortName == null || shortName.trim().isEmpty()) {
             throw new IllegalArgumentException("Illegal 'shortName'! Got: " + shortName);

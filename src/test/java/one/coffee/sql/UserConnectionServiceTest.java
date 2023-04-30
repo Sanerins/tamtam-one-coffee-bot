@@ -2,22 +2,17 @@ package one.coffee.sql;
 
 import one.coffee.DBTest;
 import one.coffee.sql.user.User;
-import one.coffee.sql.user.UserService;
 import one.coffee.sql.user_connection.UserConnection;
-import one.coffee.sql.user_connection.UserConnectionService;
 import one.coffee.sql.utils.SQLUtils;
-import one.coffee.utils.StaticContext;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+@Component
 public class UserConnectionServiceTest
         extends ResourceTest {
-
-    private static final UserConnectionService userConnectionService = StaticContext.USER_CONNECTION_SERVICE;
-    private static final UserService userService = StaticContext.USER_SERVICE;
 
     @DBTest(nUsers = 2)
     void ok(List<User> users) {

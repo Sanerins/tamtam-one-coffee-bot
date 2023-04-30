@@ -1,10 +1,10 @@
 package one.coffee.sql.user;
 
-import one.coffee.sql.DB;
 import one.coffee.sql.Dao;
 import one.coffee.sql.UserState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
 import java.sql.ResultSet;
@@ -16,12 +16,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
+@Component
 public class UserDao extends Dao<User> {
-
+    @SuppressWarnings("unused")
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static UserDao INSTANCE;
 
-    private UserDao() {
+    public UserDao() {
         shortName = "users";
         args = List.of(
                 Map.entry("id", "INTEGER PRIMARY KEY"),
@@ -30,21 +30,13 @@ public class UserDao extends Dao<User> {
                 Map.entry("connectionId", "INT REFERENCES userConnections(id) ON DELETE SET NULL"),
                 Map.entry("username", "VARCHAR(64)")
         );
-        init();
-    }
-
-    public static UserDao getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new UserDao();
-        }
-        return INSTANCE;
     }
 
     private static User parseUser(ResultSet rs) throws SQLException {
         return new User(
                 rs.getLong("id"),
                 rs.getString("city"),
-                rs.getLong("stateId"),
+                UserState.fromId(rs.getLong("stateId")),
                 rs.getLong("connectionId"),
                 rs.getString("username")
         );
@@ -56,7 +48,7 @@ public class UserDao extends Dao<User> {
         String query = MessageFormat.format("SELECT *" +
                         " FROM {0}" +
                         " WHERE id = " + id,
-                getInstance().getShortName()
+                this.getShortName()
         );
         DB.executeQuery(query, rs -> {
             if (!rs.next()) {
@@ -74,7 +66,7 @@ public class UserDao extends Dao<User> {
                         " WHERE stateId = " + UserState.WAITING.ordinal() +
                         " ORDER BY RANDOM()" +
                         " LIMIT " + n,
-                getInstance().getShortName()
+                this.getShortName()
         );
 
         DB.executeQuery(query, rs -> {
