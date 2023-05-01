@@ -44,8 +44,21 @@ public class UserConnectionService implements Service<UserConnection> {
                 .toList();
     }
 
+    public Optional<UserConnection> getByUserIdsAndUserConnectionState(UserConnection userConnection) {
+        return getByUserIdAndUserConnectionState(userConnection.getUser1Id(), userConnection.getState()).stream()
+                .filter(uc -> {
+                    if (uc.getUser1Id() == userConnection.getUser1Id()) {
+                        return uc.getUser2Id() == userConnection.getUser2Id();
+                    } else {
+                        return uc.getUser1Id() == userConnection.getUser1Id();
+                    }
+                })
+                .findAny();
+    }
+
     public Optional<UserConnection> getInProgressConnectionByUserId(long userId) {
-        List<UserConnection> inProgressUserConnections = getByUserIdAndUserConnectionState(userId, UserConnectionState.IN_PROGRESS);
+        List<UserConnection> inProgressUserConnections =
+                getByUserIdAndUserConnectionState(userId, UserConnectionState.IN_PROGRESS);
         if (inProgressUserConnections.isEmpty()) {
             return Optional.empty();
         } else if (inProgressUserConnections.size() > 1) {
@@ -79,7 +92,7 @@ public class UserConnectionService implements Service<UserConnection> {
     }
 
     @Override
-    public Optional<UserConnection> save(UserConnection userConnection) {
+    public void save(UserConnection userConnection) {
         long userConnectionId = userConnection.getId();
         long user1Id = userConnection.getUser1Id();
         long user2Id = userConnection.getUser2Id();
@@ -87,22 +100,21 @@ public class UserConnectionService implements Service<UserConnection> {
             //TODO Но не факт, что они сконнекчены друг с другом, можно попытаться выпарсить этот случай.
             if (isConnected(user1Id) || isConnected(user2Id)) {
                 LOG.warn("{} or {} has already connected!", user1Id, user2Id);
-                return Optional.empty();
+                return;
             }
         } else if (userConnectionDao.get(userConnectionId).isEmpty()) {
             LOG.warn("No UserConnection with id {}", userConnectionId);
-            return Optional.empty();
+            return;
         }
 
         userConnectionDao.save(userConnection);
-        Optional<UserConnection> optionalConnection = getInProgressConnectionByUserId(user1Id);
-        if (optionalConnection.isEmpty()) {
-            LOG.warn("Can't save user connection: {}", userConnection);
-        } else {
-            long conId = optionalConnection.get().getId();
+        Optional<UserConnection> userConnectionOptional = getByUserIdsAndUserConnectionState(userConnection);
+        if (userConnectionOptional.isEmpty()) {
+            LOG.error("Error while trying to completely save user connection: not found {}", userConnection);
+        } else if (UserConnectionState.IN_PROGRESS.equals(userConnection.getState())){
+            long conId = userConnectionOptional.get().getId();
             commitUsersConnection(conId, user1Id, user2Id, UserState.CHATTING);
         }
-        return optionalConnection;
     }
 
     @Override
@@ -110,6 +122,8 @@ public class UserConnectionService implements Service<UserConnection> {
         long user1Id = userConnection.getUser1Id();
         long user2Id = userConnection.getUser2Id();
         commitUsersConnection(SQLUtils.DEFAULT_ID, user1Id, user2Id, UserState.WAITING);
+        userConnection.setState(UserConnectionState.UNSUCCESSFUL);
+        save(userConnection);
     }
 
     public boolean haveConnection(long user1Id, long user2Id) {

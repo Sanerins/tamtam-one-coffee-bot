@@ -1,6 +1,7 @@
 package one.coffee.sql;
 
 import java.util.List;
+import java.util.Optional;
 
 import one.coffee.DBTest;
 import one.coffee.sql.user.User;
@@ -8,6 +9,7 @@ import one.coffee.sql.user.UserService;
 import one.coffee.sql.user_connection.UserConnection;
 import one.coffee.sql.user_connection.UserConnectionService;
 import one.coffee.sql.utils.SQLUtils;
+import one.coffee.sql.utils.UserConnectionState;
 import one.coffee.sql.utils.UserState;
 import one.coffee.utils.StaticContext;
 
@@ -99,6 +101,34 @@ public class UserConnectionServiceTest
 
         assertEquals(savedUser2.getState(), UserState.WAITING);
         assertEquals(savedUser2.getConnectionId(), -1);
+    }
+
+    @DBTest(nUsers = 3)
+    void validCandidate(List<User> users) {
+        long user1Id = users.get(0).getId();
+        long user2Id = users.get(1).getId();
+
+        User user3 = users.get(2);
+        user3.setState(UserState.WAITING);
+        userService.save(user3);
+        long user3Id = user3.getId();
+
+        UserConnection userConnection = UserConnection.build()
+                .setUser1Id(user1Id)
+                .setUser2Id(user2Id)
+                .get();
+        userConnectionService.save(userConnection);
+        UserConnection savedUserConnection =
+                userConnectionService.getByUserIdsAndUserConnectionState(userConnection).get();
+        userConnectionService.delete(savedUserConnection);
+        UserConnection deletedUserConnection =
+                userConnectionService.get(savedUserConnection.getId()).get();
+        assertEquals(deletedUserConnection.getState(), UserConnectionState.UNSUCCESSFUL);
+
+        Optional<User> chattingCandidateOptional = userService.getChattingCandidate(user1Id);
+        assertTrue(chattingCandidateOptional.isPresent());
+        User chattingCandidate = chattingCandidateOptional.get();
+        assertEquals(chattingCandidate.getId(), user3Id);
     }
 
 }

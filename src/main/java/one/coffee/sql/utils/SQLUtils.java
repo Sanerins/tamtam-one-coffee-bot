@@ -41,7 +41,8 @@ public class SQLUtils {
                 .setId(senderId)
                 .setUsername(senderUsername)
                 .get();
-        return StaticContext.USER_SERVICE.save(recoveredSender);
+        StaticContext.USER_SERVICE.save(recoveredSender);
+        return StaticContext.USER_SERVICE.get(recoveredSender.getId());
     }
 
 }

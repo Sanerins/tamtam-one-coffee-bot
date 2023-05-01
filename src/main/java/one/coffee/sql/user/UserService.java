@@ -47,19 +47,18 @@ public class UserService implements Service<User> {
     }
 
     @Override
-    public Optional<User> save(User user) {
+    public void save(User user) {
         if (user.getId() <= 0) {
             LOG.warn("Invalid User id! Got {}", user);
-            return Optional.empty();
+            return;
         }
 
         if (!isValidCity(user.getCity())) {
             LOG.warn("Invalid user city! Got {}", user.getCity());
-            return Optional.empty();
+            return;
         }
 
         userDao.save(user);
-        return Optional.of(user);
     }
 
     @Override
@@ -73,16 +72,18 @@ public class UserService implements Service<User> {
     }
 
     private List<User> getAllChattingCandidates(long userId) {
-        List<UserConnection> unsuccessfulUserConnections = StaticContext.USER_CONNECTION_SERVICE.getUnsuccessfulConnectionsByUserId(userId);
+        List<UserConnection> unsuccessfulUserConnections =
+                StaticContext.USER_CONNECTION_SERVICE.getUnsuccessfulConnectionsByUserId(userId);
         return getWaitingUsers().stream()
-                .filter(user -> isCandidate(user, unsuccessfulUserConnections))
+                .filter(user -> isCandidate(user, userId, unsuccessfulUserConnections))
                 .toList();
     }
 
-    private boolean isCandidate(User user, List<UserConnection> unsuccessfulUserConnections) {
+    private boolean isCandidate(User currentUser, long userId, List<UserConnection> unsuccessfulUserConnections) {
         for (UserConnection unsuccessfulUserConnection : unsuccessfulUserConnections) {
-            if (unsuccessfulUserConnection.getUser1Id() == user.getId()
-                    || unsuccessfulUserConnection.getUser2Id() == user.getId()) {
+            if (unsuccessfulUserConnection.getUser1Id() == currentUser.getId()
+                    || unsuccessfulUserConnection.getUser2Id() == currentUser.getId()
+                    || currentUser.getId() == userId) {
                 return false;
             }
         }

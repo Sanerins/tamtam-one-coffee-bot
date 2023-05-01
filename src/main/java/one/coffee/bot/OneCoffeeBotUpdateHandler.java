@@ -61,7 +61,7 @@ public class OneCoffeeBotUpdateHandler extends NoopUpdateVisitor {
             case WAITING -> waitingHandler.handle(updateMessage);
             case CHATTING -> chattingHandler.handle(updateMessage);
             default -> {
-                LOG.warn("State {} for user with 'id' = {} is not supported", userState, userId);
+                LOG.error("State {} for user with 'id' = {} is not supported", userState, userId);
                 user.setState(UserState.DEFAULT);
                 userService.save(user);
                 messageSender.sendMessage(

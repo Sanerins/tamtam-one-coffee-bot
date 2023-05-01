@@ -81,7 +81,7 @@ public class DB {
         }
     }
 
-    public static void putEntity(Dao<?> dao, Entity entity) {
+    public static <T extends Entity> void putEntity(Dao<?> dao, T entity) {
         Objects.requireNonNull(dao, "Table can't be null!");
         Objects.requireNonNull(entity, "Entity can't be null!");
 
@@ -90,17 +90,17 @@ public class DB {
             PreparedStatement stmt = CONNECTION.prepareStatement(sql);
             executeQuery(stmt);
 
-            //executeQuery("INSERT OR REPLACE INTO " + dao.getSignature(entity) + " VALUES " + entity.sqlArgValues());
             LOG.info("Put entity: {}", entity);
         } catch (SQLException e) {
             LOG.warn("When putting entity {}", entity, e);
         }
     }
 
-    public static void deleteEntity(Dao<?> dao, Entity entity) {
+    public static <T extends Entity> void deleteEntity(Dao<?> dao, T entity) {
         Objects.requireNonNull(dao, "Table can't be null!");
         if (!hasEntity(dao, entity)) {
             LOG.warn("Table {} has not entity with `id` = {}", dao.getSignature(entity), entity.getId());
+            return;
         }
 
         try {
@@ -109,7 +109,6 @@ public class DB {
             stmt.setLong(1, entity.getId());
             executeQuery(stmt);
 
-            //executeQuery("DELETE FROM " + dao.getShortName() + " WHERE id = " + entity.getId());
             LOG.info("Delete entity from table '{}' with 'id' = {}", dao.getShortName(), entity.getId());
         } catch (SQLException e) {
             LOG.warn("When deleting entity {}", entity, e);
