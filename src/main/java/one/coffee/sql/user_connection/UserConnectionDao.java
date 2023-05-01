@@ -32,7 +32,8 @@ public class UserConnectionDao
                         Map.entry("user1Id", "INT REFERENCES users(userId) ON DELETE CASCADE"),
                         Map.entry("user2Id", "INT REFERENCES users(userId) ON DELETE CASCADE"),
                         Map.entry("approve1", "BIT"),
-                        Map.entry("approve2", "BIT")
+                        Map.entry("approve2", "BIT"),
+                        Map.entry("stateId", "INT")
                 )
         );
     }
@@ -52,7 +53,7 @@ public class UserConnectionDao
             PreparedStatement stmt = StaticContext.CON.prepareStatement(sql);
             stmt.setLong(1, id);
 
-            DB.executeQueryWithActionForResult(stmt, rs -> {
+            DB.executeQuery(stmt, rs -> {
                 if (!rs.next()) {
                     return;
                 }
@@ -72,7 +73,7 @@ public class UserConnectionDao
             stmt.setLong(1, userId);
             stmt.setLong(2, userId);
 
-            DB.executeQueryWithActionForResult(stmt, rs -> {
+            DB.executeQuery(stmt, rs -> {
                 while (rs.next()) {
                     userConnections.add(parseUserConnection(rs));
                 }

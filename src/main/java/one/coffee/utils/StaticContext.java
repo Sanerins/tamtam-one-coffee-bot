@@ -60,4 +60,8 @@ public class StaticContext {
         isRecreatingTablesNeeded.set(v);
     }
 
+    public static String quote(String s) {
+        return new StringBuilder().append(STRING_QUOTTER).append(s).append(STRING_QUOTTER).toString();
+    }
+
 }

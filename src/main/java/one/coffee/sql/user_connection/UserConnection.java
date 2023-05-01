@@ -122,7 +122,7 @@ public class UserConnection implements Entity {
                 .append(SQLUtils.ARGS_SEPARATOR)
                 .append(approve2)
                 .append(SQLUtils.ARGS_SEPARATOR)
-                .append(state)
+                .append(state.ordinal())
                 .append(SQLUtils.TABLE_SIGNATURE_END)
                 .toString();
     }

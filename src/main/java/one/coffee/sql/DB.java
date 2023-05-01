@@ -43,7 +43,6 @@ public class DB {
             PreparedStatement stmt = CONNECTION.prepareStatement(sql);
             executeQuery(stmt);
 
-            //executeQuery("CREATE TABLE IF NOT EXISTS " + dao);
             LOG.info("Created table: `{}`", dao.getShortName());
         } catch (SQLException e) {
             LOG.warn("When creating table `{}`", dao.getShortName(), e);
@@ -58,7 +57,6 @@ public class DB {
             PreparedStatement stmt = CONNECTION.prepareStatement(sql);
             executeQuery(stmt);
 
-            //executeQuery("DROP TABLE IF EXISTS " + dao.getShortName());
             LOG.info("Dropped table: `{}`", dao.getShortName());
         } catch (SQLException e) {
             LOG.warn("When dropping table `{}`", dao.getShortName(), e);
@@ -69,17 +67,14 @@ public class DB {
         Objects.requireNonNull(dao, "Table can't be null!");
 
         try {
-            String deleteSql = "DELETE FROM ?";
+            String deleteSql = "DELETE FROM " + dao.getShortName();
             PreparedStatement deleteStmt = CONNECTION.prepareStatement(deleteSql);
-            deleteStmt.setString(1, dao.getShortName());
             executeQuery(deleteStmt);
 
-            String updateSql = "SELECT setval('users_id_seq', 0)";
+            String updateSql = "UPDATE `sqlite_sequence` SET `seq` = 0 WHERE `name` = " + StaticContext.quote(dao.getShortName());
             PreparedStatement updateStmt = CONNECTION.prepareStatement(updateSql);
             executeQuery(updateStmt);
 
-            //executeQuery("DELETE FROM " + dao.getShortName());
-            //executeQuery("UPDATE `sqlite_sequence` SET `seq` = 0 WHERE `name` = '" + dao.getShortName() + "'");
             LOG.info("Cleanup table: {}", dao.getShortName());
         } catch (SQLException e) {
             LOG.warn("When dropping table {}", dao, e);
@@ -128,38 +123,31 @@ public class DB {
             PreparedStatement stmt = CONNECTION.prepareStatement(sql);
             stmt.setLong(1, entity.getId());
 
-            executeQueryWithActionForResult(stmt, rs -> isPresent.set(rs.next()));
+            executeQuery(stmt, rs -> isPresent.set(rs.next()));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         return isPresent.get();
     }
 
-    public static synchronized void executeQuery(String query) {
-        try {
-            STATEMENT.execute(query);
-        } catch (SQLException e) {
-            LOG.warn("Error while executing query to DB!", e);
-        }
-    }
-
     public static synchronized void executeQuery(PreparedStatement stmt) {
+        executeQuery(stmt, SQLCallback.EMPTY);
+    }
+
+    public static synchronized void executeQuery(PreparedStatement stmt, SQLCallback sqlCallback) {
         try {
-            stmt.execute();
+            if (stmt.execute()) {
+                try (ResultSet rs = stmt.executeQuery()) {
+                    sqlCallback.run(rs);
+                }
+            }
         } catch (SQLException e) {
-            LOG.warn("Error while executing query to DB!", e);
+            LOG.error("Error while executing query to DB:\n'\n{}'", stmt, e);
         }
     }
 
-    public static synchronized void executeQueryWithActionForResult(PreparedStatement stmt, SQLAction sqlAction) {
-        try (ResultSet rs = stmt.executeQuery()) {
-            sqlAction.run(rs);
-        } catch (SQLException e) {
-            LOG.warn("Error while executing query:\n'\n{}'\nto DB!", stmt, e);
-        }
-    }
-
-    public interface SQLAction {
+    public interface SQLCallback {
+        SQLCallback EMPTY = rs -> {};
         void run(ResultSet rs) throws SQLException;
     }
 

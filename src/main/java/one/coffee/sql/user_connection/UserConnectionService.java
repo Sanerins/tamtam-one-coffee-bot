@@ -98,7 +98,6 @@ public class UserConnectionService implements Service<UserConnection> {
             return Optional.empty();
         }
 
-        // TODO IN_PROGRESS STATE???
         userConnectionDao.save(userConnection);
         Optional<UserConnection> optionalConnection = getInProgressConnectionByUserId(user1Id);
         if (optionalConnection.isEmpty()) {

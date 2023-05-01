@@ -9,6 +9,7 @@ import one.coffee.sql.user.UserService;
 import one.coffee.sql.user_connection.UserConnection;
 import one.coffee.sql.user_connection.UserConnectionService;
 import one.coffee.sql.utils.SQLUtils;
+import one.coffee.sql.utils.UserConnectionState;
 import one.coffee.sql.utils.UserState;
 import one.coffee.utils.CommandHandler;
 import one.coffee.utils.StaticContext;
@@ -58,6 +59,7 @@ public class DefaultCommandHandler extends CommandHandler {
         UserConnection userConnection = UserConnection.build()
                 .setUser1Id(senderId)
                 .setUser2Id(chattingCandidate.getId())
+                .setState(UserConnectionState.IN_PROGRESS)
                 .get();
         userConnectionService.save(userConnection);
 

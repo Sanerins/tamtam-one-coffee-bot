@@ -50,7 +50,7 @@ public class UserDao extends Dao<User> {
             String sql = "SELECT * FROM " + getInstance().getShortName() + " WHERE id = ?";
             PreparedStatement stmt = StaticContext.CON.prepareStatement(sql);
             stmt.setLong(1, id);
-            DB.executeQueryWithActionForResult(stmt, rs -> {
+            DB.executeQuery(stmt, rs -> {
                 if (!rs.next()) {
                     return;
                 }
@@ -69,7 +69,7 @@ public class UserDao extends Dao<User> {
             PreparedStatement stmt = StaticContext.CON.prepareStatement(sql);
             stmt.setLong(1, UserState.WAITING.ordinal());
 
-            DB.executeQueryWithActionForResult(stmt, rs -> {
+            DB.executeQuery(stmt, rs -> {
                 while (rs.next()) {
                     users.add(parseUser(rs));
                 }
