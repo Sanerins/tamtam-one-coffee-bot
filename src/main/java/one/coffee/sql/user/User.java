@@ -73,6 +73,10 @@ public class User implements Entity {
         this.userInfo = userInfo;
     }
 
+    public boolean isNotChatting() {
+        return !UserState.CHATTING.equals(state);
+    }
+
     public static UserBuilder build() {
         return new UserBuilder();
     }
@@ -92,21 +96,15 @@ public class User implements Entity {
         return new StringBuilder(SQLUtils.TABLE_SIGNATURE_START)
                 .append(id)
                 .append(SQLUtils.ARGS_SEPARATOR)
-                .append(StaticContext.STRING_QUOTTER)
-                .append(city)
-                .append(StaticContext.STRING_QUOTTER)
+                .append(StaticContext.quote(city))
                 .append(SQLUtils.ARGS_SEPARATOR)
                 .append(state.ordinal())
                 .append(SQLUtils.ARGS_SEPARATOR)
                 .append(connectionId)
                 .append(SQLUtils.ARGS_SEPARATOR)
-                .append(StaticContext.STRING_QUOTTER)
-                .append(username)
-                .append(StaticContext.STRING_QUOTTER)
+                .append(StaticContext.quote(username))
                 .append(SQLUtils.ARGS_SEPARATOR)
-                .append(StaticContext.STRING_QUOTTER)
-                .append(userInfo)
-                .append(StaticContext.STRING_QUOTTER)
+                .append(StaticContext.quote(userInfo))
                 .append(SQLUtils.TABLE_SIGNATURE_END)
                 .toString();
     }
@@ -141,7 +139,6 @@ public class User implements Entity {
         }
 
         public UserBuilder setCity(String city) {
-
             user.setCity(city);
             return this;
         }

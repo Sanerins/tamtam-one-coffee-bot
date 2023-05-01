@@ -9,14 +9,14 @@
 <h2>Как работать с БД</h2>
 - Создаем нашу БД (sqlite на macOS предустановлен):
 ```
-sqlite3 OneCoffee.db
+sqlite3 OneCoffee
 ```
 
 - Поскольку все таблицы при первом запуске еще не созданы,
 потребуется немного ручной работы.
 - - Для деплоя на тачке:
 ```
-java -jar <jar name> isRecreatingTablesNeeded=true
+java -jar <jar name> [isRecreatingTablesNeeded=true]
 ```
 - - Для запуска из идеи нужно проставить значение `true` в StaticContext::isRecreatingTablesNeeded. 
 После пересоздания нужно вернуть все, как было.

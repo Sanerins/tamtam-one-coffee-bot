@@ -1,6 +1,5 @@
 package one.coffee.utils;
 
-import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.model.Message;
 import org.eclipse.jetty.util.StringUtil;
 
@@ -26,19 +25,18 @@ public abstract class CommandHandler {
         handleDefault(message);
     }
 
-
-    // TODO /text не работает, на самом деле, в чате нельзя на него нажать. Надо это пофиксить.
+    // TODO невозможно нажать на /help
     protected void handleText(Message message) {
         messageSender.sendMessage(
                 message.getSender().getUserId(),
-                NewMessageBodyBuilder.ofText("Работяга, пришли мне команду!!! /help").build()
+                "Работяга, пришли мне команду!!! /help"
         );
     }
 
     protected void handleDefault(Message message) {
         messageSender.sendMessage(
                 message.getSender().getUserId(),
-                NewMessageBodyBuilder.ofText("Такой команды не знаю :(").build()
+                "Такой команды не знаю :("
         );
     }
 

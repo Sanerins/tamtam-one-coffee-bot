@@ -1,27 +1,18 @@
 package one.coffee.sql;
 
-import one.coffee.sql.utils.SQLUtils;
-import one.coffee.utils.StaticContext;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import one.coffee.sql.utils.SQLUtils;
+import one.coffee.utils.StaticContext;
 
 public abstract class Dao<T extends Entity> {
 
     protected String shortName;
     protected List<Map.Entry<String /*argNames*/, String /*argTypes*/>> args;
 
-    protected Dao() {
-    }
-
-    abstract public Optional<T> get(long id);
-
-    abstract public void save(T t);
-
-    abstract public void delete(T t);
-
-    protected final void init() {
+    protected Dao(String shortName, List<Map.Entry<String /*argNames*/, String /*argTypes*/>> args) {
         if (shortName == null || shortName.trim().isEmpty()) {
             throw new IllegalArgumentException("Illegal 'shortName'! Got: " + shortName);
         }
@@ -30,11 +21,20 @@ public abstract class Dao<T extends Entity> {
             throw new IllegalArgumentException("Not enough 'args'! Got: " + args);
         }
 
+        this.shortName = shortName;
+        this.args = args;
+
         if (StaticContext.getIsRecreatingTablesNeeded().get()) {
             DB.dropTable(this);
             DB.createTable(this);
         }
     }
+
+    abstract public Optional<T> get(long id);
+
+    abstract public void save(T t);
+
+    abstract public void delete(T t);
 
     // Возвращает полное название таблицы с указанием типов данных для каждого представленного поля.
     @Override
@@ -61,13 +61,15 @@ public abstract class Dao<T extends Entity> {
         StringBuilder signatureName = new StringBuilder(getShortName());
         signatureName.append(SQLUtils.TABLE_SIGNATURE_START);
         if (entity.isCreated()) {
-            signatureName.append(args.get(0).getKey())
+            signatureName
+                    .append(args.get(0).getKey())
                     .append(SQLUtils.ARGS_SEPARATOR);
         }
 
         for (Map.Entry<String, String> arg : args.subList(1, args.size())) {
             String argName = arg.getKey();
-            signatureName.append(argName)
+            signatureName
+                    .append(argName)
                     .append(SQLUtils.ARGS_SEPARATOR);
         }
         signatureName.delete(signatureName.length() - SQLUtils.ARGS_SEPARATOR.length(), signatureName.length());

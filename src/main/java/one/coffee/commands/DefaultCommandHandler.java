@@ -1,10 +1,8 @@
 package one.coffee.commands;
 
 import java.lang.invoke.MethodHandles;
-import java.util.List;
 import java.util.Optional;
 
-import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.model.Message;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user.UserService;
@@ -37,54 +35,55 @@ public class DefaultCommandHandler extends CommandHandler {
     }
 
     private void handleHelp(Message message) {
-        messageSender.sendMessage(message.getSender().getUserId(), NewMessageBodyBuilder.ofText("""
+        messageSender.sendMessage(
+                message.getSender().getUserId(),
+                """
                 Список команд бота, доступных для использования:
                 /help - список всех команд
                 /start - начать диалог с пользователем
-                """).build());
+                """);
     }
 
     private void handleStart(Message message) {
-        long senderId = message.getSender().getUserId();
-        userService.get(senderId).ifPresentOrElse(sender -> {}, () -> {
-            /*TODO NULL_USER*/
-            User actualSender = SQLUtils.recoverSender(message);
-            userService.save(actualSender);
-        });
+        SQLUtils.recoverSenderIfAbsent(message);
 
-        List<User> userWaitList = userService.getWaitingUsers(1);
-        if (userWaitList.isEmpty()) {
+        long senderId = message.getSender().getUserId();
+        Optional<User> chattingCandidateOptional = userService.getChattingCandidate(senderId);
+        if (chattingCandidateOptional.isEmpty()) {
             startTheWait(message);
             return;
         }
 
-        User recipient = userWaitList.get(0);
-        UserConnection userConnection = new UserConnection(senderId, recipient.getId());
+        User chattingCandidate = chattingCandidateOptional.get();
+        UserConnection userConnection = UserConnection.build()
+                .setUser1Id(senderId)
+                .setUser2Id(chattingCandidate.getId())
+                .get();
         userConnectionService.save(userConnection);
 
-        messageSender.sendMessage(senderId,
-                NewMessageBodyBuilder.ofText("""
+        sendStartChattingMessage(senderId);
+        sendStartChattingMessage(chattingCandidate.getId());
+    }
+
+    private void sendStartChattingMessage(long userId) {
+        messageSender.sendMessage(
+                userId,
+                """
                             Я нашел вам собеседника!
                             Я буду передавать сообщения между вами, можете общаться сколько влезет!)
                             Список команд, доступных во время беседы можно открыть на /help\s
-                            """).build());
-        messageSender.sendMessage(recipient.getId(),
-                NewMessageBodyBuilder.ofText("""
-                            Я нашел вам собеседника!
-                            Я буду передавать сообщения между вами, можете общаться сколько влезет!)
-                            Список команд, доступных во время беседы можно открыть на /help\s
-                            """).build());
+                            """);
     }
 
     private void startTheWait(Message message) {
         long senderId = message.getSender().getUserId();
-        Optional<User> optionalSender = userService.get(senderId);
-        User sender = optionalSender.orElseGet(() -> /*TODO NULL_USER*/ SQLUtils.recoverSender(message));
+        User sender = SQLUtils.recoverSenderIfAbsent(message);
         sender.setState(UserState.WAITING);
         userService.save(sender);
-        messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText(
-                "Вы успешно добавлены в список ждущий пользователей! Ожидайте начала диалога!"
-        ).build());
+        messageSender.sendMessage(
+                senderId,
+                "Вы успешно добавлены в список ждущий пользователей! Ожидайте начала диалога"
+        );
     }
 
 }
