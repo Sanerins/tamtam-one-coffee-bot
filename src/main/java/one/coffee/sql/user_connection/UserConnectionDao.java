@@ -1,9 +1,9 @@
 package one.coffee.sql.user_connection;
 
 import java.lang.invoke.MethodHandles;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import one.coffee.sql.DB;
 import one.coffee.sql.Dao;
 import one.coffee.sql.utils.UserConnectionState;
+import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,15 +25,16 @@ public class UserConnectionDao
     private static UserConnectionDao INSTANCE;
 
     private UserConnectionDao() {
-        shortName = "userConnections";
-        args = List.of(
-                Map.entry("id", "INTEGER PRIMARY KEY AUTOINCREMENT"),
-                Map.entry("user1Id", "INT REFERENCES users(userId) ON DELETE CASCADE"),
-                Map.entry("user2Id", "INT REFERENCES users(userId) ON DELETE CASCADE"),
-                Map.entry("approve1", "BIT"),
-                Map.entry("approve2", "BIT")
+        super(
+                "userConnections",
+                List.of(
+                        Map.entry("id", "INTEGER PRIMARY KEY AUTOINCREMENT"),
+                        Map.entry("user1Id", "INT REFERENCES users(userId) ON DELETE CASCADE"),
+                        Map.entry("user2Id", "INT REFERENCES users(userId) ON DELETE CASCADE"),
+                        Map.entry("approve1", "BIT"),
+                        Map.entry("approve2", "BIT")
+                )
         );
-        init();
     }
 
     public static UserConnectionDao getInstance() {
@@ -45,34 +47,39 @@ public class UserConnectionDao
     @Override
     public Optional<UserConnection> get(long id) {
         final AtomicReference<UserConnection> userConnection = new AtomicReference<>();
-        final String query = MessageFormat.format("""
-                        SELECT *
-                        FROM {0}
-                        WHERE id = {1}
-                        """, getInstance().getShortName(), id);
-        DB.executeQueryWithActionForResult(query, rs -> {
-            if (!rs.next()) {
-                return;
-            }
-            userConnection.set(parseUserConnection(rs));
-        });
+        try {
+            String sql = "SELECT * FROM " + getInstance().getShortName()+ " WHERE id = ?";
+            PreparedStatement stmt = StaticContext.CON.prepareStatement(sql);
+            stmt.setLong(1, id);
+
+            DB.executeQueryWithActionForResult(stmt, rs -> {
+                if (!rs.next()) {
+                    return;
+                }
+                userConnection.set(parseUserConnection(rs));
+            });
+        } catch (SQLException e) {
+            LOG.warn("When getting user connection", e);
+        }
         return Optional.ofNullable(userConnection.get());
     }
 
-
-
     public List<UserConnection> getByUserId(long userId) {
         final List<UserConnection> userConnections = new ArrayList<>();
-        final String query = MessageFormat.format("""
-                SELECT *
-                FROM {0}
-                WHERE user1Id = {1} OR user2Id = {1}
-                """, getInstance().getShortName(), userId);
-        DB.executeQueryWithActionForResult(query, rs -> {
-            while (rs.next()) {
-                userConnections.add(parseUserConnection(rs));
-            }
-        });
+        try {
+            String sql = "SELECT * FROM " + getInstance().getShortName() + " WHERE user1Id = ? OR user2Id = ?";
+            PreparedStatement stmt = StaticContext.CON.prepareStatement(sql);
+            stmt.setLong(1, userId);
+            stmt.setLong(2, userId);
+
+            DB.executeQueryWithActionForResult(stmt, rs -> {
+                while (rs.next()) {
+                    userConnections.add(parseUserConnection(rs));
+                }
+            });
+        } catch (SQLException e) {
+            LOG.warn("When getting user connections", e);
+        }
         return userConnections;
     }
 

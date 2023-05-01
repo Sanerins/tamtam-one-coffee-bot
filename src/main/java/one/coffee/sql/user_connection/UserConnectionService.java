@@ -13,8 +13,7 @@ import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class UserConnectionService
-        implements Service<UserConnection> {
+public class UserConnectionService implements Service<UserConnection> {
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final UserConnectionDao userConnectionDao = StaticContext.USER_CONNECTION_DAO;
@@ -39,18 +38,18 @@ public class UserConnectionService
         return userConnectionDao.getByUserId(userId);
     }
 
-    public List<UserConnection> getByUserId(long userId, UserConnectionState state) {
+    public List<UserConnection> getByUserIdAndUserConnectionState(long userId, UserConnectionState state) {
         return getByUserId(userId).stream()
                 .filter(uc -> uc.getState().equals(state))
                 .toList();
     }
 
     public List<UserConnection> getDefaultConnectionsByUserId(long userId) {
-        return getByUserId(userId, UserConnectionState.DEFAULT);
+        return getByUserIdAndUserConnectionState(userId, UserConnectionState.DEFAULT);
     }
 
     public Optional<UserConnection> getInProgressConnectionByUserId(long userId) {
-        List<UserConnection> inProgressUserConnections = getByUserId(userId, UserConnectionState.IN_PROGRESS);
+        List<UserConnection> inProgressUserConnections = getByUserIdAndUserConnectionState(userId, UserConnectionState.IN_PROGRESS);
         if (inProgressUserConnections.isEmpty()) {
             return Optional.empty();
         } else if (inProgressUserConnections.size() > 1) {
@@ -61,11 +60,11 @@ public class UserConnectionService
     }
 
     public List<UserConnection> getUnsuccessfulConnectionsByUserId(long userId) {
-        return getByUserId(userId, UserConnectionState.UNSUCCESSFUL);
+        return getByUserIdAndUserConnectionState(userId, UserConnectionState.UNSUCCESSFUL);
     }
 
     public List<UserConnection> getSuccessfulConnectionsByUserId(long userId) {
-        return getByUserId(userId, UserConnectionState.SUCCESSFUL);
+        return getByUserIdAndUserConnectionState(userId, UserConnectionState.SUCCESSFUL);
     }
 
     public long getConnectedUserId(long userId) {
@@ -94,13 +93,13 @@ public class UserConnectionService
                 LOG.warn("{} or {} has already connected!", user1Id, user2Id);
                 return Optional.empty();
             }
-        } else {
-            if (userConnectionDao.get(userConnectionId).isEmpty()) {
-                LOG.warn("No UserConnection with id {}", userConnectionId);
-                return Optional.empty();
-            }
+        } else if (userConnectionDao.get(userConnectionId).isEmpty()) {
+            LOG.warn("No UserConnection with id {}", userConnectionId);
+            return Optional.empty();
         }
 
+        // TODO IN_PROGRESS STATE???
+        userConnectionDao.save(userConnection);
         Optional<UserConnection> optionalConnection = getInProgressConnectionByUserId(user1Id);
         if (optionalConnection.isEmpty()) {
             LOG.warn("Can't save user connection: {}", userConnection);

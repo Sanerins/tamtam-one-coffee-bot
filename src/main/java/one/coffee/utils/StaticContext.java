@@ -1,11 +1,13 @@
 package one.coffee.utils;
 
+import java.sql.Connection;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import chat.tamtam.bot.longpolling.LongPollingBotOptions;
 import chat.tamtam.botapi.client.TamTamClient;
 import one.coffee.bot.OneCoffeeBot;
 import one.coffee.bot.OneCoffeeBotUpdateHandler;
+import one.coffee.sql.DB;
 import one.coffee.sql.user.UserDao;
 import one.coffee.sql.user.UserService;
 import one.coffee.sql.user_connection.UserConnectionDao;
@@ -21,6 +23,7 @@ public class StaticContext {
     public static final UserService USER_SERVICE = UserService.getInstance();
     public static final UserConnectionDao USER_CONNECTION_DAO = UserConnectionDao.getInstance();
     public static final UserConnectionService USER_CONNECTION_SERVICE = UserConnectionService.getInstance();
+    public static final Connection CON = DB.CONNECTION;
 
     private static TamTamClient client;
     private static MessageSender sender;

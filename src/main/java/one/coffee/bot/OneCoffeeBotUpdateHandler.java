@@ -3,7 +3,6 @@ package one.coffee.bot;
 import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 
-import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.bot.updates.NoopUpdateVisitor;
 import chat.tamtam.botapi.model.BotStartedUpdate;
 import chat.tamtam.botapi.model.Message;
@@ -43,10 +42,12 @@ public class OneCoffeeBotUpdateHandler extends NoopUpdateVisitor {
                 .setUsername(model.getUser().getUsername())
                 .get();
         userService.save(user);
-        messageSender.sendMessage(userId, NewMessageBodyBuilder.ofText("""
+        messageSender.sendMessage(
+                userId,
+                """
                         Бот, призванный помочь одиноким или скучающим людям найти компанию и славно провести время вместе
                         Напиши /help, чтобы получить список команд!
-                        """).build());
+                        """);
     }
 
     @Override
@@ -54,12 +55,9 @@ public class OneCoffeeBotUpdateHandler extends NoopUpdateVisitor {
         Message updateMessage = update.getMessage();
         long userId = Objects.requireNonNull(updateMessage.getSender().getUserId(), "UserId is null");
 
-        User user = userService.get(userId).orElseGet(() -> {
-            //TODO NULL_USER
-            User actualUser = SQLUtils.recoverSender(updateMessage);
-            userService.save(actualUser);
-            return actualUser;
-        });
+        User user = userService
+                .get(userId)
+                .orElseGet(() -> /*TODO NULL_USER*/ SQLUtils.recoverSender(updateMessage).get());
 
         UserState userState = user.getState();
         switch (userState) {
@@ -70,8 +68,10 @@ public class OneCoffeeBotUpdateHandler extends NoopUpdateVisitor {
                 LOG.warn("State {} for user with 'id' = {} is not supported", userState, userId);
                 user.setState(UserState.DEFAULT);
                 userService.save(user);
-                messageSender.sendMessage(userId,
-                        NewMessageBodyBuilder.ofText("Оххх... Что-то ошибочка вышла... Попробуйте еще раз").build());
+                messageSender.sendMessage(
+                        userId,
+                        "Оххх... Что-то ошибочка вышла... Попробуйте еще раз"
+                );
             }
         }
     }

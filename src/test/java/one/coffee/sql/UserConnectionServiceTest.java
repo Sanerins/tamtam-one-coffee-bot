@@ -1,5 +1,7 @@
 package one.coffee.sql;
 
+import java.util.List;
+
 import one.coffee.DBTest;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user.UserService;
@@ -9,7 +11,6 @@ import one.coffee.sql.utils.SQLUtils;
 import one.coffee.sql.utils.UserState;
 import one.coffee.utils.StaticContext;
 
-import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -25,10 +26,13 @@ public class UserConnectionServiceTest
         long user1Id = users.get(0).getId();
         long user2Id = users.get(1).getId();
 
-        UserConnection userConnection = new UserConnection(user1Id, user2Id);
+        UserConnection userConnection = UserConnection.build()
+                .setUser1Id(user1Id)
+                .setUser2Id(user2Id)
+                .get();
         userConnectionService.save(userConnection);
 
-        UserConnection savedUserConnection = userConnectionService.getByUserId(user1Id).get();
+        UserConnection savedUserConnection = userConnectionService.getByUserId(user1Id).get(0);
         User savedUser1 = userService.get(user1Id).get();
         User savedUser2 = userService.get(user2Id).get();
 
@@ -45,17 +49,23 @@ public class UserConnectionServiceTest
         long user2Id = users.get(1).getId();
         long user3Id = users.get(2).getId();
 
-        UserConnection users12Connection = new UserConnection(user1Id, user2Id);
+        UserConnection users12Connection = UserConnection.build()
+                .setUser1Id(user1Id)
+                .setUser2Id(user2Id)
+                .get();
         userConnectionService.save(users12Connection);
 
-        UserConnection users23Connection = new UserConnection(user2Id, user3Id);
+        UserConnection users23Connection = UserConnection.build()
+                .setUser1Id(user2Id)
+                .setUser2Id(user3Id)
+                .get();
         userConnectionService.save(users23Connection);
 
         User savedUser1 = userService.get(user1Id).get();
         User savedUser2 = userService.get(user2Id).get();
         User savedUser3 = userService.get(user3Id).get();
 
-        UserConnection savedUsers12Connection = userConnectionService.getByUserId(user1Id).get();
+        UserConnection savedUsers12Connection = userConnectionService.getByUserId(user1Id).get(0);
 
         assertTrue(userConnectionService.getByUserId(user3Id).isEmpty());
 
@@ -74,7 +84,10 @@ public class UserConnectionServiceTest
         long user1Id = users.get(0).getId();
         long user2Id = users.get(1).getId();
 
-        UserConnection userConnection = new UserConnection(user1Id, user2Id);
+        UserConnection userConnection = UserConnection.build()
+                .setUser1Id(user1Id)
+                .setUser2Id(user2Id)
+                .get();
         userConnectionService.save(userConnection);
         userConnectionService.delete(userConnection);
 

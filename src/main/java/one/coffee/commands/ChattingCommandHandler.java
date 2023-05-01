@@ -3,7 +3,6 @@ package one.coffee.commands;
 import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 
-import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.model.Message;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user.UserService;
@@ -76,20 +75,23 @@ public class ChattingCommandHandler extends CommandHandler {
     }
 
     private void processHalfApprove(long senderId) {
-        messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText(
+        messageSender.sendMessage(
+                senderId,
                 "Вы подтвердили свою симпатию к собеседнику! Ожидайте, пока он примет решение"
-        ).build());
+        );
         userConnectionService.getConnectedUser(senderId).ifPresentOrElse(connectedUser ->
-                messageSender.sendMessage(connectedUser.getId(), NewMessageBodyBuilder.ofText(
+                messageSender.sendMessage(
+                        connectedUser.getId(),
                 "Ваш собеседник проявил к Вам интерес! Ответьте взаимностью или прервите переписку"
-        ).build()), () -> {});
+        ), () -> {});
     }
 
     private void sendContactInfo(long senderId, User recipient) {
-        messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText(
+        messageSender.sendMessage(
+                senderId,
                 "Вы понравились Вашему собеседнику," +
                         " поэтому он решил поделиться с Вами своими контактами: " + recipient.getUserInfo()
-        ).build());
+        );
     }
 
     @Override
@@ -99,15 +101,20 @@ public class ChattingCommandHandler extends CommandHandler {
             return;
         }
 
-        messageSender.sendMessage(recipient.getId(), NewMessageBodyBuilder.copyOf(message).build());
+        messageSender.sendMessage(
+                recipient.getId(),
+                message.toString()
+        );
     }
 
     private void handleHelp(Message message) {
-        messageSender.sendMessage(message.getSender().getUserId(), NewMessageBodyBuilder.ofText("""
+        messageSender.sendMessage(
+                message.getSender().getUserId(),
+                """
                 Список команд бота, доступных для использования:
                 /help - список всех команд
                 /end - закончить диалог с пользователем
-                """).build());
+                """);
     }
 
     private void handleEnd(Message message) {
@@ -128,11 +135,11 @@ public class ChattingCommandHandler extends CommandHandler {
 
         messageSender.sendMessage(
                 senderId,
-                NewMessageBodyBuilder.ofText("Диалог с пользователем завершён").build()
+                "Диалог с пользователем завершён"
         );
         messageSender.sendMessage(
                 recipient.getId(),
-                NewMessageBodyBuilder.ofText("Пользователь решил закончить с вами диалог, надеюсь, все прошло сладко!").build()
+                "Пользователь решил закончить с вами диалог, надеюсь, все прошло сладко!"
         );
     }
 
@@ -170,21 +177,21 @@ public class ChattingCommandHandler extends CommandHandler {
 
     private void handleConnectionError(Message message) {
         long senderId = message.getSender().getUserId();
-        messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText(
+        messageSender.sendMessage(
+                senderId,
                 "Похоже соединение разорвалось..."
-        ).build());
-        User sender = userService.get(senderId).orElseGet(() -> /*TODO NULL_USER*/ SQLUtils.recoverSender(message));
-        sender.setState(UserState.DEFAULT);
-        userService.save(sender);
+        );
+        userService.get(senderId).ifPresentOrElse(sender -> {}, () -> /*TODO NULL_USER*/ SQLUtils.recoverSender(message));
     }
 
     private Optional<UserConnection> getInProgressConnection(long senderId) {
         Optional<UserConnection> userConnectionOptional =
                 userConnectionService.getInProgressConnectionByUserId(senderId);
         if (userConnectionOptional.isEmpty()) {
-            messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText(
+            messageSender.sendMessage(
+                    senderId,
                     "Не могу найти Вашего собеседника! Видимо, он решил поиграть в прятки..."
-            ).build());
+            );
             LOG.warn("Can't handle: No such user connection for sender {}", senderId);
             return Optional.empty();
         }

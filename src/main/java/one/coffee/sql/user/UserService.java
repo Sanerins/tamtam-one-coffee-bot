@@ -11,8 +11,7 @@ import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class UserService
-        implements Service<User> {
+public class UserService implements Service<User> {
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final UserDao userDao = StaticContext.USER_DAO;
@@ -27,11 +26,6 @@ public class UserService
             INSTANCE = new UserService();
         }
         return INSTANCE;
-    }
-
-    // TODO Enhance
-    private static boolean isValidCity(String city) {
-        return city != null && !city.trim().isEmpty();
     }
 
     @Override
@@ -73,8 +67,13 @@ public class UserService
         userDao.delete(user);
     }
 
+    // TODO Enhance
+    private static boolean isValidCity(String city) {
+        return city != null && !city.trim().isEmpty();
+    }
+
     private List<User> getAllChattingCandidates(long userId) {
-        List<UserConnection> unsuccessfulUserConnections = userConnectionService.getUnsuccessfulConnectionsByUserId(userId);
+        List<UserConnection> unsuccessfulUserConnections = StaticContext.USER_CONNECTION_SERVICE.getUnsuccessfulConnectionsByUserId(userId);
         return getWaitingUsers().stream()
                 .filter(user -> isCandidate(user, unsuccessfulUserConnections))
                 .toList();

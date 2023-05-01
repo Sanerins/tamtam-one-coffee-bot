@@ -1,5 +1,9 @@
 package one.coffee.utils;
 
+import java.lang.invoke.MethodHandles;
+import java.util.List;
+
+import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.client.TamTamClient;
 import chat.tamtam.botapi.exceptions.APIException;
 import chat.tamtam.botapi.exceptions.ClientException;
@@ -11,9 +15,6 @@ import chat.tamtam.botapi.model.TextFormat;
 import chat.tamtam.botapi.queries.SendMessageQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
-import java.util.List;
 
 /**
  * @author almaz.shakirov
@@ -88,6 +89,14 @@ public class MessageSender {
         return MAX_CHARS_IN_MESSAGE - 1;
     }
 
+    public void sendMessage(long userId, String message) {
+        sendMessage(userId, NewMessageBodyBuilder.ofText(message).build());
+    }
+
+    public SendMessageResult sendMessageWithResult(long userId, NewMessageBody messageBody) throws APIException, ClientException {
+        return new SendMessageQuery(client, messageBody).userId(userId).execute();
+    }
+
     /**
      * If messageBody has text with length more than {@link MessageSender#MAX_CHARS_IN_MESSAGE}, then it will be automatically
      * split and sent as several messages.
@@ -95,7 +104,7 @@ public class MessageSender {
      * @param userId      recipient
      * @param messageBody message
      */
-    public void sendMessage(long userId, NewMessageBody messageBody) {
+    private void sendMessage(long userId, NewMessageBody messageBody) {
         if (messageBody.getText() == null || messageBody.getText().length() <= 4000) { // 4000 - max characters in message text
             try {
                 new SendMessageQuery(client, messageBody).userId(userId).enqueue();
@@ -119,10 +128,6 @@ public class MessageSender {
         } catch (APIException | ClientException e) {
             LOG.error("Failed to send message to user {}", userId, e);
         }
-    }
-
-    public SendMessageResult sendMessageWithResult(long userId, NewMessageBody messageBody) throws APIException, ClientException {
-        return new SendMessageQuery(client, messageBody).userId(userId).execute();
     }
 
     private NewMessageBody createNewMessageBody(String text, List<AttachmentRequest> attachments, NewMessageLink link, Boolean notify, TextFormat format) {

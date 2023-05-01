@@ -1,6 +1,5 @@
 package one.coffee.utils;
 
-import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.model.Message;
 import org.eclipse.jetty.util.StringUtil;
 
@@ -31,14 +30,14 @@ public abstract class CommandHandler {
     protected void handleText(Message message) {
         messageSender.sendMessage(
                 message.getSender().getUserId(),
-                NewMessageBodyBuilder.ofText("Работяга, пришли мне команду!!! /help").build()
+                "Работяга, пришли мне команду!!! /help"
         );
     }
 
     protected void handleDefault(Message message) {
         messageSender.sendMessage(
                 message.getSender().getUserId(),
-                NewMessageBodyBuilder.ofText("Такой команды не знаю :(").build()
+                "Такой команды не знаю :("
         );
     }
 
