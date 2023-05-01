@@ -39,7 +39,7 @@ public @interface DBTest {
                 long id = i + 1;
                 User user = User.build()
                         .setId(id)
-                        .setCity("City" + id)
+                        .setCity(User.UserBuilder.DEFAULT_CITY)
                         .get();
                 userService.save(user);
                 users.add(user);

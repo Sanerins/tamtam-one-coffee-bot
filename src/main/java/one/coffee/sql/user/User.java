@@ -126,7 +126,7 @@ public class User implements Entity {
     public static final class UserBuilder {
 
         private static final long DEFAULT_ID = SQLUtils.DEFAULT_ID;
-        private static final String DEFAULT_CITY = "Cyberpunk2077";
+        public static final String DEFAULT_CITY = "Москва";
         private static final UserState DEFAULT_STATE = UserState.DEFAULT;
         private static final long DEFAULT_CONNECTION_ID = SQLUtils.DEFAULT_ID;
         private static final String DEFAULT_USERNAME = "Вася Пупкин";

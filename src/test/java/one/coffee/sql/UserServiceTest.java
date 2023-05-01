@@ -8,7 +8,6 @@ import one.coffee.sql.user.UserService;
 import one.coffee.sql.utils.SQLUtils;
 import one.coffee.sql.utils.UserState;
 import one.coffee.utils.StaticContext;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,7 +21,7 @@ public class UserServiceTest
     @Test
     void ok1() {
         long userId = 123;
-        String userCity = "St. Petersburg";
+        String userCity = UserService.userCities.stream().findAny().get();
         User user = User.build()
                 .setId(userId)
                 .setCity(userCity)
@@ -71,7 +70,6 @@ public class UserServiceTest
         assertTrue(userService.get(userId).isEmpty());
     }
 
-    @Disabled("TODO Validate user city")
     @Test
     void invalidUserCity3() {
         final long userId = 123;
@@ -95,7 +93,10 @@ public class UserServiceTest
     void rewriteUser(List<User> users) {
         User user = users.get(0);
 
-        String newUserCity = user.getCity() + "777";
+        String newUserCity = UserService.userCities.stream()
+                .filter(city -> !city.equals(user.getCity()))
+                .findAny()
+                .get();
         user.setCity(newUserCity);
         userService.save(user);
         User savedUser = userService.get(user.getId()).get();

@@ -3,6 +3,7 @@ package one.coffee.sql.user;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import one.coffee.sql.Service;
 import one.coffee.utils.StaticContext;
@@ -14,6 +15,7 @@ public class UserService
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final UserDao userDao = StaticContext.USER_DAO;
+    public static final Set<String> userCities = Set.of("Москва", "Санкт-Петербург");
     private static UserService INSTANCE;
 
     private UserService() {
@@ -26,9 +28,8 @@ public class UserService
         return INSTANCE;
     }
 
-    // TODO Enhance
     private static boolean isValidCity(String city) {
-        return city != null && !city.trim().isEmpty();
+        return city != null && userCities.contains(city);
     }
 
     @Override
@@ -48,7 +49,7 @@ public class UserService
         }
 
         if (!isValidCity(user.getCity())) {
-            LOG.warn("Invalid user city! Got {}", user.getCity());
+            LOG.warn("Invalid user city! Got '{}'", user.getCity());
             return Optional.empty();
         }
 
