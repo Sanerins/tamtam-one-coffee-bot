@@ -104,7 +104,7 @@ public class MessageSender {
      * @param userId      recipient
      * @param messageBody message
      */
-    private void sendMessage(long userId, NewMessageBody messageBody) {
+    public void sendMessage(long userId, NewMessageBody messageBody) {
         if (messageBody.getText() == null || messageBody.getText().length() <= 4000) { // 4000 - max characters in message text
             try {
                 new SendMessageQuery(client, messageBody).userId(userId).enqueue();

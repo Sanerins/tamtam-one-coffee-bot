@@ -130,7 +130,7 @@ public class DB {
         return isPresent.get();
     }
 
-    public static synchronized void executeQuery(PreparedStatement stmt) {
+    public static void executeQuery(PreparedStatement stmt) {
         executeQuery(stmt, SQLCallback.EMPTY);
     }
 

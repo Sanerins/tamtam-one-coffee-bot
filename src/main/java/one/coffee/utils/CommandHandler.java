@@ -25,8 +25,7 @@ public abstract class CommandHandler {
         handleDefault(message);
     }
 
-
-    // TODO /text не работает, на самом деле, в чате нельзя на него нажать. Надо это пофиксить.
+    // TODO невозможно нажать на /help
     protected void handleText(Message message) {
         messageSender.sendMessage(
                 message.getSender().getUserId(),

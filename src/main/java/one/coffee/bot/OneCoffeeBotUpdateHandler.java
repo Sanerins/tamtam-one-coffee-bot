@@ -54,16 +54,12 @@ public class OneCoffeeBotUpdateHandler extends NoopUpdateVisitor {
     public void visit(MessageCreatedUpdate update) {
         Message updateMessage = update.getMessage();
         long userId = Objects.requireNonNull(updateMessage.getSender().getUserId(), "UserId is null");
-
-        User user = userService
-                .get(userId)
-                .orElseGet(() -> /*TODO NULL_USER*/ SQLUtils.recoverSender(updateMessage).get());
-
+        User user = SQLUtils.recoverSenderIfAbsent(updateMessage);
         UserState userState = user.getState();
         switch (userState) {
-            case DEFAULT -> defaultHandler.handle(update.getMessage());
-            case WAITING -> waitingHandler.handle(update.getMessage());
-            case CHATTING -> chattingHandler.handle(update.getMessage());
+            case DEFAULT -> defaultHandler.handle(updateMessage);
+            case WAITING -> waitingHandler.handle(updateMessage);
+            case CHATTING -> chattingHandler.handle(updateMessage);
             default -> {
                 LOG.warn("State {} for user with 'id' = {} is not supported", userState, userId);
                 user.setState(UserState.DEFAULT);

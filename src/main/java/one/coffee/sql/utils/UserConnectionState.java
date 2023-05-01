@@ -1,7 +1,6 @@
 package one.coffee.sql.utils;
 
 public enum UserConnectionState {
-    DEFAULT,
     IN_PROGRESS,
     SUCCESSFUL,
     UNSUCCESSFUL;
@@ -12,6 +11,6 @@ public enum UserConnectionState {
                 return state;
             }
         }
-        return UserConnectionState.DEFAULT;
+        throw new IllegalArgumentException("No userConnectionState with id " + id);
     }
 }

@@ -3,6 +3,7 @@ package one.coffee.commands;
 import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 
+import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.model.Message;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user.UserService;
@@ -10,7 +11,6 @@ import one.coffee.sql.user_connection.UserConnection;
 import one.coffee.sql.user_connection.UserConnectionService;
 import one.coffee.sql.utils.SQLUtils;
 import one.coffee.sql.utils.UserConnectionState;
-import one.coffee.sql.utils.UserState;
 import one.coffee.utils.CommandHandler;
 import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
@@ -36,64 +36,6 @@ public class ChattingCommandHandler extends CommandHandler {
         }
     }
 
-    private void handleApprove(Message message) {
-        long senderId = message.getSender().getUserId();
-        Optional<UserConnection> userConnectionOptional = getInProgressConnection(senderId);
-        if (userConnectionOptional.isEmpty()) {
-            return;
-        }
-        UserConnection userConnection = userConnectionOptional.get();
-        setApprove(senderId, userConnection);
-        processApprove(senderId, userConnection);
-        userConnectionService.save(userConnection);
-    }
-
-    private void setApprove(long senderId, UserConnection userConnection) {
-        if (userConnection.getUser1Id() == senderId) {
-            userConnection.setApprove1(true);
-        } else {
-            userConnection.setApprove2(true);
-        }
-    }
-
-    private void processApprove(long senderId, UserConnection userConnection) {
-        if (userConnection.isAllApprove()) {
-            processAllApprove(senderId, userConnection);
-        } else {
-            processHalfApprove(senderId);
-        }
-    }
-
-    private void processAllApprove(long senderId, UserConnection userConnection) {
-        User recipient = userConnectionService.getConnectedUser(senderId).get();
-        User sender = userService.get(senderId).get();
-
-        sendContactInfo(senderId, recipient);
-        sendContactInfo(recipient.getId(), sender);
-
-        userConnection.setState(UserConnectionState.SUCCESSFUL);
-    }
-
-    private void processHalfApprove(long senderId) {
-        messageSender.sendMessage(
-                senderId,
-                "Вы подтвердили свою симпатию к собеседнику! Ожидайте, пока он примет решение"
-        );
-        userConnectionService.getConnectedUser(senderId).ifPresentOrElse(connectedUser ->
-                messageSender.sendMessage(
-                        connectedUser.getId(),
-                "Ваш собеседник проявил к Вам интерес! Ответьте взаимностью или прервите переписку"
-        ), () -> {});
-    }
-
-    private void sendContactInfo(long senderId, User recipient) {
-        messageSender.sendMessage(
-                senderId,
-                "Вы понравились Вашему собеседнику," +
-                        " поэтому он решил поделиться с Вами своими контактами: " + recipient.getUserInfo()
-        );
-    }
-
     @Override
     protected void handleText(Message message) {
         User recipient = getRecipient(message);
@@ -103,7 +45,7 @@ public class ChattingCommandHandler extends CommandHandler {
 
         messageSender.sendMessage(
                 recipient.getId(),
-                message.toString()
+                NewMessageBodyBuilder.copyOf(message).build()
         );
     }
 
@@ -160,13 +102,13 @@ public class ChattingCommandHandler extends CommandHandler {
             recipient = optionalRecipient.get();
         }
 
-        if (recipient.getState() != UserState.CHATTING) {
+        if (recipient.isNotChatting()) {
             LOG.error("The recipient " + recipient + " is not in chatting state for user " + senderId);
             handleConnectionError(message);
             return null;
         }
 
-        if (userConnectionService.getConnectedUserId(recipientId) != message.getSender().getUserId()) {
+        if (userConnectionService.haveNotConnection(recipientId, senderId)) {
             LOG.error("The recipient " + recipient + " is chatting with other person, not with " + senderId);
             handleConnectionError(message);
             return null;
@@ -175,27 +117,82 @@ public class ChattingCommandHandler extends CommandHandler {
         return recipient;
     }
 
+    private void handleApprove(Message message) {
+        long senderId = message.getSender().getUserId();
+        Optional<UserConnection> userConnectionOptional = getInProgressConnection(senderId);
+        if (userConnectionOptional.isEmpty()) {
+            return;
+        }
+        UserConnection userConnection = userConnectionOptional.get();
+        setApprove(senderId, userConnection);
+        processApprove(senderId, userConnection);
+        userConnectionService.save(userConnection);
+    }
+
+    private void setApprove(long senderId, UserConnection userConnection) {
+        if (userConnection.getUser1Id() == senderId) {
+            userConnection.setApprove1(true);
+        } else {
+            userConnection.setApprove2(true);
+        }
+    }
+
+    private void processApprove(long senderId, UserConnection userConnection) {
+        if (userConnection.isAllApprove()) {
+            processAllApprove(senderId, userConnection);
+        } else {
+            processHalfApprove(senderId);
+        }
+    }
+
+    private void processAllApprove(long senderId, UserConnection userConnection) {
+        User recipient = userConnectionService.getConnectedUser(senderId).get();
+        User sender = userService.get(senderId).get();
+
+        sendContactInfo(senderId, recipient);
+        sendContactInfo(recipient.getId(), sender);
+
+        userConnection.setState(UserConnectionState.SUCCESSFUL);
+    }
+
+    private void processHalfApprove(long senderId) {
+        messageSender.sendMessage(
+                senderId,
+                "Вы подтвердили свою симпатию к собеседнику! Ожидайте, пока он примет решение"
+        );
+        userConnectionService.getConnectedUser(senderId).ifPresentOrElse(connectedUser ->
+                messageSender.sendMessage(
+                        connectedUser.getId(),
+                        "Ваш собеседник проявил к Вам интерес! Ответьте взаимностью или прервите переписку"
+                ), () -> {});
+    }
+
+    private void sendContactInfo(long senderId, User recipient) {
+        messageSender.sendMessage(
+                senderId,
+                "Вы понравились Вашему собеседнику," +
+                        " поэтому он решил поделиться с Вами своими контактами: " + recipient.getUserInfo()
+        );
+    }
+
     private void handleConnectionError(Message message) {
         long senderId = message.getSender().getUserId();
         messageSender.sendMessage(
                 senderId,
                 "Похоже соединение разорвалось..."
         );
-        userService.get(senderId).ifPresentOrElse(sender -> {}, () -> /*TODO NULL_USER*/ SQLUtils.recoverSender(message));
+        SQLUtils.recoverSenderIfAbsent(message);
     }
 
     private Optional<UserConnection> getInProgressConnection(long senderId) {
-        Optional<UserConnection> userConnectionOptional =
-                userConnectionService.getInProgressConnectionByUserId(senderId);
-        if (userConnectionOptional.isEmpty()) {
+        return Optional.ofNullable(userConnectionService.getInProgressConnectionByUserId(senderId).orElseGet(() -> {
             messageSender.sendMessage(
                     senderId,
                     "Не могу найти Вашего собеседника! Видимо, он решил поиграть в прятки..."
             );
             LOG.warn("Can't handle: No such user connection for sender {}", senderId);
-            return Optional.empty();
-        }
-        return userConnectionOptional;
+            return null;
+        }));
     }
 
 }

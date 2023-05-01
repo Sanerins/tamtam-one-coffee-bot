@@ -73,6 +73,10 @@ public class User implements Entity {
         this.userInfo = userInfo;
     }
 
+    public boolean isNotChatting() {
+        return !UserState.CHATTING.equals(state);
+    }
+
     public static UserBuilder build() {
         return new UserBuilder();
     }

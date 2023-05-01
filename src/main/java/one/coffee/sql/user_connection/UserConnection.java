@@ -134,7 +134,7 @@ public class UserConnection implements Entity {
         private static final long DEFAULT_USER2_ID = SQLUtils.DEFAULT_ID;
         private static final boolean DEFAULT_APPROVE1 = false;
         private static final boolean DEFAULT_APPROVE2 = false;
-        private static final UserConnectionState DEFAULT_USER_CONNECTION_STATE = UserConnectionState.DEFAULT;
+        private static final UserConnectionState DEFAULT_USER_CONNECTION_STATE = UserConnectionState.IN_PROGRESS;
 
         private final UserConnection userConnection =
                 new UserConnection(DEFAULT_ID, DEFAULT_USER1_ID, DEFAULT_USER2_ID, DEFAULT_APPROVE1, DEFAULT_APPROVE2, DEFAULT_USER_CONNECTION_STATE);

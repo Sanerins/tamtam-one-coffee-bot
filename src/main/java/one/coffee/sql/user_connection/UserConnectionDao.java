@@ -17,8 +17,7 @@ import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class UserConnectionDao
-        extends Dao<UserConnection>
+public class UserConnectionDao extends Dao<UserConnection>
 {
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -60,7 +59,7 @@ public class UserConnectionDao
                 userConnection.set(parseUserConnection(rs));
             });
         } catch (SQLException e) {
-            LOG.warn("When getting user connection", e);
+            LOG.error("Error when getting user connection", e);
         }
         return Optional.ofNullable(userConnection.get());
     }
@@ -79,7 +78,7 @@ public class UserConnectionDao
                 }
             });
         } catch (SQLException e) {
-            LOG.warn("When getting user connections", e);
+            LOG.error("Error when getting user connections", e);
         }
         return userConnections;
     }

@@ -44,16 +44,12 @@ public class UserConnectionService implements Service<UserConnection> {
                 .toList();
     }
 
-    public List<UserConnection> getDefaultConnectionsByUserId(long userId) {
-        return getByUserIdAndUserConnectionState(userId, UserConnectionState.DEFAULT);
-    }
-
     public Optional<UserConnection> getInProgressConnectionByUserId(long userId) {
         List<UserConnection> inProgressUserConnections = getByUserIdAndUserConnectionState(userId, UserConnectionState.IN_PROGRESS);
         if (inProgressUserConnections.isEmpty()) {
             return Optional.empty();
         } else if (inProgressUserConnections.size() > 1) {
-            LOG.warn("Several userConnections with state 'IN_PROGRESS'!");
+            LOG.warn("Several userConnections with state 'IN_PROGRESS'! Expected only one.");
             return Optional.empty();
         }
         return Optional.of(inProgressUserConnections.get(0));
@@ -89,7 +85,7 @@ public class UserConnectionService implements Service<UserConnection> {
         long user2Id = userConnection.getUser2Id();
         if (userConnectionId <= 0) {
             //TODO Но не факт, что они сконнекчены друг с другом, можно попытаться выпарсить этот случай.
-            if (isConnected(user1Id, user2Id)) {
+            if (isConnected(user1Id) || isConnected(user2Id)) {
                 LOG.warn("{} or {} has already connected!", user1Id, user2Id);
                 return Optional.empty();
             }
@@ -116,8 +112,12 @@ public class UserConnectionService implements Service<UserConnection> {
         commitUsersConnection(SQLUtils.DEFAULT_ID, user1Id, user2Id, UserState.WAITING);
     }
 
-    private boolean isConnected(long user1Id, long user2Id) {
-        return isConnected(user1Id) && isConnected(user2Id);
+    public boolean haveConnection(long user1Id, long user2Id) {
+        return getConnectedUserId(user1Id) == user2Id;
+    }
+
+    public boolean haveNotConnection(long user1Id, long user2Id) {
+        return !haveConnection(user1Id, user2Id);
     }
 
     private boolean isConnected(long userId) {
