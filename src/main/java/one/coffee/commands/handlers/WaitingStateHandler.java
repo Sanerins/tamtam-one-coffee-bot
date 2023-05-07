@@ -1,8 +1,9 @@
-package one.coffee.commands;
+package one.coffee.commands.handlers;
 
-import chat.tamtam.bot.annotations.CommandHandler;
 import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.model.Message;
+import one.coffee.ParentClasses.HandlerAnnotation;
+import one.coffee.commands.StateHandler;
 import one.coffee.sql.UserState;
 import one.coffee.sql.user.User;
 import org.slf4j.Logger;
@@ -15,6 +16,7 @@ import java.util.Optional;
 //TODO: по методу handle вполне понятно что надо сделать)
 @Component
 public class WaitingStateHandler extends StateHandler {
+    @SuppressWarnings("unused")
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Override
@@ -22,7 +24,8 @@ public class WaitingStateHandler extends StateHandler {
         return UserState.WAITING;
     }
 
-    @CommandHandler("/stop")
+    @SuppressWarnings("unused")
+    @HandlerAnnotation("/stop")
     private void handleStop(Message message) {
         long senderId = message.getSender().getUserId();
         Optional<User> optionalSender = userService.get(senderId);

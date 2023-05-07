@@ -1,8 +1,9 @@
-package one.coffee.commands;
+package one.coffee.commands.handlers;
 
-import chat.tamtam.bot.annotations.CommandHandler;
 import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.model.Message;
+import one.coffee.ParentClasses.HandlerAnnotation;
+import one.coffee.commands.StateHandler;
 import one.coffee.sql.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user_connection.UserConnection;
@@ -23,7 +24,8 @@ public class ChattingStateHandler extends StateHandler {
         return UserState.CHATTING;
     }
 
-    @CommandHandler("/approve")
+    @SuppressWarnings("unused")
+    @HandlerAnnotation("/approve")
     private void handleApprove(Message message) {
         long senderId = message.getSender().getUserId();
         UserConnection userConnection = userConnectionService.getByUserId(senderId).get();
@@ -56,17 +58,8 @@ public class ChattingStateHandler extends StateHandler {
         messageSender.sendMessage(senderId, NewMessageBodyBuilder.ofText(username).build());
     }
 
-    @Override
-    protected void handleText(Message message) {
-        User recipient = getRecipient(message);
-        if (recipient == null) {
-            return;
-        }
-
-        messageSender.sendMessage(recipient.getId(), NewMessageBodyBuilder.copyOf(message).build());
-    }
-
-    @CommandHandler("/help")
+    @SuppressWarnings("unused")
+    @HandlerAnnotation("/help")
     private void handleHelp(Message message) {
         messageSender.sendMessage(message.getSender().getUserId(), NewMessageBodyBuilder.ofText("""
                 Список команд бота, доступных для использования:
@@ -74,7 +67,8 @@ public class ChattingStateHandler extends StateHandler {
                 /end - закончить диалог с пользователем""").build());
     }
 
-    @CommandHandler("/end")
+    @SuppressWarnings("unused")
+    @HandlerAnnotation("/end")
     private void handleEnd(Message message) {
         User recipient = getRecipient(message);
         if (recipient == null) {
