@@ -3,39 +3,26 @@ package one.coffee.bot;
 import chat.tamtam.botapi.client.TamTamClient;
 import one.coffee.Main;
 import one.coffee.sql.DB;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Properties;
+import org.springframework.context.annotation.PropertySource;
 
 @Configuration
+@PropertySource("/application.properties")
 @ComponentScan(
         basePackageClasses = {Main.class}
 )
 public class ContextConf {
     @Bean
-    public static TamTamClient getTamTamClient(Properties properties) {
-        return TamTamClient.create(properties.getProperty("api.key"));
+    public static TamTamClient getTamTamClient(@Value("${api.key}") String API_KEY) {
+        return TamTamClient.create(API_KEY);
     }
 
     @Bean
-    public static DB getDB(Properties properties) {
-        return new DB(properties);
+    public static DB getDB(@Value("${db.URL}") String DB_URL) {
+        return new DB(DB_URL);
     }
 
-    @Bean
-    @Primary
-    public static Properties getProperties() {
-        Properties properties = new Properties();
-        try {
-            properties.load(new FileInputStream("src/main/resources/configuration.properties"));
-        } catch (IOException e) {
-            throw new RuntimeException("Inside resources folder create configuration.properties");
-        }
-        return properties;
-    }
 }

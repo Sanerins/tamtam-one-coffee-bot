@@ -5,7 +5,8 @@ import chat.tamtam.bot.longpolling.LongPollingBot;
 import chat.tamtam.bot.longpolling.LongPollingBotOptions;
 import chat.tamtam.botapi.client.TamTamClient;
 import chat.tamtam.botapi.model.Update;
-import org.jetbrains.annotations.Nullable;
+import one.coffee.ParentClasses.Result;
+import one.coffee.commands.StateResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,15 +30,15 @@ public class OneCoffeeBot extends LongPollingBot {
         this.handler = handler;
     }
 
-    @Nullable
     @Override
     public Object onUpdate(Update update) {
         LOG.info("Received update: {}", update);
-        UpdateResult result = update.map(handler);
-        if (result.getUpdateState() == UpdateResult.UpdateState.SUCCESS) {
+        Result result = update.map(handler);
+        if (result.getResultState() == StateResult.ResultState.SUCCESS) {
             successfulCount++;
         } else {
             unsuccessfulCount--;
+            LOG.error("Got error%s".formatted(result.getError()));
         }
         return result;
     }

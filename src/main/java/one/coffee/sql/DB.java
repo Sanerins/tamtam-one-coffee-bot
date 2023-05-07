@@ -10,7 +10,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 // TODO Подумать, нужно ли объединять DB с Dao
@@ -20,12 +19,12 @@ public class DB {
     private Connection CONNECTION;
     private Statement STATEMENT;
 
-    public DB(Properties properties) {
+    public DB(String DB_URL) {
         try {
             // Auto-commit mode with multithreading support
             // TODO Проверить, что многопоток действительно поддерживается (дока, профилирование, тестирование).
             // Если на самом деле он не поддерживается, то создать пул коннекшенов, как было на NoSQL.
-            CONNECTION = DriverManager.getConnection(properties.getProperty("db.URL"));
+            CONNECTION = DriverManager.getConnection(DB_URL);
             STATEMENT = CONNECTION.createStatement();
         } catch (SQLException e) {
             // Считаю, что зафейленная инициализация БД - критическая ситуация для приложения,

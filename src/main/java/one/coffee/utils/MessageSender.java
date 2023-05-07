@@ -9,6 +9,7 @@ import chat.tamtam.botapi.model.NewMessageLink;
 import chat.tamtam.botapi.model.SendMessageResult;
 import chat.tamtam.botapi.model.TextFormat;
 import chat.tamtam.botapi.queries.SendMessageQuery;
+import one.coffee.keyboards.Keyboard;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -128,6 +129,10 @@ public class MessageSender {
 
     public SendMessageResult sendMessageWithResult(long userId, NewMessageBody messageBody) throws APIException, ClientException {
         return new SendMessageQuery(client, messageBody).userId(userId).execute();
+    }
+
+    public void sendKeyboard(long userId, Keyboard keyboard) {
+        sendMessage(userId, keyboard.build());
     }
 
     private NewMessageBody createNewMessageBody(String text, List<AttachmentRequest> attachments, NewMessageLink link, Boolean notify, TextFormat format) {

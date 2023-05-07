@@ -1,13 +1,16 @@
 package one.coffee.sql;
 
+import one.coffee.bot.ContextConf;
 import one.coffee.sql.user.UserDao;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@Component
+@SpringBootTest
+@ContextConfiguration(classes = ContextConf.class)
 public class BasicDBTest {
     @Autowired
     protected UserDao userDao;
