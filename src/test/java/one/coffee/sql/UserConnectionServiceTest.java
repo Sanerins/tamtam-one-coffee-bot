@@ -1,9 +1,7 @@
 package one.coffee.sql;
 
-import java.util.List;
-import java.util.Optional;
-
 import one.coffee.DBTest;
+import one.coffee.sql.states.UserConnectionState;
 import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user_connection.UserConnection;
@@ -11,9 +9,7 @@ import one.coffee.sql.utils.SQLUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 

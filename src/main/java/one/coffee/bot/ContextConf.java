@@ -24,5 +24,4 @@ public class ContextConf {
     public static DB getDB(@Value("${db.URL}") String DB_URL) {
         return new DB(DB_URL);
     }
-
 }

@@ -1,18 +1,22 @@
 package one.coffee.sql;
 
-import java.util.List;
-
 import one.coffee.DBTest;
+import one.coffee.bot.ContextConf;
 import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@SpringBootTest
+@ContextConfiguration(classes = ContextConf.class, loader= AnnotationConfigContextLoader.class)
 public class UserServiceTest
         extends ResourceTest {
 
@@ -22,7 +26,7 @@ public class UserServiceTest
         final String userCity = "St. Petersburg";
         final UserState state = UserState.DEFAULT;
         final long connectionId = -1;
-        User user = new User(userId, userCity, state, connectionId, null);
+        User user = new User(userId, userCity, state, connectionId, "Вася Пупкин", "Живу на болоте");
 
         userService.save(user);
 
@@ -40,7 +44,7 @@ public class UserServiceTest
         final String userCity = "St. Petersburg";
         final UserState state = UserState.DEFAULT;
         final long connectionId = -1;
-        User user = new User(userId, userCity, state, connectionId, "Вася Пупкин");
+        User user = new User(userId, userCity, state, connectionId, "Вася Пупкин", "Живу на болоте");
 
         userService.save(user);
         assertTrue(userService.get(userId).isEmpty());
@@ -52,7 +56,7 @@ public class UserServiceTest
         final String userCity = null;
         final UserState state = UserState.DEFAULT;
         final long connectionId = -1;
-        User user = new User(userId, userCity, state, connectionId, "Вася Пупкин");
+        User user = new User(userId, userCity, state, connectionId, "Вася Пупкин", "Живу на болоте");
 
         userService.save(user);
         assertTrue(userService.get(userId).isEmpty());
@@ -64,7 +68,7 @@ public class UserServiceTest
         final String userCity = "";
         final UserState state = UserState.DEFAULT;
         final long connectionId = -1;
-        User user = new User(userId, userCity, state, connectionId, "Вася Пупкин");
+        User user = new User(userId, userCity, state, connectionId, "Вася Пупкин", "Живу на болоте");
 
         userService.save(user);
         assertTrue(userService.get(userId).isEmpty());
@@ -77,7 +81,7 @@ public class UserServiceTest
         final String userCity = "abc";
         final UserState state = UserState.DEFAULT;
         final long connectionId = -1;
-        User user = new User(userId, userCity, state, connectionId, "Вася Пупкин");
+        User user = new User(userId, userCity, state, connectionId, "Вася Пупкин", "Живу на болоте");
 
         userService.save(user);
         assertTrue(userService.get(userId).isEmpty());

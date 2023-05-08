@@ -1,11 +1,14 @@
 package one.coffee.sql;
 
 import one.coffee.DBTest;
+import one.coffee.bot.ContextConf;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user.UserDao;
 import org.junit.jupiter.api.Disabled;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -13,7 +16,8 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@Component
+@SpringBootTest
+@ContextConfiguration(classes = ContextConf.class, loader= AnnotationConfigContextLoader.class)
 public class ConcurrentTest {
 
     @Autowired

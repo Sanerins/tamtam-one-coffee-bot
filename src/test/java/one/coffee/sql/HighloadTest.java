@@ -1,18 +1,21 @@
 package one.coffee.sql;
 
 import one.coffee.DBTest;
+import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user.UserDao;
-import one.coffee.utils.StaticContext;
 import org.junit.jupiter.api.Disabled;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import java.sql.SQLException;
 import java.util.List;
 
+@Component
 public class HighloadTest
         extends ResourceTest {
 
-    private static final UserDao userDao = StaticContext.USER_DAO;
+    @Autowired
+    private UserDao userDao;
 
     @Disabled("База поддерживает 4K GET-Rps в однопоток")
     @DBTest(nUsers = 4000)
