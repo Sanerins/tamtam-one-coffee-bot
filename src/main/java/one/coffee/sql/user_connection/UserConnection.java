@@ -5,6 +5,7 @@ import one.coffee.sql.states.UserConnectionState;
 import one.coffee.sql.utils.SQLUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.invoke.MethodHandles;
 
@@ -13,9 +14,13 @@ public class UserConnection
 
     @SuppressWarnings("unused")
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private final long user1Id;
-    private final long user2Id;
-    private final long id;
+
+    @Autowired
+    private static final UserConnectionService userConnectionService;
+
+    private long id;
+    private long user1Id;
+    private long user2Id;
     private boolean approve1;
     private boolean approve2;
     private UserConnectionState state;
@@ -33,7 +38,6 @@ public class UserConnection
         this.state = state;
     }
 
-
     public boolean isApprove1() {
         return approve1;
     }
@@ -42,14 +46,30 @@ public class UserConnection
         return approve2;
     }
 
+    public boolean isAllApprove() {
+        return isApprove1() && isApprove2();
+    }
+
     @Override
     public boolean isCreated() {
-        return id != SQLUtils.DEFAULT_ID;
+        return userConnectionService.getInProgressConnectionByUserId(user1Id).isPresent();
     }
 
     @Override
     public long getId() {
         return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public void setUser1Id(long user1Id) {
+        this.user1Id = user1Id;
+    }
+
+    public void setUser2Id(long user2Id) {
+        this.user2Id = user2Id;
     }
 
     public long getUser1Id() {
@@ -58,10 +78,6 @@ public class UserConnection
 
     public long getUser2Id() {
         return user2Id;
-    }
-
-    public boolean isAllApprove() {
-        return isApprove1() && isApprove2();
     }
 
     public void setApprove1(boolean approve1) {
@@ -83,11 +99,12 @@ public class UserConnection
     @Override
     public String toString() {
         return "UserConnection{" +
-                "user1Id=" + user1Id +
+                "id=" + id +
+                ", user1Id=" + user1Id +
                 ", user2Id=" + user2Id +
-                ", id=" + id +
                 ", approve1=" + approve1 +
                 ", approve2=" + approve2 +
+                ", state=" + state +
                 '}';
     }
 

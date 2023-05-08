@@ -1,5 +1,8 @@
 package one.coffee.sql;
 
+import java.util.List;
+import java.util.Optional;
+
 import one.coffee.DBTest;
 import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
@@ -8,6 +11,9 @@ import one.coffee.sql.utils.SQLUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -23,7 +29,7 @@ public class UserConnectionServiceTest
         UserConnection userConnection = new UserConnection(user1Id, user2Id);
         userConnectionService.save(userConnection);
 
-        UserConnection savedUserConnection = userConnectionService.getByUserId(user1Id).get();
+        UserConnection savedUserConnection = userConnectionService.getByUserId(user1Id).get(0);
         User savedUser1 = userService.get(user1Id).get();
         User savedUser2 = userService.get(user2Id).get();
 
@@ -50,7 +56,7 @@ public class UserConnectionServiceTest
         User savedUser2 = userService.get(user2Id).get();
         User savedUser3 = userService.get(user3Id).get();
 
-        UserConnection savedUsers12Connection = userConnectionService.getByUserId(user1Id).get();
+        UserConnection savedUsers12Connection = userConnectionService.getByUserId(user1Id).get(0);
 
         assertTrue(userConnectionService.getByUserId(user3Id).isEmpty());
 
@@ -81,6 +87,31 @@ public class UserConnectionServiceTest
 
         assertEquals(savedUser2.getState(), UserState.WAITING);
         assertEquals(savedUser2.getConnectionId(), -1);
+    }
+
+    @DBTest(nUsers = 3)
+    void validCandidate(List<User> users) {
+        long user1Id = users.get(0).getId();
+        long user2Id = users.get(1).getId();
+
+        User user3 = users.get(2);
+        user3.setState(UserState.WAITING);
+        userService.save(user3);
+        long user3Id = user3.getId();
+
+        UserConnection userConnection = new UserConnection(user1Id, user2Id);
+        userConnectionService.save(userConnection);
+        UserConnection savedUserConnection =
+                userConnectionService.getByUserIdsAndUserConnectionState(userConnection).get();
+        userConnectionService.delete(savedUserConnection);
+        UserConnection deletedUserConnection =
+                userConnectionService.get(savedUserConnection.getId()).get();
+        assertEquals(deletedUserConnection.getState(), UserConnectionState.UNSUCCESSFUL);
+
+        Optional<User> chattingCandidateOptional = userService.getChattingCandidate(user1Id);
+        assertTrue(chattingCandidateOptional.isPresent());
+        User chattingCandidate = chattingCandidateOptional.get();
+        assertEquals(chattingCandidate.getId(), user3Id);
     }
 
 }

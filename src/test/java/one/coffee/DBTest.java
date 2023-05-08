@@ -9,6 +9,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -30,8 +31,7 @@ public @interface DBTest {
     int nUsers();
 
     @Component
-    class UserList
-            implements ArgumentsProvider {
+    class UserList implements ArgumentsProvider {
 
         @Autowired
         protected UserService userService;
@@ -47,7 +47,8 @@ public @interface DBTest {
                         "City" + id,
                         UserState.DEFAULT,
                         SQLUtils.DEFAULT_ID,
-                        null
+                        DEFAULT_USERNAME,
+                        DEFAULT_USERINFO
                 );
                 userService.save(user);
                 users.add(user);

@@ -1,18 +1,23 @@
 package one.coffee.sql;
 
 import one.coffee.DBTest;
-import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
+import one.coffee.sql.user.UserDao;
+import one.coffee.utils.StaticContext;
 import org.junit.jupiter.api.Disabled;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public class HighloadTest
         extends ResourceTest {
 
+    private static final UserDao userDao = StaticContext.USER_DAO;
+
     @Disabled("База поддерживает 4K GET-Rps в однопоток")
     @DBTest(nUsers = 4000)
     void getUsers(List<User> users) {
+        final int N = users.size();
         for (User user : users) {
             userDao.get(user.getId());
         }
@@ -30,6 +35,7 @@ public class HighloadTest
     @Disabled("База поддерживает 100 DELETE-Rps в однопоток")
     @DBTest(nUsers = 100)
     void deleteUsers(List<User> users) {
+        final int N = users.size();
         for (User user : users) {
             userDao.delete(user);
         }

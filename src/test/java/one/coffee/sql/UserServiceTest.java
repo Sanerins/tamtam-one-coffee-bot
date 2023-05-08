@@ -1,5 +1,7 @@
 package one.coffee.sql;
 
+import java.util.List;
+
 import one.coffee.DBTest;
 import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
@@ -38,7 +40,7 @@ public class UserServiceTest
         final String userCity = "St. Petersburg";
         final UserState state = UserState.DEFAULT;
         final long connectionId = -1;
-        User user = new User(userId, userCity, state, connectionId, null);
+        User user = new User(userId, userCity, state, connectionId, "Вася Пупкин");
 
         userService.save(user);
         assertTrue(userService.get(userId).isEmpty());
@@ -50,7 +52,7 @@ public class UserServiceTest
         final String userCity = null;
         final UserState state = UserState.DEFAULT;
         final long connectionId = -1;
-        User user = new User(userId, userCity, state, connectionId, null);
+        User user = new User(userId, userCity, state, connectionId, "Вася Пупкин");
 
         userService.save(user);
         assertTrue(userService.get(userId).isEmpty());
@@ -62,7 +64,7 @@ public class UserServiceTest
         final String userCity = "";
         final UserState state = UserState.DEFAULT;
         final long connectionId = -1;
-        User user = new User(userId, userCity, state, connectionId, null);
+        User user = new User(userId, userCity, state, connectionId, "Вася Пупкин");
 
         userService.save(user);
         assertTrue(userService.get(userId).isEmpty());
@@ -75,7 +77,7 @@ public class UserServiceTest
         final String userCity = "abc";
         final UserState state = UserState.DEFAULT;
         final long connectionId = -1;
-        User user = new User(userId, userCity, state, connectionId, null);
+        User user = new User(userId, userCity, state, connectionId, "Вася Пупкин");
 
         userService.save(user);
         assertTrue(userService.get(userId).isEmpty());
