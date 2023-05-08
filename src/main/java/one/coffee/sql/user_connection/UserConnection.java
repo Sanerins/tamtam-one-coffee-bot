@@ -5,7 +5,6 @@ import one.coffee.sql.states.UserConnectionState;
 import one.coffee.sql.utils.SQLUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.invoke.MethodHandles;
 
@@ -14,9 +13,6 @@ public class UserConnection
 
     @SuppressWarnings("unused")
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-    @Autowired
-    private static final UserConnectionService userConnectionService;
 
     private long id;
     private long user1Id;
@@ -52,7 +48,7 @@ public class UserConnection
 
     @Override
     public boolean isCreated() {
-        return userConnectionService.getInProgressConnectionByUserId(user1Id).isPresent();
+        return id != SQLUtils.DEFAULT_ID;
     }
 
     @Override

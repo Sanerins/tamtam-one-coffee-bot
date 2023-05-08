@@ -28,6 +28,7 @@ public class ChattingStateHandler extends StateHandler {
         return UserState.CHATTING;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected <R extends Result> R handleDefault(Message message) {
         String text = message.getBody().getText();
