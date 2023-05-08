@@ -62,6 +62,10 @@ public class User implements Entity {
         return username;
     }
 
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     public String getUserInfo() {
         return userInfo;
     }

@@ -1,5 +1,6 @@
 package one.coffee.sql;
 
+import one.coffee.sql.utils.SQLUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +17,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 // TODO Подумать, нужно ли объединять DB с Dao
 public class DB {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    public static final String STRING_QUOTER = "'";
     private Connection CONNECTION;
     private Statement STATEMENT;
 
@@ -135,14 +135,6 @@ public class DB {
         return isPresent.get();
     }
 
-    public synchronized void executeQuery(String query, SQLCallback sqlAction) {
-        try (ResultSet rs = STATEMENT.executeQuery(query)) {
-            sqlAction.run(rs);
-        } catch (SQLException e) {
-            LOG.warn("Error while executing query to DB!", e);
-        }
-    }
-
     public void executeQuery(PreparedStatement stmt) {
         executeQuery(stmt, SQLCallback.EMPTY);
     }
@@ -160,7 +152,7 @@ public class DB {
     }
 
     public static String quote(String s) {
-        return new StringBuilder().append(STRING_QUOTER).append(s).append(STRING_QUOTER).toString();
+        return new StringBuilder().append(SQLUtils.STRING_QUOTER).append(s).append(SQLUtils.STRING_QUOTER).toString();
     }
 
     public interface SQLCallback {
