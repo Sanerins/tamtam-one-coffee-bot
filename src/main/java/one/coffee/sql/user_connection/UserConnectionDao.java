@@ -1,12 +1,16 @@
 package one.coffee.sql.user_connection;
 
 import one.coffee.sql.Dao;
+import one.coffee.sql.states.UserConnectionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
-import java.text.MessageFormat;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -25,48 +29,48 @@ public class UserConnectionDao
                 Map.entry("user1Id", "INT REFERENCES users(userId) ON DELETE CASCADE"),
                 Map.entry("user2Id", "INT REFERENCES users(userId) ON DELETE CASCADE"),
                 Map.entry("approve1", "BIT"),
-                Map.entry("approve2", "BIT")
+                Map.entry("approve2", "BIT"),
+                Map.entry("stateId", "INT")
         );
     }
 
     @Override
     public Optional<UserConnection> get(long id) {
         final AtomicReference<UserConnection> userConnection = new AtomicReference<>();
-        final String query = MessageFormat.format("SELECT *" +
-                        " FROM {0}" +
-                        " WHERE id = " + id,
-                this.getShortName());
-        DB.executeQuery(query, rs -> {
-            if (!rs.next()) {
-                return;
-            }
-            final long actualUser1Id = rs.getLong("user1Id");
-            final long actualUser2Id = rs.getLong("user2Id");
-            final boolean approve1 = rs.getBoolean("approve1");
-            final boolean approve2 = rs.getBoolean("approve2");
-            userConnection.set(new UserConnection(id, actualUser1Id, actualUser2Id, approve1, approve2));
-        });
+        try {
+            String sql = "SELECT * FROM " + this.getShortName()+ " WHERE id = ?";
+            PreparedStatement stmt = DB.prepareStatement(sql);
+            stmt.setLong(1, id);
+
+            DB.executeQuery(stmt, rs -> {
+                if (!rs.next()) {
+                    return;
+                }
+                userConnection.set(parseUserConnection(rs));
+            });
+        } catch (SQLException e) {
+            LOG.error("Error when getting user connection", e);
+        }
         return Optional.ofNullable(userConnection.get());
     }
 
-    public Optional<UserConnection> getByUserId(long userId) {
-        final AtomicReference<UserConnection> userConnection = new AtomicReference<>();
-        final String query = MessageFormat.format("SELECT *" +
-                        " FROM {0}" +
-                        " WHERE user1Id = " + userId + " OR user2Id = " + userId,
-                this.getShortName());
-        DB.executeQuery(query, rs -> {
-            if (!rs.next()) {
-                return;
-            }
-            final long id = rs.getLong("id");
-            final long actualUser1Id = rs.getLong("user1Id");
-            final long actualUser2Id = rs.getLong("user2Id");
-            final boolean approve1 = rs.getBoolean("approve1");
-            final boolean approve2 = rs.getBoolean("approve2");
-            userConnection.set(new UserConnection(id, actualUser1Id, actualUser2Id, approve1, approve2));
-        });
-        return Optional.ofNullable(userConnection.get());
+    public List<UserConnection> getByUserId(long userId) {
+        final List<UserConnection> userConnections = new ArrayList<>();
+        try {
+            String sql = "SELECT * FROM " + this.getShortName() + " WHERE user1Id = ? OR user2Id = ?";
+            PreparedStatement stmt = DB.prepareStatement(sql);
+            stmt.setLong(1, userId);
+            stmt.setLong(2, userId);
+
+            DB.executeQuery(stmt, rs -> {
+                while (rs.next()) {
+                    userConnections.add(parseUserConnection(rs));
+                }
+            });
+        } catch (SQLException e) {
+            LOG.error("Error when getting user connections", e);
+        }
+        return userConnections;
     }
 
     @Override
@@ -79,4 +83,13 @@ public class UserConnectionDao
         DB.deleteEntity(this, userConnection);
     }
 
+    private static UserConnection parseUserConnection(ResultSet rs) throws SQLException {
+        long id = rs.getLong("id");
+        long user1Id = rs.getLong("user1Id");
+        long user2Id = rs.getLong("user2Id");
+        boolean approve1 = rs.getBoolean("approve1");
+        boolean approve2 = rs.getBoolean("approve2");
+        UserConnectionState state = UserConnectionState.fromId(rs.getLong("stateId"));
+        return new UserConnection(id, user1Id, user2Id, approve1, approve2, state);
+    }
 }

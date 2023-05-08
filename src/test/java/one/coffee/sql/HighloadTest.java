@@ -1,6 +1,7 @@
 package one.coffee.sql;
 
 import one.coffee.DBTest;
+import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
 import org.junit.jupiter.api.Disabled;
 

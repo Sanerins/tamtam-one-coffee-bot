@@ -1,8 +1,7 @@
 package one.coffee;
 
-import one.coffee.sql.UserState;
+import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
-import one.coffee.sql.user.UserService;
 import one.coffee.sql.utils.SQLUtils;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -47,7 +46,7 @@ public @interface DBTest {
                         id,
                         "City" + id,
                         UserState.DEFAULT,
-                        SQLUtils.NO_ID,
+                        SQLUtils.DEFAULT_ID,
                         null
                 );
                 userService.save(user);

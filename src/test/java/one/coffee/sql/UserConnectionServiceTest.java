@@ -1,6 +1,7 @@
 package one.coffee.sql;
 
 import one.coffee.DBTest;
+import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user_connection.UserConnection;
 import one.coffee.sql.utils.SQLUtils;
@@ -60,7 +61,7 @@ public class UserConnectionServiceTest
         assertEquals(savedUser2.getConnectionId(), savedUsers12Connection.getId());
 
         assertNotEquals(savedUser3.getState(), UserState.CHATTING);
-        assertEquals(savedUser3.getConnectionId(), SQLUtils.NO_ID);
+        assertEquals(savedUser3.getConnectionId(), SQLUtils.DEFAULT_ID);
     }
 
     @DBTest(nUsers = 2)

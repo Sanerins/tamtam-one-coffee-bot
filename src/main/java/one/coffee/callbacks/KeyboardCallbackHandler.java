@@ -1,6 +1,5 @@
 package one.coffee.callbacks;
 
-import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.model.Message;
 import one.coffee.ParentClasses.Handler;
 import one.coffee.ParentClasses.Result;
@@ -25,7 +24,7 @@ public abstract class KeyboardCallbackHandler extends Handler {
     protected <R extends Result> R handleDefault(Message message) {
         messageSender.sendMessage(
                 message.getSender().getUserId(),
-                NewMessageBodyBuilder.ofText("Такой кнопки не знаю :(").build()
+                "Такой кнопки не знаю :("
         );
         return (R) new CallbackResult(Result.ResultState.ERROR, "Unknown button");
     }

@@ -1,17 +1,16 @@
 package one.coffee.bot;
 
-import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.bot.updates.DefaultUpdateMapper;
 import chat.tamtam.botapi.model.BotStartedUpdate;
 import chat.tamtam.botapi.model.MessageCallbackUpdate;
 import chat.tamtam.botapi.model.MessageCreatedUpdate;
 import chat.tamtam.botapi.model.Update;
 import one.coffee.ParentClasses.Result;
-import one.coffee.callbacks.KeyboardCallbackHandler;
 import one.coffee.callbacks.CallbackResult;
+import one.coffee.callbacks.KeyboardCallbackHandler;
 import one.coffee.commands.StateHandler;
 import one.coffee.commands.StateResult;
-import one.coffee.sql.UserState;
+import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user.UserService;
 import one.coffee.utils.MessageSender;
@@ -32,6 +31,7 @@ import java.util.stream.Collectors;
 public class OneCoffeeBotUpdateMapper extends DefaultUpdateMapper<Result> {
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     @Autowired
     private UserService userService;
     @Autowired
@@ -53,9 +53,8 @@ public class OneCoffeeBotUpdateMapper extends DefaultUpdateMapper<Result> {
         long userId = Objects.requireNonNull(model.getUser().getUserId(), "UserId is null");
         User user = new User(userId, "Cyberpunk2077", UserState.DEFAULT, model.getUser().getUsername());
         userService.save(user);
-        messageSender.sendMessage(userId,
-                NewMessageBodyBuilder.ofText("Бот, призванный помочь одиноким или скучающим людям найти компанию и славно провести время вместе \n" +
-                        "Напиши /help, чтобы получить список команд!").build());
+        messageSender.sendMessage(userId,"Бот, призванный помочь одиноким или скучающим людям найти компанию и славно провести время вместе \n" +
+                        "Напиши /help, чтобы получить список команд!");
         return new StateResult(StateResult.ResultState.SUCCESS);
     }
 

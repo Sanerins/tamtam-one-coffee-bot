@@ -1,10 +1,11 @@
 package one.coffee.commands.handlers;
 
-import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.model.Message;
 import one.coffee.ParentClasses.HandlerAnnotation;
+import one.coffee.ParentClasses.Result;
 import one.coffee.commands.StateHandler;
-import one.coffee.sql.UserState;
+import one.coffee.commands.StateResult;
+import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,7 @@ public class WaitingStateHandler extends StateHandler {
 
     @SuppressWarnings("unused")
     @HandlerAnnotation("/stop")
-    private void handleStop(Message message) {
+    private StateResult handleStop(Message message) {
         long senderId = message.getSender().getUserId();
         Optional<User> optionalSender = userService.get(senderId);
         User sender;
@@ -35,6 +36,7 @@ public class WaitingStateHandler extends StateHandler {
         sender.setState(UserState.DEFAULT);
         userService.save(sender);
         messageSender.sendMessage(senderId,
-                NewMessageBodyBuilder.ofText("Ты успешно вышел из очереди!").build());
+                "Ты успешно вышел из очереди!");
+        return new StateResult(Result.ResultState.SUCCESS);
     }
 }

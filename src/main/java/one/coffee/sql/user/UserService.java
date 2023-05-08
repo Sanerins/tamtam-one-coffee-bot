@@ -1,6 +1,8 @@
 package one.coffee.sql.user;
 
 import one.coffee.sql.Service;
+import one.coffee.sql.user_connection.UserConnection;
+import one.coffee.sql.user_connection.UserConnectionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,8 @@ public class UserService
 
     @Autowired
     private UserDao userDao;
+    @Autowired
+    private UserConnectionService userConnectionService;
 
     // TODO Enhance
     private static boolean isValidCity(String city) {
@@ -29,8 +33,17 @@ public class UserService
         return userDao.get(id);
     }
 
+    public List<User> getWaitingUsers() {
+        return getWaitingUsers(Integer.MAX_VALUE);
+    }
+
     public List<User> getWaitingUsers(long n) {
         return userDao.getWaitingUsers(n);
+    }
+
+    //TODO подоплёка для нейронки
+    public Optional<User> getChattingCandidate(long userId) {
+        return getAllChattingCandidates(userId).stream().findAny();
     }
 
     @Override
@@ -53,4 +66,22 @@ public class UserService
         userDao.delete(user);
     }
 
+    private List<User> getAllChattingCandidates(long userId) {
+        List<UserConnection> unsuccessfulUserConnections =
+                userConnectionService.getUnsuccessfulConnectionsByUserId(userId);
+        return getWaitingUsers().stream()
+                .filter(user -> isCandidate(user, userId, unsuccessfulUserConnections))
+                .toList();
+    }
+
+    private boolean isCandidate(User currentUser, long userId, List<UserConnection> unsuccessfulUserConnections) {
+        for (UserConnection unsuccessfulUserConnection : unsuccessfulUserConnections) {
+            if (unsuccessfulUserConnection.getUser1Id() == currentUser.getId()
+                    || unsuccessfulUserConnection.getUser2Id() == currentUser.getId()
+                    || currentUser.getId() == userId) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

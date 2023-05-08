@@ -1,6 +1,7 @@
 package one.coffee.sql.user_connection;
 
 import one.coffee.sql.Entity;
+import one.coffee.sql.states.UserConnectionState;
 import one.coffee.sql.utils.SQLUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,18 +18,21 @@ public class UserConnection
     private final long id;
     private boolean approve1;
     private boolean approve2;
+    private UserConnectionState state;
 
     public UserConnection(long user1Id, long user2Id) {
-        this(SQLUtils.NO_ID, user1Id, user2Id, false, false);
+        this(SQLUtils.DEFAULT_ID, user1Id, user2Id, false, false, UserConnectionState.IN_PROGRESS);
     }
 
-    public UserConnection(long id, long user1Id, long user2Id, boolean approve1, boolean approve2) {
+    public UserConnection(long id, long user1Id, long user2Id, boolean approve1, boolean approve2, UserConnectionState state) {
         this.id = id;
         this.user1Id = user1Id;
         this.user2Id = user2Id;
         this.approve1 = approve1;
         this.approve2 = approve2;
+        this.state = state;
     }
+
 
     public boolean isApprove1() {
         return approve1;
@@ -40,7 +44,7 @@ public class UserConnection
 
     @Override
     public boolean isCreated() {
-        return id != SQLUtils.NO_ID;
+        return id != SQLUtils.DEFAULT_ID;
     }
 
     @Override
@@ -56,12 +60,24 @@ public class UserConnection
         return user2Id;
     }
 
+    public boolean isAllApprove() {
+        return isApprove1() && isApprove2();
+    }
+
     public void setApprove1(boolean approve1) {
         this.approve1 = approve1;
     }
 
     public void setApprove2(boolean approve2) {
         this.approve2 = approve2;
+    }
+
+    public UserConnectionState getState() {
+        return state;
+    }
+
+    public void setState(UserConnectionState state) {
+        this.state = state;
     }
 
     @Override
@@ -77,12 +93,13 @@ public class UserConnection
 
     @Override
     public String sqlArgValues() {
-        StringBuilder sqlValues = new StringBuilder(SQLUtils.TABLE_SIGNATURE_START);
-
+        StringBuilder sqlValues = new StringBuilder();
+        sqlValues.append(SQLUtils.TABLE_SIGNATURE_START);
         if (isCreated()) {
-            sqlValues.append(id).append(SQLUtils.ARGS_SEPARATOR);
+            sqlValues
+                    .append(id)
+                    .append(SQLUtils.ARGS_SEPARATOR);
         }
-
         return sqlValues
                 .append(user1Id)
                 .append(SQLUtils.ARGS_SEPARATOR)
@@ -91,6 +108,9 @@ public class UserConnection
                 .append(approve1)
                 .append(SQLUtils.ARGS_SEPARATOR)
                 .append(approve2)
-                .append(SQLUtils.TABLE_SIGNATURE_END).toString();
+                .append(SQLUtils.ARGS_SEPARATOR)
+                .append(state.ordinal())
+                .append(SQLUtils.TABLE_SIGNATURE_END)
+                .toString();
     }
 }

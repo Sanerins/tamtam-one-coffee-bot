@@ -1,7 +1,8 @@
 package one.coffee.sql.user_connection;
 
 import one.coffee.sql.Service;
-import one.coffee.sql.UserState;
+import one.coffee.sql.states.UserConnectionState;
+import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user.UserService;
 import one.coffee.sql.utils.SQLUtils;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -29,42 +31,84 @@ public class UserConnectionService
         return userConnectionDao.get(id);
     }
 
-    public Optional<UserConnection> getByUserId(long userId) {
+    public List<UserConnection> getByUserId(long userId) {
         return userConnectionDao.getByUserId(userId);
     }
 
+    public List<UserConnection> getByUserIdAndUserConnectionState(long userId, UserConnectionState state) {
+        return getByUserId(userId).stream()
+                .filter(uc -> uc.getState().equals(state))
+                .toList();
+    }
+
+    public Optional<UserConnection> getByUserIdsAndUserConnectionState(UserConnection userConnection) {
+        return getByUserIdAndUserConnectionState(userConnection.getUser1Id(), userConnection.getState()).stream()
+                .filter(uc -> {
+                    if (uc.getUser1Id() == userConnection.getUser1Id()) {
+                        return uc.getUser2Id() == userConnection.getUser2Id();
+                    } else {
+                        return uc.getUser1Id() == userConnection.getUser1Id();
+                    }
+                })
+                .findAny();
+    }
+
+    public Optional<UserConnection> getInProgressConnectionByUserId(long userId) {
+        List<UserConnection> inProgressUserConnections =
+                getByUserIdAndUserConnectionState(userId, UserConnectionState.IN_PROGRESS);
+        if (inProgressUserConnections.isEmpty()) {
+            return Optional.empty();
+        } else if (inProgressUserConnections.size() > 1) {
+            LOG.warn("Several userConnections with state 'IN_PROGRESS'! Expected only one.");
+            return Optional.empty();
+        }
+        return Optional.of(inProgressUserConnections.get(0));
+    }
+
+    public List<UserConnection> getSuccessfulConnectionsByUserId(long userId) {
+        return getByUserIdAndUserConnectionState(userId, UserConnectionState.SUCCESSFUL);
+    }
+
+    public List<UserConnection> getUnsuccessfulConnectionsByUserId(long userId) {
+        return getByUserIdAndUserConnectionState(userId, UserConnectionState.UNSUCCESSFUL);
+    }
+
     public long getConnectedUserId(long userId) {
-        Optional<UserConnection> optionalUserConnection = getByUserId(userId);
+        Optional<UserConnection> optionalUserConnection = getInProgressConnectionByUserId(userId);
         if (optionalUserConnection.isEmpty()) {
-            return SQLUtils.NO_ID;
+            return SQLUtils.DEFAULT_ID;
         }
         UserConnection userConnection = optionalUserConnection.get();
         return userConnection.getUser1Id() == userId ? userConnection.getUser2Id() : userConnection.getUser1Id();
     }
 
+    public Optional<User> getConnectedUser(long userId) {
+        long connectedUserId = getConnectedUserId(userId);
+        return userService.get(connectedUserId);
+    }
+
     @Override
     public void save(UserConnection userConnection) {
+        long userConnectionId = userConnection.getId();
         long user1Id = userConnection.getUser1Id();
         long user2Id = userConnection.getUser2Id();
-        if (userConnection.getId() <= 0) {
-            if (isConnected(user1Id) || isConnected(user2Id)) { // Но не факт, что они сконнекчены друг с другом.
-                // Можно попытаться выпарсить этот случай.
+        if (userConnectionId <= 0) {
+            //TODO Но не факт, что они сконнекчены друг с другом, можно попытаться выпарсить этот случай.
+            if (isConnected(user1Id) || isConnected(user2Id)) {
                 LOG.warn("{} or {} has already connected!", user1Id, user2Id);
                 return;
             }
-        } else {
-            if (userConnectionDao.get(userConnection.getId()).isEmpty()) {
-                LOG.warn("No UserConnection with id {}", userConnection.getId());
-                return;
-            }
+        } else if (userConnectionDao.get(userConnectionId).isEmpty()) {
+            LOG.warn("No UserConnection with id {}", userConnectionId);
+            return;
         }
 
         userConnectionDao.save(userConnection);
-        Optional<UserConnection> optionalConnection = getByUserId(user1Id);
-        if (optionalConnection.isEmpty()) {
-            LOG.warn("Can't save user connection: {}", userConnection);
-        } else {
-            long conId = optionalConnection.get().getId();
+        Optional<UserConnection> userConnectionOptional = getByUserIdsAndUserConnectionState(userConnection);
+        if (userConnectionOptional.isEmpty()) {
+            LOG.error("Error while trying to completely save user connection: not found {}", userConnection);
+        } else if (UserConnectionState.IN_PROGRESS.equals(userConnection.getState())){
+            long conId = userConnectionOptional.get().getId();
             commitUsersConnection(conId, user1Id, user2Id, UserState.CHATTING);
         }
     }
@@ -73,34 +117,37 @@ public class UserConnectionService
     public void delete(UserConnection userConnection) {
         long user1Id = userConnection.getUser1Id();
         long user2Id = userConnection.getUser2Id();
-        commitUsersConnection(SQLUtils.NO_ID, user1Id, user2Id, UserState.WAITING);
-        userConnectionDao.delete(userConnection);
+        commitUsersConnection(SQLUtils.DEFAULT_ID, user1Id, user2Id, UserState.WAITING);
+        userConnection.setState(UserConnectionState.UNSUCCESSFUL);
+        save(userConnection);
+    }
+
+    public boolean haveConnection(long user1Id, long user2Id) {
+        return getConnectedUserId(user1Id) == user2Id;
+    }
+
+    public boolean haveNotConnection(long user1Id, long user2Id) {
+        return !haveConnection(user1Id, user2Id);
     }
 
     private boolean isConnected(long userId) {
-        return getByUserId(userId).isPresent();
+        return getInProgressConnectionByUserId(userId).isPresent();
     }
 
     private void commitUsersConnection(long connectionId, long user1Id, long user2Id, UserState state) {
-        Optional<User> optionalUser1 = userService.get(user1Id);
-        if (optionalUser1.isEmpty()) {
-            LOG.warn("User with id {} is absent in DB!", user1Id);
-            return; // TODO Тут нет никакой возможности восстановить данные юзера, поэтому надо бы придумать, как сообщить пользователю, что ничего не получилось...
-        }
-        User user1 = optionalUser1.get();
-        user1.setState(state);
-        user1.setConnectionId(connectionId);
-        userService.save(user1);
-
-        Optional<User> optionalUser2 = userService.get(user2Id);
-        if (optionalUser2.isEmpty()) {
-            LOG.warn("User with id {} is absent in DB!", user2Id);
-            return; // TODO Тут нет никакой возможности восстановить данные юзера, поэтому надо бы придумать, как сообщить пользователю, что ничего не получилось...
-        }
-        User user2 = optionalUser2.get();
-        user2.setState(state);
-        user2.setConnectionId(connectionId);
-        userService.save(user2);
+        commitUserConnection(connectionId, user1Id, state);
+        commitUserConnection(connectionId, user2Id, state);
     }
 
+    private void commitUserConnection(long connectionId, long userId, UserState userState) {
+        userService.get(userId).ifPresentOrElse(user -> {
+            user.setState(userState);
+            user.setConnectionId(connectionId);
+            userService.save(user);
+        }, () -> {
+            // TODO Тут нет никакой возможности восстановить данные юзера, поэтому надо бы придумать,
+            //  как сообщить пользователю, что ничего не получилось...
+            LOG.warn("Can't commit user connection for user {}: no such user", userId);
+        });
+    }
 }

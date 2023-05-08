@@ -1,5 +1,6 @@
 package one.coffee.utils;
 
+import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.client.TamTamClient;
 import chat.tamtam.botapi.exceptions.APIException;
 import chat.tamtam.botapi.exceptions.ClientException;
@@ -92,6 +93,10 @@ public class MessageSender {
 
         // if we are here, then there is something wrong with this string
         return MAX_CHARS_IN_MESSAGE - 1;
+    }
+
+    public void sendMessage(long userId, String message) {
+        sendMessage(userId, NewMessageBodyBuilder.ofText(message).build());
     }
 
     /**

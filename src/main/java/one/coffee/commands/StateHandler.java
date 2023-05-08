@@ -1,13 +1,12 @@
 package one.coffee.commands;
 
-import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.bot.commands.CommandLineParser;
 import chat.tamtam.bot.commands.RawCommandLine;
 import chat.tamtam.botapi.model.Message;
 import one.coffee.ParentClasses.Handler;
 import one.coffee.ParentClasses.HandlerAnnotation;
 import one.coffee.ParentClasses.Result;
-import one.coffee.sql.UserState;
+import one.coffee.sql.states.UserState;
 import org.springframework.stereotype.Component;
 
 import java.lang.annotation.Annotation;
@@ -25,7 +24,7 @@ public abstract class StateHandler extends Handler {
     protected <R extends Result> R handleDefault(Message message) {
         messageSender.sendMessage(
                 message.getSender().getUserId(),
-                NewMessageBodyBuilder.ofText("Такой команды не знаю :(").build()
+                "Такой команды не знаю :("
         );
         return (R) new StateResult(Result.ResultState.ERROR, "Unknown command");
     }

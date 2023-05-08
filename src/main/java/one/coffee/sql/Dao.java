@@ -64,13 +64,15 @@ public abstract class Dao<T extends Entity> {
         StringBuilder signatureName = new StringBuilder(getShortName());
         signatureName.append(SQLUtils.TABLE_SIGNATURE_START);
         if (entity.isCreated()) {
-            signatureName.append(args.get(0).getKey())
+            signatureName
+                    .append(args.get(0).getKey())
                     .append(SQLUtils.ARGS_SEPARATOR);
         }
 
         for (Map.Entry<String, String> arg : args.subList(1, args.size())) {
             String argName = arg.getKey();
-            signatureName.append(argName)
+            signatureName
+                    .append(argName)
                     .append(SQLUtils.ARGS_SEPARATOR);
         }
         signatureName.delete(signatureName.length() - SQLUtils.ARGS_SEPARATOR.length(), signatureName.length());

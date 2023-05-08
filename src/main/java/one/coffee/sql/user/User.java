@@ -1,7 +1,8 @@
 package one.coffee.sql.user;
 
+import one.coffee.sql.DB;
 import one.coffee.sql.Entity;
-import one.coffee.sql.UserState;
+import one.coffee.sql.states.UserState;
 import one.coffee.sql.utils.SQLUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,18 +18,20 @@ public class User implements Entity {
     private UserState state;
     private long connectionId;
     private String username;
+    private String userInfo;
 
-    // ЧТО ЭТО ЗА КОНСТРУКТОР?? ПОЧЕМУ КОНСТРУКТОРЫ ДЛЯ ТЕСТОВ ТУТ
+    // От этого надо избавиться
     public User(long id, String city, UserState state, String username) {
-        this(id, city, state, SQLUtils.NO_ID, username);
+        this(id, city, state, SQLUtils.DEFAULT_ID, username, "Живу на болоте");
     }
 
-    public User(long id, String city, UserState state, long connectionId, String username) {
+    public User(long id, String city, UserState state, long connectionId, String username, String userInfo) {
         this.id = id;
         this.city = city;
         this.state = state;
         this.connectionId = connectionId;
         this.username = username;
+        this.userInfo = userInfo;
     }
 
     public String getCity() {
@@ -55,16 +58,21 @@ public class User implements Entity {
         this.connectionId = connectionId;
     }
 
-//    public long getConnectedUserId() throws SQLException {
-//        if (connectionId <= 0) {
-//            LOG.warn(this + " has not connected user!");
-//            return SQLUtils.NO_ID;
-//        }
-//
-//        UserConnection userConnection = UserConnectionsTable.getUserConnectionUserById(id);
-//        return userConnection.getUser1Id() == id ? userConnection.getUser2Id() : userConnection.getUser1Id();
-//    }
+    public String getUsername() {
+        return username;
+    }
 
+    public String getUserInfo() {
+        return userInfo;
+    }
+
+    public void setUserInfo(String userInfo) {
+        this.userInfo = userInfo;
+    }
+
+    public boolean isNotChatting() {
+        return !UserState.CHATTING.equals(state);
+    }
     @Override
     public boolean isCreated() {
         return true; // Because we don't create a new 'id' for each user, we use in-built userId
@@ -75,27 +83,22 @@ public class User implements Entity {
         return id;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
     @Override
     public String sqlArgValues() {
-        return SQLUtils.TABLE_SIGNATURE_START +
-                id +
-                SQLUtils.ARGS_SEPARATOR +
-                SQLUtils.STRING_QUOTTER +
-                city +
-                SQLUtils.STRING_QUOTTER +
-                SQLUtils.ARGS_SEPARATOR +
-                state.ordinal() +
-                SQLUtils.ARGS_SEPARATOR +
-                connectionId +
-                SQLUtils.ARGS_SEPARATOR +
-                SQLUtils.STRING_QUOTTER +
-                username +
-                SQLUtils.STRING_QUOTTER +
-                SQLUtils.TABLE_SIGNATURE_END;
+        return new StringBuilder(SQLUtils.TABLE_SIGNATURE_START)
+                .append(id)
+                .append(SQLUtils.ARGS_SEPARATOR)
+                .append(DB.quote(city))
+                .append(SQLUtils.ARGS_SEPARATOR)
+                .append(state.ordinal())
+                .append(SQLUtils.ARGS_SEPARATOR)
+                .append(connectionId)
+                .append(SQLUtils.ARGS_SEPARATOR)
+                .append(DB.quote(username))
+                .append(SQLUtils.ARGS_SEPARATOR)
+                .append(DB.quote(userInfo))
+                .append(SQLUtils.TABLE_SIGNATURE_END)
+                .toString();
     }
 
     @Override

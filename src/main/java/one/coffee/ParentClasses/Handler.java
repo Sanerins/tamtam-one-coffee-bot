@@ -113,6 +113,13 @@ public abstract class Handler
                     "Method " + method + " must have only single parameter of type `Message`");
         }
 
+        Class<?> returnType = method.getReturnType();
+        if (!Result.class.isAssignableFrom(returnType)) {
+            throw new IllegalArgumentException(
+                    "Method" + method + " must return `Result` class or predecessor"
+            );
+        }
+
         MethodHandle handler = unreflect(method);
         handler = handler.bindTo(target);
 
