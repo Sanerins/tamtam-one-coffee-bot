@@ -1,24 +1,29 @@
 package one.coffee.sql.user;
 
-import java.lang.invoke.MethodHandles;
-
+import one.coffee.sql.DB;
 import one.coffee.sql.Entity;
+import one.coffee.sql.states.UserState;
 import one.coffee.sql.utils.SQLUtils;
-import one.coffee.sql.utils.UserState;
-import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class User implements Entity {
+import java.lang.invoke.MethodHandles;
 
+public class User implements Entity {
+    @SuppressWarnings("unused")
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private long id;
+    private final long id;
     private String city;
     private UserState state;
     private long connectionId;
     private String username;
     private String userInfo;
+
+    // От этого надо избавиться
+    public User(long id, String city, UserState state, String username) {
+        this(id, city, state, SQLUtils.DEFAULT_ID, username, "Живу на болоте");
+    }
 
     public User(long id, String city, UserState state, long connectionId, String username, String userInfo) {
         this.id = id;
@@ -27,10 +32,6 @@ public class User implements Entity {
         this.connectionId = connectionId;
         this.username = username;
         this.userInfo = userInfo;
-    }
-
-    public void setId(long id) {
-        this.id = id;
     }
 
     public String getCity() {
@@ -76,11 +77,6 @@ public class User implements Entity {
     public boolean isNotChatting() {
         return !UserState.CHATTING.equals(state);
     }
-
-    public static UserBuilder build() {
-        return new UserBuilder();
-    }
-
     @Override
     public boolean isCreated() {
         return true; // Because we don't create a new 'id' for each user, we use in-built userId
@@ -96,15 +92,15 @@ public class User implements Entity {
         return new StringBuilder(SQLUtils.TABLE_SIGNATURE_START)
                 .append(id)
                 .append(SQLUtils.ARGS_SEPARATOR)
-                .append(StaticContext.quote(city))
+                .append(DB.quote(city))
                 .append(SQLUtils.ARGS_SEPARATOR)
                 .append(state.ordinal())
                 .append(SQLUtils.ARGS_SEPARATOR)
                 .append(connectionId)
                 .append(SQLUtils.ARGS_SEPARATOR)
-                .append(StaticContext.quote(username))
+                .append(DB.quote(username))
                 .append(SQLUtils.ARGS_SEPARATOR)
-                .append(StaticContext.quote(userInfo))
+                .append(DB.quote(userInfo))
                 .append(SQLUtils.TABLE_SIGNATURE_END)
                 .toString();
     }
@@ -113,59 +109,10 @@ public class User implements Entity {
     public String toString() {
         return "User{" +
                 "id=" + id +
-                ", city=" + StaticContext.STRING_QUOTTER + city + StaticContext.STRING_QUOTTER +
+                ", city='" + city + '\'' +
                 ", state=" + state +
                 ", connectionId=" + connectionId +
-                ", username=" + username +
-                ", userInfo=" + userInfo +
                 '}';
-    }
-
-    public static final class UserBuilder {
-
-        private static final long DEFAULT_ID = SQLUtils.DEFAULT_ID;
-        private static final String DEFAULT_CITY = "Cyberpunk2077";
-        private static final UserState DEFAULT_STATE = UserState.DEFAULT;
-        private static final long DEFAULT_CONNECTION_ID = SQLUtils.DEFAULT_ID;
-        private static final String DEFAULT_USERNAME = "Вася Пупкин";
-        private static final String DEFAULT_USERINFO = "Живу на болоте";
-
-        private final User user =
-                new User(DEFAULT_ID, DEFAULT_CITY, DEFAULT_STATE, DEFAULT_CONNECTION_ID, DEFAULT_USERNAME, DEFAULT_USERINFO);
-
-        public UserBuilder setId(long id) {
-            user.setId(id);
-            return this;
-        }
-
-        public UserBuilder setCity(String city) {
-            user.setCity(city);
-            return this;
-        }
-
-        public UserBuilder setState(UserState state) {
-            user.setState(state);
-            return this;
-        }
-
-        public UserBuilder setConnectionId(long connectionId) {
-            user.setConnectionId(connectionId);
-            return this;
-        }
-
-        public UserBuilder setUsername(String username) {
-            user.setUsername(username == null ? DEFAULT_USERNAME : username);
-            return this;
-        }
-
-        public UserBuilder setUserInfo(String userInfo) {
-            user.setUserInfo(userInfo == null ? DEFAULT_USERNAME : userInfo);
-            return this;
-        }
-
-        public User get() {
-            return user;
-        }
     }
 
 }

@@ -1,33 +1,30 @@
 package one.coffee.sql.user_connection;
 
+import one.coffee.sql.Service;
+import one.coffee.sql.states.UserConnectionState;
+import one.coffee.sql.states.UserState;
+import one.coffee.sql.user.User;
+import one.coffee.sql.user.UserService;
+import one.coffee.sql.utils.SQLUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Optional;
 
-import one.coffee.sql.Service;
-import one.coffee.sql.user.User;
-import one.coffee.sql.utils.SQLUtils;
-import one.coffee.sql.utils.UserConnectionState;
-import one.coffee.sql.utils.UserState;
-import one.coffee.utils.StaticContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class UserConnectionService implements Service<UserConnection> {
+@Component
+public class UserConnectionService
+        implements Service<UserConnection> {
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final UserConnectionDao userConnectionDao = StaticContext.USER_CONNECTION_DAO;
-    private static UserConnectionService INSTANCE;
-
-    private UserConnectionService() {
-    }
-
-    public static UserConnectionService getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new UserConnectionService();
-        }
-        return INSTANCE;
-    }
+    @Autowired
+    private UserConnectionDao userConnectionDao;
+    @Autowired
+    private UserService userService;
 
     @Override
     public Optional<UserConnection> get(long id) {
@@ -68,27 +65,26 @@ public class UserConnectionService implements Service<UserConnection> {
         return Optional.of(inProgressUserConnections.get(0));
     }
 
-    public List<UserConnection> getUnsuccessfulConnectionsByUserId(long userId) {
-        return getByUserIdAndUserConnectionState(userId, UserConnectionState.UNSUCCESSFUL);
-    }
-
     public List<UserConnection> getSuccessfulConnectionsByUserId(long userId) {
         return getByUserIdAndUserConnectionState(userId, UserConnectionState.SUCCESSFUL);
     }
 
+    public List<UserConnection> getUnsuccessfulConnectionsByUserId(long userId) {
+        return getByUserIdAndUserConnectionState(userId, UserConnectionState.UNSUCCESSFUL);
+    }
+
     public long getConnectedUserId(long userId) {
-        Optional<UserConnection> userConnectionOptional = getInProgressConnectionByUserId(userId);
-        if (userConnectionOptional.isPresent()) {
-            UserConnection userConnection = userConnectionOptional.get();
-            return userConnection.getUser1Id() == userId ? userConnection.getUser2Id() : userConnection.getUser1Id();
-        } else {
+        Optional<UserConnection> optionalUserConnection = getInProgressConnectionByUserId(userId);
+        if (optionalUserConnection.isEmpty()) {
             return SQLUtils.DEFAULT_ID;
         }
+        UserConnection userConnection = optionalUserConnection.get();
+        return userConnection.getUser1Id() == userId ? userConnection.getUser2Id() : userConnection.getUser1Id();
     }
 
     public Optional<User> getConnectedUser(long userId) {
         long connectedUserId = getConnectedUserId(userId);
-        return StaticContext.USER_SERVICE.get(connectedUserId);
+        return userService.get(connectedUserId);
     }
 
     @Override
@@ -144,15 +140,14 @@ public class UserConnectionService implements Service<UserConnection> {
     }
 
     private void commitUserConnection(long connectionId, long userId, UserState userState) {
-        StaticContext.USER_SERVICE.get(userId).ifPresentOrElse(user -> {
+        userService.get(userId).ifPresentOrElse(user -> {
             user.setState(userState);
             user.setConnectionId(connectionId);
-            StaticContext.USER_SERVICE.save(user);
+            userService.save(user);
         }, () -> {
             // TODO Тут нет никакой возможности восстановить данные юзера, поэтому надо бы придумать,
             //  как сообщить пользователю, что ничего не получилось...
             LOG.warn("Can't commit user connection for user {}: no such user", userId);
         });
     }
-
 }

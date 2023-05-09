@@ -1,5 +1,16 @@
 package one.coffee;
 
+import one.coffee.sql.states.UserState;
+import one.coffee.sql.user.User;
+import one.coffee.sql.user.UserService;
+import one.coffee.sql.utils.SQLUtils;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.provider.ArgumentsSource;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -8,15 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import one.coffee.sql.user.User;
-import one.coffee.sql.user.UserService;
-import one.coffee.utils.StaticContext;
-import org.junit.jupiter.api.Timeout;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.ArgumentsProvider;
-import org.junit.jupiter.params.provider.ArgumentsSource;
 
 @Target({ElementType.ANNOTATION_TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
@@ -29,7 +31,7 @@ public @interface DBTest {
 
     class UserList implements ArgumentsProvider {
 
-        private static final UserService userService = StaticContext.USER_SERVICE;
+        protected UserService userService;
 
         @Override
         public Stream<? extends Arguments> provideArguments(ExtensionContext extensionContext) {
@@ -37,10 +39,14 @@ public @interface DBTest {
             List<User> users = new ArrayList<>();
             for (int i = 0; i < nUsers; ++i) {
                 long id = i + 1;
-                User user = User.build()
-                        .setId(id)
-                        .setCity("City" + id)
-                        .get();
+                User user = new User(
+                        id,
+                        "City" + id,
+                        UserState.DEFAULT,
+                        SQLUtils.DEFAULT_ID,
+                        "Вася Пупкин",
+                        "Живу на болоте"
+                );
                 userService.save(user);
                 users.add(user);
             }

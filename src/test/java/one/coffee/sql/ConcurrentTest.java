@@ -1,10 +1,14 @@
 package one.coffee.sql;
 
 import one.coffee.DBTest;
+import one.coffee.bot.ContextConf;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user.UserDao;
-import one.coffee.utils.StaticContext;
 import org.junit.jupiter.api.Disabled;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -12,9 +16,12 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@SpringBootTest
+@ContextConfiguration(classes = ContextConf.class, loader= AnnotationConfigContextLoader.class)
 public class ConcurrentTest {
 
-    private static final UserDao userDao = StaticContext.USER_DAO;
+    @Autowired
+    private UserDao userDao;
 
     @Disabled("База поддерживает 4.5K GET-Rps в многопоток")
     @DBTest(nUsers = 4500)

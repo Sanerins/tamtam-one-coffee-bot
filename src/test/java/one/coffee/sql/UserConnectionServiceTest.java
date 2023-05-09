@@ -1,37 +1,28 @@
 package one.coffee.sql;
 
+import one.coffee.DBTest;
+import one.coffee.sql.states.UserConnectionState;
+import one.coffee.sql.states.UserState;
+import one.coffee.sql.user.User;
+import one.coffee.sql.user_connection.UserConnection;
+import one.coffee.sql.utils.SQLUtils;
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 import java.util.Optional;
 
-import one.coffee.DBTest;
-import one.coffee.sql.user.User;
-import one.coffee.sql.user.UserService;
-import one.coffee.sql.user_connection.UserConnection;
-import one.coffee.sql.user_connection.UserConnectionService;
-import one.coffee.sql.utils.SQLUtils;
-import one.coffee.sql.utils.UserConnectionState;
-import one.coffee.sql.utils.UserState;
-import one.coffee.utils.StaticContext;
+import static org.junit.jupiter.api.Assertions.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
+@Component
 public class UserConnectionServiceTest
         extends ResourceTest {
-
-    private static final UserConnectionService userConnectionService = StaticContext.USER_CONNECTION_SERVICE;
-    private static final UserService userService = StaticContext.USER_SERVICE;
 
     @DBTest(nUsers = 2)
     void ok(List<User> users) {
         long user1Id = users.get(0).getId();
         long user2Id = users.get(1).getId();
 
-        UserConnection userConnection = UserConnection.build()
-                .setUser1Id(user1Id)
-                .setUser2Id(user2Id)
-                .get();
+        UserConnection userConnection = new UserConnection(user1Id, user2Id);
         userConnectionService.save(userConnection);
 
         UserConnection savedUserConnection = userConnectionService.getByUserId(user1Id).get(0);
@@ -51,16 +42,10 @@ public class UserConnectionServiceTest
         long user2Id = users.get(1).getId();
         long user3Id = users.get(2).getId();
 
-        UserConnection users12Connection = UserConnection.build()
-                .setUser1Id(user1Id)
-                .setUser2Id(user2Id)
-                .get();
+        UserConnection users12Connection = new UserConnection(user1Id, user2Id);
         userConnectionService.save(users12Connection);
 
-        UserConnection users23Connection = UserConnection.build()
-                .setUser1Id(user2Id)
-                .setUser2Id(user3Id)
-                .get();
+        UserConnection users23Connection = new UserConnection(user2Id, user3Id);
         userConnectionService.save(users23Connection);
 
         User savedUser1 = userService.get(user1Id).get();
@@ -86,10 +71,7 @@ public class UserConnectionServiceTest
         long user1Id = users.get(0).getId();
         long user2Id = users.get(1).getId();
 
-        UserConnection userConnection = UserConnection.build()
-                .setUser1Id(user1Id)
-                .setUser2Id(user2Id)
-                .get();
+        UserConnection userConnection = new UserConnection(user1Id, user2Id);
         userConnectionService.save(userConnection);
         userConnectionService.delete(userConnection);
 
@@ -113,10 +95,7 @@ public class UserConnectionServiceTest
         userService.save(user3);
         long user3Id = user3.getId();
 
-        UserConnection userConnection = UserConnection.build()
-                .setUser1Id(user1Id)
-                .setUser2Id(user2Id)
-                .get();
+        UserConnection userConnection = new UserConnection(user1Id, user2Id);
         userConnectionService.save(userConnection);
         UserConnection savedUserConnection =
                 userConnectionService.getByUserIdsAndUserConnectionState(userConnection).get();

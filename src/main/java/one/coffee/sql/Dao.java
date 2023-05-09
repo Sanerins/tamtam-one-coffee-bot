@@ -1,18 +1,31 @@
 package one.coffee.sql;
 
+import one.coffee.sql.utils.SQLUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import one.coffee.sql.utils.SQLUtils;
-import one.coffee.utils.StaticContext;
-
+@Component
 public abstract class Dao<T extends Entity> {
+
+    @Autowired
+    protected DB DB;
 
     protected String shortName;
     protected List<Map.Entry<String /*argNames*/, String /*argTypes*/>> args;
 
-    protected Dao(String shortName, List<Map.Entry<String /*argNames*/, String /*argTypes*/>> args) {
+    abstract public Optional<T> get(long id);
+
+    abstract public void save(T t);
+
+    abstract public void delete(T t);
+
+    @PostConstruct
+    protected final void init() {
         if (shortName == null || shortName.trim().isEmpty()) {
             throw new IllegalArgumentException("Illegal 'shortName'! Got: " + shortName);
         }
@@ -21,22 +34,12 @@ public abstract class Dao<T extends Entity> {
             throw new IllegalArgumentException("Not enough 'args'! Got: " + args);
         }
 
-        this.shortName = shortName;
-        this.args = args;
-
-        if (StaticContext.getIsRecreatingTablesNeeded().get()) {
-            DB.dropTable(this);
-            DB.createTable(this);
-        }
+        // Включать, только если поменялась схема таблички
+        //DB.dropTable(this);
+        //DB.createTable(this);
     }
 
-    abstract public Optional<T> get(long id);
-
-    abstract public void save(T t);
-
-    abstract public void delete(T t);
-
-    // Возвращает полное название таблицы с указанием типов данных для каждого представленного поля.
+    // Returns full name of the table with specified types.
     @Override
     public final String toString() {
         StringBuilder fullName = new StringBuilder(shortName);

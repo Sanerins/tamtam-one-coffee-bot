@@ -1,5 +1,9 @@
 package one.coffee.sql;
 
+import one.coffee.sql.utils.SQLUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.invoke.MethodHandles;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -10,37 +14,38 @@ import java.sql.Statement;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import one.coffee.utils.StaticContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 // TODO Подумать, нужно ли объединять DB с Dao
 public class DB {
-
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final String DB_NAME = "OneCoffee.db";
-    private static final String CONNECTION_URL = "jdbc:sqlite:" + DB_NAME;
-    public static Connection CONNECTION;
-    private static Statement STATEMENT;
+    private Connection CONNECTION;
+    private Statement STATEMENT;
 
-    static {
+    public DB(String DB_URL) {
         try {
-            CONNECTION = DriverManager.getConnection(CONNECTION_URL);
+            // Auto-commit mode with multithreading support
+            // TODO Проверить, что многопоток действительно поддерживается (дока, профилирование, тестирование).
+            // Если на самом деле он не поддерживается, то создать пул коннекшенов, как было на NoSQL.
+            CONNECTION = DriverManager.getConnection(DB_URL);
             STATEMENT = CONNECTION.createStatement();
         } catch (SQLException e) {
+            // Считаю, что зафейленная инициализация БД - критическая ситуация для приложения,
+            // поэтому ложим всё приложение, если что-то пошло тут не так
             LOG.error("DB creation is failed!", e);
-            StaticContext.getBot().stop();
+            // FIXME как-то аккуратно выключиться, жду предложений
+            System.exit(1);
         }
     }
 
-    private DB() {
+    public PreparedStatement prepareStatement(String sql) throws SQLException {
+        return CONNECTION.prepareStatement(sql);
     }
 
-    public static void createTable(Dao<?> dao) {
+    @SuppressWarnings("unused")
+    public void createTable(Dao<?> dao) {
         try {
             Objects.requireNonNull(dao, "Table can't be null!");
             String sql = "CREATE TABLE IF NOT EXISTS " + dao;
-            PreparedStatement stmt = CONNECTION.prepareStatement(sql);
+            PreparedStatement stmt = prepareStatement(sql);
             executeQuery(stmt);
 
             LOG.info("Created table: `{}`", dao.getShortName());
@@ -49,7 +54,8 @@ public class DB {
         }
     }
 
-    public static void dropTable(Dao<?> dao) {
+    @SuppressWarnings("unused")
+    public void dropTable(Dao<?> dao) {
         Objects.requireNonNull(dao, "Table can't be null!");
 
         try {
@@ -63,7 +69,7 @@ public class DB {
         }
     }
 
-    public static void cleanupTable(Dao<?> dao) {
+    public void cleanupTable(Dao<?> dao) {
         Objects.requireNonNull(dao, "Table can't be null!");
 
         try {
@@ -71,7 +77,7 @@ public class DB {
             PreparedStatement deleteStmt = CONNECTION.prepareStatement(deleteSql);
             executeQuery(deleteStmt);
 
-            String updateSql = "UPDATE `sqlite_sequence` SET `seq` = 0 WHERE `name` = " + StaticContext.quote(dao.getShortName());
+            String updateSql = "UPDATE `sqlite_sequence` SET `seq` = 0 WHERE `name` = " + quote(dao.getShortName());
             PreparedStatement updateStmt = CONNECTION.prepareStatement(updateSql);
             executeQuery(updateStmt);
 
@@ -81,7 +87,7 @@ public class DB {
         }
     }
 
-    public static <T extends Entity> void putEntity(Dao<?> dao, T entity) {
+    public <T extends Entity> void putEntity(Dao<?> dao, T entity) {
         Objects.requireNonNull(dao, "Table can't be null!");
         Objects.requireNonNull(entity, "Entity can't be null!");
 
@@ -96,7 +102,7 @@ public class DB {
         }
     }
 
-    public static <T extends Entity> void deleteEntity(Dao<?> dao, T entity) {
+    public <T extends Entity> void deleteEntity(Dao<?> dao, T entity) {
         Objects.requireNonNull(dao, "Table can't be null!");
         if (!hasEntity(dao, entity)) {
             LOG.warn("Table {} has not entity with `id` = {}", dao.getSignature(entity), entity.getId());
@@ -115,11 +121,11 @@ public class DB {
         }
     }
 
-    public static boolean hasEntity(Dao<?> dao, Entity entity) {
+    public boolean hasEntity(Dao<?> dao, Entity entity) {
         AtomicBoolean isPresent = new AtomicBoolean();
         try {
             String sql = "SELECT * FROM " + dao.getShortName() + " WHERE id = ?";
-            PreparedStatement stmt = CONNECTION.prepareStatement(sql);
+            PreparedStatement stmt = prepareStatement(sql);
             stmt.setLong(1, entity.getId());
 
             executeQuery(stmt, rs -> isPresent.set(rs.next()));
@@ -129,11 +135,11 @@ public class DB {
         return isPresent.get();
     }
 
-    public static void executeQuery(PreparedStatement stmt) {
+    public void executeQuery(PreparedStatement stmt) {
         executeQuery(stmt, SQLCallback.EMPTY);
     }
 
-    public static synchronized void executeQuery(PreparedStatement stmt, SQLCallback sqlCallback) {
+    public synchronized void executeQuery(PreparedStatement stmt, SQLCallback sqlCallback) {
         try {
             if (stmt.execute()) {
                 try (ResultSet rs = stmt.executeQuery()) {
@@ -145,9 +151,12 @@ public class DB {
         }
     }
 
+    public static String quote(String s) {
+        return new StringBuilder().append(SQLUtils.STRING_QUOTER).append(s).append(SQLUtils.STRING_QUOTER).toString();
+    }
+
     public interface SQLCallback {
         SQLCallback EMPTY = rs -> {};
         void run(ResultSet rs) throws SQLException;
     }
-
 }

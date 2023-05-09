@@ -1,58 +1,62 @@
 package one.coffee.sql;
 
-import java.util.List;
-
 import one.coffee.DBTest;
+import one.coffee.bot.ContextConf;
+import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
-import one.coffee.sql.user.UserService;
-import one.coffee.sql.utils.SQLUtils;
-import one.coffee.sql.utils.UserState;
-import one.coffee.utils.StaticContext;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@SpringBootTest
+@ContextConfiguration(classes = ContextConf.class, loader= AnnotationConfigContextLoader.class)
 public class UserServiceTest
         extends ResourceTest {
 
-    private static final UserService userService = StaticContext.USER_SERVICE;
-
     @Test
     void ok1() {
-        long userId = 123;
-        String userCity = "St. Petersburg";
-        User user = User.build()
-                .setId(userId)
-                .setCity(userCity)
-                .get();
+        final long userId = 123;
+        final String userCity = "St. Petersburg";
+        final UserState state = UserState.DEFAULT;
+        final long connectionId = -1;
+        User user = new User(userId, userCity, state, connectionId, "Вася Пупкин", "Живу на болоте");
 
         userService.save(user);
 
         User savedUser = userService.get(userId).get();
 
         assertEquals(savedUser.getId(), userId);
-        assertEquals(savedUser.getState(), UserState.DEFAULT);
+        assertEquals(savedUser.getState(), state);
         assertEquals(savedUser.getCity(), userCity);
-        assertEquals(savedUser.getConnectionId(), SQLUtils.DEFAULT_ID);
+        assertEquals(savedUser.getConnectionId(), connectionId);
     }
 
     @Test
     void invalidUserId() {
-        User user = User.build().get();
+        final long userId = -1;
+        final String userCity = "St. Petersburg";
+        final UserState state = UserState.DEFAULT;
+        final long connectionId = -1;
+        User user = new User(userId, userCity, state, connectionId, "Вася Пупкин", "Живу на болоте");
+
         userService.save(user);
-        assertTrue(userService.get(SQLUtils.DEFAULT_ID).isEmpty());
+        assertTrue(userService.get(userId).isEmpty());
     }
 
     @Test
     void invalidUserCity1() {
         final long userId = 123;
         final String userCity = null;
-        User user = User.build()
-                .setId(userId)
-                .setCity(userCity)
-                .get();
+        final UserState state = UserState.DEFAULT;
+        final long connectionId = -1;
+        User user = new User(userId, userCity, state, connectionId, "Вася Пупкин", "Живу на болоте");
 
         userService.save(user);
         assertTrue(userService.get(userId).isEmpty());
@@ -62,10 +66,9 @@ public class UserServiceTest
     void invalidUserCity2() {
         final long userId = 123;
         final String userCity = "";
-        User user = User.build()
-                .setId(userId)
-                .setCity(userCity)
-                .get();
+        final UserState state = UserState.DEFAULT;
+        final long connectionId = -1;
+        User user = new User(userId, userCity, state, connectionId, "Вася Пупкин", "Живу на болоте");
 
         userService.save(user);
         assertTrue(userService.get(userId).isEmpty());
@@ -76,10 +79,10 @@ public class UserServiceTest
     void invalidUserCity3() {
         final long userId = 123;
         final String userCity = "abc";
-        User user = User.build()
-                        .setId(userId)
-                        .setCity(userCity)
-                        .get();
+        final UserState state = UserState.DEFAULT;
+        final long connectionId = -1;
+        User user = new User(userId, userCity, state, connectionId, "Вася Пупкин", "Живу на болоте");
+
         userService.save(user);
         assertTrue(userService.get(userId).isEmpty());
     }

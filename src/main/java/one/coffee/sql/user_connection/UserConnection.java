@@ -1,18 +1,18 @@
 package one.coffee.sql.user_connection;
 
-import java.lang.invoke.MethodHandles;
-
 import one.coffee.sql.Entity;
+import one.coffee.sql.states.UserConnectionState;
 import one.coffee.sql.utils.SQLUtils;
-import one.coffee.sql.utils.UserConnectionState;
-import one.coffee.utils.StaticContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class UserConnection implements Entity {
+import java.lang.invoke.MethodHandles;
 
+public class UserConnection
+        implements Entity {
+
+    @SuppressWarnings("unused")
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final UserConnectionService userConnectionService = StaticContext.USER_CONNECTION_SERVICE;
 
     private long id;
     private long user1Id;
@@ -20,6 +20,10 @@ public class UserConnection implements Entity {
     private boolean approve1;
     private boolean approve2;
     private UserConnectionState state;
+
+    public UserConnection(long user1Id, long user2Id) {
+        this(SQLUtils.DEFAULT_ID, user1Id, user2Id, false, false, UserConnectionState.IN_PROGRESS);
+    }
 
     public UserConnection(long id, long user1Id, long user2Id, boolean approve1, boolean approve2, UserConnectionState state) {
         this.id = id;
@@ -44,7 +48,7 @@ public class UserConnection implements Entity {
 
     @Override
     public boolean isCreated() {
-        return userConnectionService.getInProgressConnectionByUserId(user1Id).isPresent();
+        return id != SQLUtils.DEFAULT_ID;
     }
 
     @Override
@@ -88,10 +92,6 @@ public class UserConnection implements Entity {
         this.state = state;
     }
 
-    public static UserConnectionBuilder build() {
-        return new UserConnectionBuilder();
-    }
-
     @Override
     public String toString() {
         return "UserConnection{" +
@@ -125,52 +125,5 @@ public class UserConnection implements Entity {
                 .append(state.ordinal())
                 .append(SQLUtils.TABLE_SIGNATURE_END)
                 .toString();
-    }
-
-    public static final class UserConnectionBuilder {
-
-        private static final long DEFAULT_ID = SQLUtils.DEFAULT_ID;
-        private static final long DEFAULT_USER1_ID = SQLUtils.DEFAULT_ID;
-        private static final long DEFAULT_USER2_ID = SQLUtils.DEFAULT_ID;
-        private static final boolean DEFAULT_APPROVE1 = false;
-        private static final boolean DEFAULT_APPROVE2 = false;
-        private static final UserConnectionState DEFAULT_USER_CONNECTION_STATE = UserConnectionState.IN_PROGRESS;
-
-        private final UserConnection userConnection =
-                new UserConnection(DEFAULT_ID, DEFAULT_USER1_ID, DEFAULT_USER2_ID, DEFAULT_APPROVE1, DEFAULT_APPROVE2, DEFAULT_USER_CONNECTION_STATE);
-
-        public UserConnectionBuilder setId(long id) {
-            userConnection.setId(id);
-            return this;
-        }
-
-        public UserConnectionBuilder setUser1Id(long user1Id) {
-            userConnection.setUser1Id(user1Id);
-            return this;
-        }
-
-        public UserConnectionBuilder setUser2Id(long user2Id) {
-            userConnection.setUser2Id(user2Id);
-            return this;
-        }
-
-        public UserConnectionBuilder setApprove1(boolean approve1) {
-            userConnection.setApprove1(approve1);
-            return this;
-        }
-
-        public UserConnectionBuilder setApprove2(boolean approve2) {
-            userConnection.setApprove2(approve2);
-            return this;
-        }
-
-        public UserConnectionBuilder setState(UserConnectionState state) {
-            userConnection.setState(state);
-            return this;
-        }
-
-        public UserConnection get() {
-            return userConnection;
-        }
     }
 }

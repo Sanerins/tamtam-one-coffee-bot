@@ -1,8 +1,5 @@
 package one.coffee.utils;
 
-import java.lang.invoke.MethodHandles;
-import java.util.List;
-
 import chat.tamtam.bot.builders.NewMessageBodyBuilder;
 import chat.tamtam.botapi.client.TamTamClient;
 import chat.tamtam.botapi.exceptions.APIException;
@@ -13,13 +10,21 @@ import chat.tamtam.botapi.model.NewMessageLink;
 import chat.tamtam.botapi.model.SendMessageResult;
 import chat.tamtam.botapi.model.TextFormat;
 import chat.tamtam.botapi.queries.SendMessageQuery;
+import one.coffee.keyboards.Keyboard;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.lang.invoke.MethodHandles;
+import java.util.List;
 
 /**
  * @author almaz.shakirov
- * This code was copied from https://github.com/tamtam-chat/tamtam-bot-sdk/pull/16
+ * This code was copied from <a href="https://github.com/tamtam-chat/tamtam-bot-sdk/pull/16">here</a>
  */
+
+@Component
 public class MessageSender {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -31,6 +36,7 @@ public class MessageSender {
 
     private final TamTamClient client;
 
+    @Autowired
     public MessageSender(TamTamClient client) {
         this.client = client;
     }
@@ -93,10 +99,6 @@ public class MessageSender {
         sendMessage(userId, NewMessageBodyBuilder.ofText(message).build());
     }
 
-    public SendMessageResult sendMessageWithResult(long userId, NewMessageBody messageBody) throws APIException, ClientException {
-        return new SendMessageQuery(client, messageBody).userId(userId).execute();
-    }
-
     /**
      * If messageBody has text with length more than {@link MessageSender#MAX_CHARS_IN_MESSAGE}, then it will be automatically
      * split and sent as several messages.
@@ -128,6 +130,14 @@ public class MessageSender {
         } catch (APIException | ClientException e) {
             LOG.error("Failed to send message to user {}", userId, e);
         }
+    }
+
+    public SendMessageResult sendMessageWithResult(long userId, NewMessageBody messageBody) throws APIException, ClientException {
+        return new SendMessageQuery(client, messageBody).userId(userId).execute();
+    }
+
+    public void sendKeyboard(long userId, Keyboard keyboard) {
+        sendMessage(userId, keyboard.build());
     }
 
     private NewMessageBody createNewMessageBody(String text, List<AttachmentRequest> attachments, NewMessageLink link, Boolean notify, TextFormat format) {

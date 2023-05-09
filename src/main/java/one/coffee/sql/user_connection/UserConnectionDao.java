@@ -1,5 +1,11 @@
 package one.coffee.sql.user_connection;
 
+import one.coffee.sql.Dao;
+import one.coffee.sql.states.UserConnectionState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
 import java.lang.invoke.MethodHandles;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,46 +16,30 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
-import one.coffee.sql.DB;
-import one.coffee.sql.Dao;
-import one.coffee.sql.utils.UserConnectionState;
-import one.coffee.utils.StaticContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-public class UserConnectionDao extends Dao<UserConnection>
-{
-
+@Component
+public class UserConnectionDao
+        extends Dao<UserConnection> {
+    @SuppressWarnings("unused")
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static UserConnectionDao INSTANCE;
 
-    private UserConnectionDao() {
-        super(
-                "userConnections",
-                List.of(
-                        Map.entry("id", "INTEGER PRIMARY KEY AUTOINCREMENT"),
-                        Map.entry("user1Id", "INT REFERENCES users(userId) ON DELETE CASCADE"),
-                        Map.entry("user2Id", "INT REFERENCES users(userId) ON DELETE CASCADE"),
-                        Map.entry("approve1", "BIT"),
-                        Map.entry("approve2", "BIT"),
-                        Map.entry("stateId", "INT")
-                )
+    public UserConnectionDao() {
+        shortName = "userConnections";
+        args = List.of(
+                Map.entry("id", "INTEGER PRIMARY KEY AUTOINCREMENT"),
+                Map.entry("user1Id", "INT REFERENCES users(userId) ON DELETE CASCADE"),
+                Map.entry("user2Id", "INT REFERENCES users(userId) ON DELETE CASCADE"),
+                Map.entry("approve1", "BIT"),
+                Map.entry("approve2", "BIT"),
+                Map.entry("stateId", "INT")
         );
-    }
-
-    public static UserConnectionDao getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new UserConnectionDao();
-        }
-        return INSTANCE;
     }
 
     @Override
     public Optional<UserConnection> get(long id) {
         final AtomicReference<UserConnection> userConnection = new AtomicReference<>();
         try {
-            String sql = "SELECT * FROM " + getInstance().getShortName()+ " WHERE id = ?";
-            PreparedStatement stmt = StaticContext.CON.prepareStatement(sql);
+            String sql = "SELECT * FROM " + this.getShortName()+ " WHERE id = ?";
+            PreparedStatement stmt = DB.prepareStatement(sql);
             stmt.setLong(1, id);
 
             DB.executeQuery(stmt, rs -> {
@@ -67,8 +57,8 @@ public class UserConnectionDao extends Dao<UserConnection>
     public List<UserConnection> getByUserId(long userId) {
         final List<UserConnection> userConnections = new ArrayList<>();
         try {
-            String sql = "SELECT * FROM " + getInstance().getShortName() + " WHERE user1Id = ? OR user2Id = ?";
-            PreparedStatement stmt = StaticContext.CON.prepareStatement(sql);
+            String sql = "SELECT * FROM " + this.getShortName() + " WHERE user1Id = ? OR user2Id = ?";
+            PreparedStatement stmt = DB.prepareStatement(sql);
             stmt.setLong(1, userId);
             stmt.setLong(2, userId);
 
@@ -102,5 +92,4 @@ public class UserConnectionDao extends Dao<UserConnection>
         UserConnectionState state = UserConnectionState.fromId(rs.getLong("stateId"));
         return new UserConnection(id, user1Id, user2Id, approve1, approve2, state);
     }
-
 }

@@ -1,31 +1,31 @@
 package one.coffee.sql.user;
 
+import one.coffee.sql.Service;
+import one.coffee.sql.user_connection.UserConnection;
+import one.coffee.sql.user_connection.UserConnectionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Optional;
 
-import one.coffee.sql.Service;
-import one.coffee.sql.user_connection.UserConnection;
-import one.coffee.sql.user_connection.UserConnectionService;
-import one.coffee.utils.StaticContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-public class UserService implements Service<User> {
+@Component
+public class UserService
+        implements Service<User> {
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final UserDao userDao = StaticContext.USER_DAO;
-    private static final UserConnectionService userConnectionService = StaticContext.USER_CONNECTION_SERVICE;
-    private static UserService INSTANCE;
 
-    private UserService() {
-    }
+    @Autowired
+    private UserDao userDao;
+    @Autowired
+    private UserConnectionService userConnectionService;
 
-    public static UserService getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new UserService();
-        }
-        return INSTANCE;
+    // TODO Enhance
+    private static boolean isValidCity(String city) {
+        return city != null && !city.trim().isEmpty();
     }
 
     @Override
@@ -54,7 +54,7 @@ public class UserService implements Service<User> {
         }
 
         if (!isValidCity(user.getCity())) {
-            LOG.warn("Invalid user city! Got {}", user.getCity());
+            LOG.warn("Invalid user city!! Got {}", user.getCity());
             return;
         }
 
@@ -66,14 +66,9 @@ public class UserService implements Service<User> {
         userDao.delete(user);
     }
 
-    // TODO Enhance
-    private static boolean isValidCity(String city) {
-        return city != null && !city.trim().isEmpty();
-    }
-
     private List<User> getAllChattingCandidates(long userId) {
         List<UserConnection> unsuccessfulUserConnections =
-                StaticContext.USER_CONNECTION_SERVICE.getUnsuccessfulConnectionsByUserId(userId);
+                userConnectionService.getUnsuccessfulConnectionsByUserId(userId);
         return getWaitingUsers().stream()
                 .filter(user -> isCandidate(user, userId, unsuccessfulUserConnections))
                 .toList();
@@ -89,5 +84,4 @@ public class UserService implements Service<User> {
         }
         return true;
     }
-
 }

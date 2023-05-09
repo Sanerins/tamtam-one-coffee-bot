@@ -1,5 +1,11 @@
 package one.coffee.sql.user;
 
+import one.coffee.sql.Dao;
+import one.coffee.sql.states.UserState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
 import java.lang.invoke.MethodHandles;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,45 +16,29 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
-import one.coffee.sql.DB;
-import one.coffee.sql.Dao;
-import one.coffee.sql.utils.UserState;
-import one.coffee.utils.StaticContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+@Component
 public class UserDao extends Dao<User> {
-
+    @SuppressWarnings("unused")
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static UserDao INSTANCE;
 
-    private UserDao() {
-        super(
-                "users",
-                List.of(
-                        Map.entry("id", "INTEGER PRIMARY KEY"),
-                        Map.entry("city", "VARCHAR(20)"),
-                        Map.entry("stateId", "INT"),
-                        Map.entry("connectionId", "INT REFERENCES userConnections(id) ON DELETE SET NULL"),
-                        Map.entry("username", "VARCHAR(64)"),
-                        Map.entry("userInfo", "TEXT")
-                )
+    public UserDao() {
+        shortName = "users";
+        args = List.of(
+                Map.entry("id", "INTEGER PRIMARY KEY"),
+                Map.entry("city", "VARCHAR(20)"),
+                Map.entry("stateId", "INT"),
+                Map.entry("connectionId", "INT REFERENCES userConnections(id) ON DELETE SET NULL"),
+                Map.entry("username", "VARCHAR(64)"),
+                Map.entry("userInfo", "TEXT")
         );
-    }
-
-    public static UserDao getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new UserDao();
-        }
-        return INSTANCE;
     }
 
     @Override
     public Optional<User> get(long id) {
         AtomicReference<User> user = new AtomicReference<>();
         try {
-            String sql = "SELECT * FROM " + getInstance().getShortName() + " WHERE id = ?";
-            PreparedStatement stmt = StaticContext.CON.prepareStatement(sql);
+            String sql = "SELECT * FROM " + this.getShortName() + " WHERE id = ?";
+            PreparedStatement stmt = DB.prepareStatement(sql);
             stmt.setLong(1, id);
             DB.executeQuery(stmt, rs -> {
                 if (!rs.next()) {
@@ -65,8 +55,8 @@ public class UserDao extends Dao<User> {
     public List<User> getWaitingUsers(long n) {
         List<User> users = new ArrayList<>();
         try {
-            String sql = "SELECT * FROM " + getInstance().getShortName() +  " WHERE stateId = ? ORDER BY RANDOM() LIMIT " + n;
-            PreparedStatement stmt = StaticContext.CON.prepareStatement(sql);
+            String sql = "SELECT * FROM " + this.getShortName() + " WHERE stateId = ? ORDER BY RANDOM() LIMIT " + n;
+            PreparedStatement stmt = DB.prepareStatement(sql);
             stmt.setLong(1, UserState.WAITING.ordinal());
 
             DB.executeQuery(stmt, rs -> {
@@ -100,5 +90,4 @@ public class UserDao extends Dao<User> {
                 rs.getString("userInfo")
         );
     }
-
 }

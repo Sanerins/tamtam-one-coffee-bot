@@ -1,4 +1,4 @@
-package one.coffee.sql.utils;
+package one.coffee.sql.states;
 
 public enum UserConnectionState {
     IN_PROGRESS,
