@@ -13,6 +13,7 @@ import one.coffee.commands.StateResult;
 import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user.UserService;
+import one.coffee.sql.utils.SQLUtils;
 import one.coffee.utils.MessageSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,10 +52,10 @@ public class OneCoffeeBotUpdateMapper extends DefaultUpdateMapper<Result> {
     @Override
     public StateResult map(BotStartedUpdate model) {
         long userId = Objects.requireNonNull(model.getUser().getUserId(), "UserId is null");
-        User user = new User(userId, "Cyberpunk2077", UserState.DEFAULT, model.getUser().getUsername());
+        User user = new User(userId, "Cyberpunk2077", UserState.PROFILE_DEFAULT, SQLUtils.DEFAULT_ID, model.getUser().getUsername(), null);
         userService.save(user);
         messageSender.sendMessage(userId,"Бот, призванный помочь одиноким или скучающим людям найти компанию и славно провести время вместе \n" +
-                        "Напиши /help, чтобы получить список команд!");
+                        "Напиши /profile, чтобы перейти к заполнению профиля!");
         return new StateResult(StateResult.ResultState.SUCCESS);
     }
 

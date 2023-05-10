@@ -4,16 +4,19 @@ import chat.tamtam.botapi.model.CallbackButton;
 import chat.tamtam.botapi.model.Intent;
 
 public abstract class Button {
-    public final String keyboardPrefix;
-    public final String text;
-    protected Intent intent;
-    public Button(String keyboardPrefix, String text) {
-        this.keyboardPrefix = keyboardPrefix;
-        this.text = text;
-    }
 
     public String getPrefix() {
         return this.getClass().getSimpleName();
+    }
+
+
+    public final String keyboardPrefix;
+    public final String text;
+    protected Intent intent;
+
+    public Button(String keyboardPrefix, String text) {
+        this.keyboardPrefix = keyboardPrefix;
+        this.text = text;
     }
 
     /**
