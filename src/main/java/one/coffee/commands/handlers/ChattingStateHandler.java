@@ -11,7 +11,6 @@ import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user_connection.UserConnection;
 import one.coffee.sql.utils.SQLUtils;
-import org.eclipse.jetty.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -28,27 +27,18 @@ public class ChattingStateHandler extends StateHandler {
         return UserState.CHATTING;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    protected <R extends Result> R handleDefault(Message message) {
-        String text = message.getBody().getText();
-        if (StringUtil.isEmpty(text) || text.charAt(0) != '/') {
-            handleText(message);
-            return (R) new StateResult(Result.ResultState.SUCCESS);
-        }
-        return super.handleDefault(message);
-    }
-
-    protected void handleText(Message message) {
+    protected StateResult handleText(Message message) {
         User recipient = getRecipient(message);
         if (recipient == null) {
-            return;
+            return new StateResult(Result.ResultState.ERROR, "Got null user : " + message.getSender());
         }
 
         messageSender.sendMessage(
                 recipient.getId(),
                 NewMessageBodyBuilder.copyOf(message).build()
         );
+        return new StateResult(Result.ResultState.SUCCESS);
     }
 
     @SuppressWarnings("unused")
