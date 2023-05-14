@@ -8,7 +8,12 @@ import java.lang.invoke.MethodHandles;
 public enum UserState {
     DEFAULT(0),
     WAITING(1),
-    CHATTING(2);
+    CHATTING(2),
+    PROFILE_DEFAULT(3),
+    PROFILE_CHANGE_NAME(4),
+    PROFILE_CHANGE_CITY(5),
+    PROFILE_CHANGE_DESCRIPTION(6);
+
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final long id;

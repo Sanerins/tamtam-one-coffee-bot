@@ -7,6 +7,7 @@ import one.coffee.ParentClasses.Handler;
 import one.coffee.ParentClasses.HandlerAnnotation;
 import one.coffee.ParentClasses.Result;
 import one.coffee.sql.states.UserState;
+import org.eclipse.jetty.util.StringUtil;
 import org.springframework.stereotype.Component;
 
 import java.lang.annotation.Annotation;
@@ -21,12 +22,25 @@ public abstract class StateHandler extends Handler {
 
     @SuppressWarnings("unchecked")
     @Override
-    protected <R extends Result> R handleDefault(Message message) {
+    protected StateResult handleDefault(Message message) {
+        String text = message.getBody().getText();
+        if (StringUtil.isEmpty(text) || text.charAt(0) != '/') {
+            return handleText(message);
+        }
+
         messageSender.sendMessage(
                 message.getSender().getUserId(),
                 "Такой команды не знаю :("
         );
-        return (R) new StateResult(Result.ResultState.ERROR, "Unknown command");
+        return new StateResult(Result.ResultState.ERROR, "Unknown command");
+    }
+
+    protected StateResult handleText(Message message) {
+        messageSender.sendMessage(
+                message.getSender().getUserId(),
+                "Напиши мне лучше команду"
+        );
+        return new StateResult(Result.ResultState.SUCCESS);
     }
 
     public StateResult handle(Message message) {
