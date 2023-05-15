@@ -1,13 +1,15 @@
 package one.coffee.sql;
 
-import one.coffee.sql.utils.SQLUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.annotation.PostConstruct;
+
+import one.coffee.sql.utils.SQLUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
 public abstract class Dao<T extends Entity> {
@@ -17,6 +19,7 @@ public abstract class Dao<T extends Entity> {
 
     protected String shortName;
     protected List<Map.Entry<String /*argNames*/, String /*argTypes*/>> args;
+    public static final AtomicBoolean reinit = new AtomicBoolean(true);
 
     abstract public Optional<T> get(long id);
 
@@ -34,9 +37,10 @@ public abstract class Dao<T extends Entity> {
             throw new IllegalArgumentException("Not enough 'args'! Got: " + args);
         }
 
-        // Включать, только если поменялась схема таблички
-        //DB.dropTable(this);
-        //DB.createTable(this);
+        if (reinit.get()) {
+            DB.dropTable(this);
+            DB.createTable(this);
+        }
     }
 
     // Returns full name of the table with specified types.
