@@ -1,15 +1,8 @@
 package one.coffee;
 
-import one.coffee.sql.states.UserState;
-import one.coffee.sql.user.User;
-import one.coffee.sql.user.UserService;
-import one.coffee.sql.utils.SQLUtils;
 import org.junit.jupiter.api.Timeout;
-import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.ArgumentsProvider;
-import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -23,35 +16,7 @@ import java.util.stream.Stream;
 @Target({ElementType.ANNOTATION_TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @ParameterizedTest
-@ArgumentsSource(DBTest.UserList.class)
+@MethodSource({"provideArguments"})
 @Timeout(5)
 public @interface DBTest {
-
-    int nUsers();
-
-    class UserList implements ArgumentsProvider {
-
-        protected UserService userService;
-
-        @Override
-        public Stream<? extends Arguments> provideArguments(ExtensionContext extensionContext) {
-            int nUsers = extensionContext.getTestMethod().get().getAnnotation(DBTest.class).nUsers();
-            List<User> users = new ArrayList<>();
-            for (int i = 0; i < nUsers; ++i) {
-                long id = i + 1;
-                User user = new User(
-                        id,
-                        "City" + id,
-                        UserState.DEFAULT,
-                        SQLUtils.DEFAULT_ID,
-                        "Вася Пупкин",
-                        "Живу на болоте"
-                );
-                userService.save(user);
-                users.add(user);
-            }
-            return Stream.of(Arguments.of(users));
-        }
-    }
-
 }

@@ -117,8 +117,7 @@ public class UserConnectionService
     public void delete(UserConnection userConnection) {
         long user1Id = userConnection.getUser1Id();
         long user2Id = userConnection.getUser2Id();
-        commitUsersConnection(SQLUtils.DEFAULT_ID, user1Id, user2Id, UserState.WAITING);
-        userConnection.setState(UserConnectionState.UNSUCCESSFUL);
+        commitUsersConnection(SQLUtils.DEFAULT_ID, user1Id, user2Id, UserState.DEFAULT);
         save(userConnection);
     }
 

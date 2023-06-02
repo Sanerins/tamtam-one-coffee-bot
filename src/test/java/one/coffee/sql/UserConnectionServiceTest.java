@@ -1,23 +1,33 @@
 package one.coffee.sql;
 
 import one.coffee.DBTest;
+import one.coffee.bot.ContextConf;
 import one.coffee.sql.states.UserConnectionState;
 import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user_connection.UserConnection;
 import one.coffee.sql.utils.SQLUtils;
+
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.stereotype.Component;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
-@Component
+@TestInstance(PER_CLASS)
+@SpringBootTest
+@ContextConfiguration(classes = ContextConf.class, loader= AnnotationConfigContextLoader.class)
 public class UserConnectionServiceTest
         extends ResourceTest {
 
-    @DBTest(nUsers = 2)
+    @DBTest()
     void ok(List<User> users) {
         long user1Id = users.get(0).getId();
         long user2Id = users.get(1).getId();
@@ -36,7 +46,7 @@ public class UserConnectionServiceTest
         assertEquals(savedUserConnection.getId(), savedUser2.getConnectionId());
     }
 
-    @DBTest(nUsers = 3)
+    @DBTest()
     void twoParallelConnections(List<User> users) {
         long user1Id = users.get(0).getId();
         long user2Id = users.get(1).getId();
@@ -66,7 +76,7 @@ public class UserConnectionServiceTest
         assertEquals(savedUser3.getConnectionId(), SQLUtils.DEFAULT_ID);
     }
 
-    @DBTest(nUsers = 2)
+    @DBTest()
     void breakConnection(List<User> users) {
         long user1Id = users.get(0).getId();
         long user2Id = users.get(1).getId();
@@ -78,14 +88,14 @@ public class UserConnectionServiceTest
         User savedUser1 = userService.get(user1Id).get();
         User savedUser2 = userService.get(user2Id).get();
 
-        assertEquals(savedUser1.getState(), UserState.WAITING);
+        assertEquals(savedUser1.getState(), UserState.DEFAULT);
         assertEquals(savedUser1.getConnectionId(), -1);
 
-        assertEquals(savedUser2.getState(), UserState.WAITING);
+        assertEquals(savedUser2.getState(), UserState.DEFAULT);
         assertEquals(savedUser2.getConnectionId(), -1);
     }
 
-    @DBTest(nUsers = 3)
+    @DBTest()
     void validCandidate(List<User> users) {
         long user1Id = users.get(0).getId();
         long user2Id = users.get(1).getId();
@@ -99,6 +109,7 @@ public class UserConnectionServiceTest
         userConnectionService.save(userConnection);
         UserConnection savedUserConnection =
                 userConnectionService.getByUserIdsAndUserConnectionState(userConnection).get();
+        savedUserConnection.setState(UserConnectionState.UNSUCCESSFUL);
         userConnectionService.delete(savedUserConnection);
         UserConnection deletedUserConnection =
                 userConnectionService.get(savedUserConnection.getId()).get();
