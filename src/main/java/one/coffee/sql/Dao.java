@@ -3,12 +3,12 @@ package one.coffee.sql;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.PostConstruct;
 
 import one.coffee.sql.utils.SQLUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -19,7 +19,9 @@ public abstract class Dao<T extends Entity> {
 
     protected String shortName;
     protected List<Map.Entry<String /*argNames*/, String /*argTypes*/>> args;
-    public static final AtomicBoolean reinit = new AtomicBoolean(true);
+
+    @Value("${sql.reinit}")
+    public boolean reinit;
 
     abstract public Optional<T> get(long id);
 
@@ -37,7 +39,7 @@ public abstract class Dao<T extends Entity> {
             throw new IllegalArgumentException("Not enough 'args'! Got: " + args);
         }
 
-        if (reinit.get()) {
+        if (reinit) {
             DB.dropTable(this);
             DB.createTable(this);
         }
