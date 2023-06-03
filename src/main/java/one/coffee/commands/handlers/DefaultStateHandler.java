@@ -4,7 +4,7 @@ import chat.tamtam.botapi.model.Message;
 import one.coffee.ParentClasses.HandlerAnnotation;
 import one.coffee.commands.StateHandler;
 import one.coffee.commands.StateResult;
-import one.coffee.keyboards.DefaultHelpKeyboard;
+import one.coffee.keyboards.DefaultStateKeyboard;
 import one.coffee.sql.states.UserState;
 import one.coffee.utils.DefaultStateUtils;
 
@@ -31,7 +31,12 @@ public class DefaultStateHandler extends StateHandler {
     @SuppressWarnings("unused")
     @HandlerAnnotation("/help")
     private StateResult handleHelp(Message message) {
-        messageSender.sendKeyboard(message.getSender().getUserId(), new DefaultHelpKeyboard());
+        messageSender.sendKeyboard(message.getSender().getUserId(), new DefaultStateKeyboard("""
+                        Список команд бота, доступных для использования:
+                        /profile - редактировать профиль пользователя
+                        /start - начать диалог с пользователем
+                        Или воспользуйтесь кнопкой ниже
+                        """));
         return new StateResult(StateResult.ResultState.SUCCESS);
     }
 

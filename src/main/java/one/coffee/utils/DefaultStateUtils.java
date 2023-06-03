@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import one.coffee.ParentClasses.Result;
 import one.coffee.commands.StateResult;
 import one.coffee.keyboards.FillProfileKeyboard;
+import one.coffee.keyboards.InConversationKeyboard;
 import one.coffee.keyboards.WaitingKeyboard;
 import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
@@ -30,16 +31,14 @@ public class DefaultStateUtils extends StateUtils {
         UserConnection userConnection = new UserConnection(userId, chattingCandidate.getId());
         userConnectionService.save(userConnection);
 
-        messageSender.sendMessage(userId,
-                """
+        messageSender.sendKeyboard(userId, new InConversationKeyboard("""
                         Я нашел вам собеседника!
                         Я буду передавать сообщения между вами, можете общаться сколько влезет!)
-                        Список команд, доступных во время беседы можно открыть на /help\s""");
-        messageSender.sendMessage(chattingCandidate.getId(),
-                """
+                        Список команд с кнопками всегда можно вызвать на /help\s"""));
+        messageSender.sendKeyboard(chattingCandidate.getId(), new InConversationKeyboard("""
                         Я нашел вам собеседника!
                         Я буду передавать сообщения между вами, можете общаться сколько влезет!)
-                        Список команд, доступных во время беседы можно открыть на /help\s""");
+                        Список команд с кнопками всегда можно вызвать на /help\s"""));
         return new StateResult(StateResult.ResultState.SUCCESS);
     }
 
@@ -50,7 +49,7 @@ public class DefaultStateUtils extends StateUtils {
         sender = optionalSender.orElseGet(() -> new User(userId, "Cyberpunk2077", UserState.DEFAULT, username));
         sender.setState(UserState.PROFILE_DEFAULT);
         userService.save(sender);
-        messageSender.sendKeyboard(userId, new FillProfileKeyboard());
+        messageSender.sendKeyboard(userId, new FillProfileKeyboard("Какое из дейсвий вы хотите сделать со своим профилем?"));
         return new StateResult(Result.ResultState.SUCCESS);
     }
 

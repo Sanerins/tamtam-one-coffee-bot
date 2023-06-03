@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import one.coffee.ParentClasses.Result;
 import one.coffee.commands.StateResult;
+import one.coffee.keyboards.DefaultStateKeyboard;
 import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
 
@@ -23,8 +24,7 @@ public class WaitingStateUtils extends StateUtils {
         sender = optionalSender.orElseGet(() -> new User(userId, "Cyberpunk2077", UserState.DEFAULT, username));
         sender.setState(UserState.DEFAULT);
         userService.save(sender);
-        messageSender.sendMessage(userId,
-                "Ты успешно вышел из очереди!");
+        messageSender.sendKeyboard(userId, new DefaultStateKeyboard("Ты успешно вышел из очереди!"));
         return new StateResult(Result.ResultState.SUCCESS);
     }
 }

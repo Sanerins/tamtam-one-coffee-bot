@@ -17,7 +17,7 @@ import one.coffee.ParentClasses.Result;
 import one.coffee.antispam.DetectPornService;
 import one.coffee.commands.StateHandler;
 import one.coffee.commands.StateResult;
-import one.coffee.keyboards.InConversationHelpKeyboard;
+import one.coffee.keyboards.InConversationKeyboard;
 import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.utils.ChattingStateUtils;
@@ -150,7 +150,12 @@ public class ChattingStateHandler extends StateHandler {
     @SuppressWarnings("unused")
     @HandlerAnnotation("/help")
     private StateResult handleHelp(Message message) {
-        messageSender.sendKeyboard(message.getSender().getUserId(), new InConversationHelpKeyboard());
+        messageSender.sendKeyboard(message.getSender().getUserId(), new InConversationKeyboard("""
+                        Список команд бота, доступных для использования:
+                        /approve - подтвердить желание поделиться контактной информацией
+                        /end - закончить диалог с пользователем
+                        Или же используйте кнопки:
+                        """));
         return new StateResult(Result.ResultState.SUCCESS);
     }
 }

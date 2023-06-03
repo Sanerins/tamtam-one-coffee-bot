@@ -6,15 +6,11 @@ import org.springframework.stereotype.Component;
 import chat.tamtam.botapi.model.Message;
 import one.coffee.callbacks.CallbackResult;
 import one.coffee.callbacks.KeyboardCallbackHandler;
-import one.coffee.keyboards.DefaultHelpKeyboard;
-import one.coffee.keyboards.InConversationHelpKeyboard;
+import one.coffee.keyboards.DefaultStateKeyboard;
 import one.coffee.keyboards.Keyboard;
-import one.coffee.keyboards.buttons.ApproveButton;
 import one.coffee.keyboards.buttons.ButtonAnnotation;
-import one.coffee.keyboards.buttons.EndConversationButton;
 import one.coffee.keyboards.buttons.ProfileButton;
 import one.coffee.keyboards.buttons.StartButton;
-import one.coffee.utils.ChattingStateUtils;
 import one.coffee.utils.DefaultStateUtils;
 
 @Component
@@ -25,7 +21,7 @@ public class DefaultHelpKeyboardCallback extends KeyboardCallbackHandler {
 
     @Override
     public Class<? extends Keyboard> getKeyboardPrefix() {
-        return DefaultHelpKeyboard.class;
+        return DefaultStateKeyboard.class;
     }
 
     @ButtonAnnotation(ProfileButton.class)

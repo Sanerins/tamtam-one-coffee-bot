@@ -8,6 +8,9 @@ import org.springframework.stereotype.Component;
 
 import one.coffee.ParentClasses.Result;
 import one.coffee.commands.StateResult;
+import one.coffee.keyboards.DefaultProfileStateKeyboard;
+import one.coffee.keyboards.DefaultStateKeyboard;
+import one.coffee.keyboards.FillProfileKeyboard;
 import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
 
@@ -22,9 +25,9 @@ public class DefaultProfileStateUtils extends StateUtils {
                 && !user.getUserInfo().isBlank()) {
             user.setState(UserState.DEFAULT);
             userService.save(user);
-            messageSender.sendMessage(user.getId(), "Вы успешно создали профиль. Используйте /help, чтобы посмотреть новые возможности");
+            messageSender.sendKeyboard(user.getId(), new DefaultStateKeyboard("Вы успешно создали профиль! Можно приступать к общению!"));
         } else {
-            messageSender.sendMessage(user.getId(), "Вы еще не полностью заполнили профиль");
+            messageSender.sendKeyboard(user.getId(), new FillProfileKeyboard("Вы еще не полностью заполнили профиль"));
         }
         return new StateResult(Result.ResultState.SUCCESS);
     }

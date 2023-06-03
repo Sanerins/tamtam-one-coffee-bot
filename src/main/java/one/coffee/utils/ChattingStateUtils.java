@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 
 import one.coffee.ParentClasses.Result;
 import one.coffee.commands.StateResult;
+import one.coffee.keyboards.DefaultStateKeyboard;
+import one.coffee.keyboards.InConversationKeyboard;
 import one.coffee.sql.states.UserConnectionState;
 import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
@@ -46,13 +48,13 @@ public class ChattingStateUtils extends StateUtils {
         userConnection.setState(UserConnectionState.UNSUCCESSFUL);
         userConnectionService.delete(userConnection);
 
-        messageSender.sendMessage(
+        messageSender.sendKeyboard(
                 userId,
-                "Диалог с пользователем завершён"
+                new DefaultStateKeyboard("Диалог с пользователем завершён")
         );
-        messageSender.sendMessage(
+        messageSender.sendKeyboard(
                 recipient.getId(),
-                "Пользователь решил закончить с вами диалог, надеюсь, все прошло сладко!"
+                new DefaultStateKeyboard("Пользователь решил закончить с вами диалог, надеюсь, все прошло сладко!")
         );
         return new StateResult(Result.ResultState.SUCCESS);
     }
@@ -121,9 +123,9 @@ public class ChattingStateUtils extends StateUtils {
                 "Вы подтвердили свою симпатию к собеседнику! Ожидайте, пока он примет решение"
         );
         userConnectionService.getConnectedUser(senderId).ifPresentOrElse(connectedUser ->
-                messageSender.sendMessage(
-                        connectedUser.getId(),
-                        "Ваш собеседник проявил к Вам интерес! Ответьте взаимностью или прервите переписку"
+                messageSender.sendKeyboard(connectedUser.getId(),
+                        new InConversationKeyboard("Ваш собеседник проявил к Вам интерес! Ответьте взаимностью, " +
+                                "прервите переписку или просто продолжите общение, если еще не уверены")
                 ), () -> {
         });
     }
@@ -134,6 +136,9 @@ public class ChattingStateUtils extends StateUtils {
                 "Вы понравились Вашему собеседнику," +
                         " поэтому он решил поделиться с Вами своими контактами: " + recipient.getUserInfo()
         );
+        messageSender.sendKeyboard(senderId,
+                new DefaultStateKeyboard("Теперь вам осталось встретиться с друг другом очно за чашечкой кофе! " +
+                        "Договоритесь об этом по полученным контактам!\n"));
     }
 
     private void handleConnectionError(long userId, String username) {
