@@ -10,6 +10,7 @@ import one.coffee.callbacks.CallbackResult;
 import one.coffee.callbacks.KeyboardCallbackHandler;
 import one.coffee.commands.StateHandler;
 import one.coffee.commands.StateResult;
+import one.coffee.keyboards.DefaultProfileStateKeyboard;
 import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user.UserService;
@@ -54,8 +55,8 @@ public class OneCoffeeBotUpdateMapper extends DefaultUpdateMapper<Result> {
         long userId = Objects.requireNonNull(model.getUser().getUserId(), "UserId is null");
         User user = new User(userId, "Cyberpunk2077", UserState.PROFILE_DEFAULT, SQLUtils.DEFAULT_ID, model.getUser().getUsername(), null);
         userService.save(user);
-        messageSender.sendMessage(userId,"Бот, призванный помочь одиноким или скучающим людям найти компанию и славно провести время вместе \n" +
-                        "Напиши /profile, чтобы перейти к заполнению профиля!");
+        messageSender.sendKeyboard(userId, new DefaultProfileStateKeyboard("Бот, призванный помочь одиноким или скучающим людям найти компанию и славно провести время вместе " +
+                "жми на кнопку чтобы перейти к заполнению профиля!"));
         return new StateResult(StateResult.ResultState.SUCCESS);
     }
 

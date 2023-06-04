@@ -5,6 +5,7 @@ import one.coffee.ParentClasses.HandlerAnnotation;
 import one.coffee.ParentClasses.Result;
 import one.coffee.commands.StateHandler;
 import one.coffee.commands.StateResult;
+import one.coffee.keyboards.DefaultProfileStateKeyboard;
 import one.coffee.keyboards.FillProfileKeyboard;
 import one.coffee.sql.states.UserState;
 import org.springframework.stereotype.Component;
@@ -28,18 +29,17 @@ public class ProfileDefaultStateHandler extends StateHandler {
     @SuppressWarnings("unused")
     @HandlerAnnotation("/help")
     private StateResult handleHelp(Message message) {
-        messageSender.sendMessage(message.getSender().getUserId(),
-                """
+        messageSender.sendKeyboard(message.getSender().getUserId(), new DefaultProfileStateKeyboard("""
                         Список команд бота, доступных для использования:
-                        /help - список всех команд
                         /profile - получить форму для заполнения профиля
-                        """);
+                        Либо воспользуйтесь кнопкой
+                        """));
         return new StateResult(Result.ResultState.SUCCESS);
     }
 
     @HandlerAnnotation("/profile")
     private StateResult handleProfile(Message message) {
-        messageSender.sendKeyboard(message.getSender().getUserId(), new FillProfileKeyboard());
+        messageSender.sendKeyboard(message.getSender().getUserId(), new FillProfileKeyboard("Для заполнения профиля нужно выполнить каждое из действий:"));
         return new StateResult(Result.ResultState.SUCCESS);
     }
 }

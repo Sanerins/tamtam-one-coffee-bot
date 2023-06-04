@@ -8,8 +8,8 @@ import one.coffee.keyboards.buttons.FinishProfileButton;
 import java.util.List;
 
 public class FillProfileKeyboard extends Keyboard {
-    public FillProfileKeyboard() {
-        this.message = "Для заполнения профиля нужно выполнить каждое из действий:";
+    public FillProfileKeyboard(String message) {
+        this.message = message;
         this.buttonsMap =
                 List.of(
                         List.of(new ChangeNameButton(getPrefix())),

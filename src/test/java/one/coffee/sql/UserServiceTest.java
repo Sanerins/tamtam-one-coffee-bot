@@ -6,6 +6,7 @@ import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
@@ -14,7 +15,9 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
+@TestInstance(PER_CLASS)
 @SpringBootTest
 @ContextConfiguration(classes = ContextConf.class, loader= AnnotationConfigContextLoader.class)
 public class UserServiceTest
@@ -87,14 +90,14 @@ public class UserServiceTest
         assertTrue(userService.get(userId).isEmpty());
     }
 
-    @DBTest(nUsers = 1)
+    @DBTest()
     void ok2(List<User> users) {
         User user = users.get(0);
         userService.delete(user);
         assertTrue(userService.get(user.getId()).isEmpty());
     }
 
-    @DBTest(nUsers = 1)
+    @DBTest()
     void rewriteUser(List<User> users) {
         User user = users.get(0);
 

@@ -5,6 +5,7 @@ import one.coffee.bot.ContextConf;
 import one.coffee.sql.user.User;
 import one.coffee.sql.user.UserDao;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
@@ -16,6 +17,9 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
+
+@TestInstance(PER_CLASS)
 @SpringBootTest
 @ContextConfiguration(classes = ContextConf.class, loader= AnnotationConfigContextLoader.class)
 public class ConcurrentTest {
@@ -24,7 +28,7 @@ public class ConcurrentTest {
     private UserDao userDao;
 
     @Disabled("База поддерживает 4.5K GET-Rps в многопоток")
-    @DBTest(nUsers = 4500)
+    @DBTest()
     void concurrentGet(List<User> users) throws BrokenBarrierException, InterruptedException {
         final int N = users.size();
         final int nThreads = 100;
@@ -39,7 +43,7 @@ public class ConcurrentTest {
     }
 
     @Disabled("База поддерживает 20 PUT-Rps в многопоток")
-    @DBTest(nUsers = 0)
+    @DBTest()
     void concurrentPut(List<User> users) throws BrokenBarrierException, InterruptedException {
         final int N = 20;
         final int nThreads = 10;
@@ -54,7 +58,7 @@ public class ConcurrentTest {
     }
 
     @Disabled("База поддерживает 100 DELETE-Rps в многопоток")
-    @DBTest(nUsers = 100)
+    @DBTest()
     void concurrentDelete(List<User> users) throws BrokenBarrierException, InterruptedException {
         final int N = users.size();
         final int nThreads = 10;
@@ -70,7 +74,7 @@ public class ConcurrentTest {
     }
 
     @Disabled("Работяга умеет в конкурентность! 1 секунда, 4к операций, 54 потока...")
-    @DBTest(nUsers = 4000)
+    @DBTest()
     void concurrentCombined(List<User> users) throws BrokenBarrierException, InterruptedException {
         final int NGets = 4000;
         final int NPuts = 20;

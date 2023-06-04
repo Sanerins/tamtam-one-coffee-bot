@@ -13,10 +13,16 @@ import one.coffee.keyboards.buttons.ChangeNameButton;
 import one.coffee.keyboards.buttons.FinishProfileButton;
 import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
+import one.coffee.utils.DefaultProfileStateUtils;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class FillProfileKeyboardCallback extends KeyboardCallbackHandler {
+    @Autowired
+    private DefaultProfileStateUtils utils;
+
     @Override
     public Class<? extends Keyboard> getKeyboardPrefix() {
         return FillProfileKeyboard.class;
@@ -52,16 +58,6 @@ public class FillProfileKeyboardCallback extends KeyboardCallbackHandler {
 
     @ButtonAnnotation(FinishProfileButton.class)
     public CallbackResult FinishProfileButtonCallback(Message message) {
-        User user = userService.get(message.getRecipient().getUserId()).get();
-        if (!user.getUsername().isBlank()
-                && !user.getCity().isBlank()
-                && !user.getUserInfo().isBlank()) {
-            user.setState(UserState.DEFAULT);
-            userService.save(user);
-            messageSender.sendMessage(user.getId(), "Вы успешно создали профиль. Используйте /help, чтобы посмотреть новые возможности");
-        } else {
-            messageSender.sendMessage(user.getId(), "Вы еще не полностью заполнили профиль");
-        }
-        return new CallbackResult(Result.ResultState.SUCCESS);
+        return utils.finishProfile(message.getRecipient().getUserId()).toCallbackResult();
     }
 }
