@@ -21,7 +21,7 @@ public class ProfileChangeDescriptionStateHandler extends StateHandler {
         User user = userService.get(message.getSender().getUserId()).get();
         String newDesc = message.getBody().getText();
         user.setUserInfo(newDesc);
-        messageSender.sendKeyboard(user.getId(), new FillProfileKeyboard("Теперь ваше новое описание: " + newDesc));
+        messageSender.sendKeyboard(user.getId(), new FillProfileKeyboard("Теперь ваши контакты: " + newDesc));
         user.setState(UserState.PROFILE_DEFAULT);
         userService.save(user);
         return new StateResult(Result.ResultState.SUCCESS);
