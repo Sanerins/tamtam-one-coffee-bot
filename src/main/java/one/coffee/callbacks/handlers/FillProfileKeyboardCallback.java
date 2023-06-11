@@ -52,7 +52,7 @@ public class FillProfileKeyboardCallback extends KeyboardCallbackHandler {
         User user = userService.get(message.getRecipient().getUserId()).get();
         user.setState(UserState.PROFILE_CHANGE_DESCRIPTION);
         userService.save(user);
-        messageSender.sendMessage(user.getId(), "Введите ваше новое описание");
+        messageSender.sendMessage(user.getId(), "Введите контакты, которые вы хотите сообщить юзеру при обоюдном согласии продолжить диалог");
         return new CallbackResult(Result.ResultState.SUCCESS);
     }
 

@@ -11,6 +11,7 @@ import one.coffee.ParentClasses.Result;
 import one.coffee.commands.StateResult;
 import one.coffee.keyboards.FillProfileKeyboard;
 import one.coffee.keyboards.InConversationKeyboard;
+import one.coffee.keyboards.StartConversationKeyboard;
 import one.coffee.keyboards.WaitingKeyboard;
 import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
@@ -31,11 +32,11 @@ public class DefaultStateUtils extends StateUtils {
         UserConnection userConnection = new UserConnection(userId, chattingCandidate.getId());
         userConnectionService.save(userConnection);
 
-        messageSender.sendKeyboard(userId, new InConversationKeyboard("""
+        messageSender.sendKeyboard(userId, new StartConversationKeyboard("""
                         Я нашел вам собеседника!
                         Я буду передавать сообщения между вами, можете общаться сколько влезет!)
                         Список команд с кнопками всегда можно вызвать на /help\s"""));
-        messageSender.sendKeyboard(chattingCandidate.getId(), new InConversationKeyboard("""
+        messageSender.sendKeyboard(chattingCandidate.getId(), new StartConversationKeyboard("""
                         Я нашел вам собеседника!
                         Я буду передавать сообщения между вами, можете общаться сколько влезет!)
                         Список команд с кнопками всегда можно вызвать на /help\s"""));
