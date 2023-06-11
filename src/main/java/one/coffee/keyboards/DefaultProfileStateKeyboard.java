@@ -11,7 +11,7 @@ public class DefaultProfileStateKeyboard extends Keyboard {
         this.message = message;
         this.buttonsMap =
                 List.of(
-                        List.of(new ProfileButton(getPrefix())),
+                        List.of(new ProfileButton(getPrefix(), "Изменить профиль")),
                         List.of(new FinishProfileButton(getPrefix()))
                 );
 
