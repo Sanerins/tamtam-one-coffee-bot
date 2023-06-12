@@ -28,14 +28,14 @@ public abstract class KeyboardCallbackHandler extends Handler {
     protected <R extends Result> R handleDefault(Message message) {
         if (getStateBaseCommandsKeyboard() == null) {
             messageSender.sendMessage(
-                    message.getSender().getUserId(),
+                    message.getRecipient().getUserId(),
                     """
                             Такой кнопки не знаю :(
                             Напиши лучше /help для получения списка команд
                             """
             );
         } else {
-            messageSender.sendKeyboard(message.getSender().getUserId(), getStateBaseCommandsKeyboard());
+            messageSender.sendKeyboard(message.getRecipient().getUserId(), getStateBaseCommandsKeyboard());
         }
         return (R) new CallbackResult(Result.ResultState.ERROR, "Unknown button");
     }
