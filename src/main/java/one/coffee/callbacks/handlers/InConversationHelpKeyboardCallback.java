@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import chat.tamtam.botapi.model.Message;
 import one.coffee.callbacks.CallbackResult;
 import one.coffee.callbacks.KeyboardCallbackHandler;
+import one.coffee.keyboards.DefaultStateKeyboard;
 import one.coffee.keyboards.InConversationKeyboard;
 import one.coffee.keyboards.Keyboard;
 import one.coffee.keyboards.buttons.ApproveButton;
@@ -32,5 +33,12 @@ public class InConversationHelpKeyboardCallback extends KeyboardCallbackHandler 
     @ButtonAnnotation(EndConversationButton.class)
     public CallbackResult EndConversationButtonCallback(Message message) {
         return utils.handleEnd(message.getRecipient().getUserId(), "Person").toCallbackResult();
+    }
+
+    @Override
+    protected Keyboard getStateBaseCommandsKeyboard() {
+        return new InConversationKeyboard("""
+                        Напиши мне лучше команду /help
+                        """);
     }
 }

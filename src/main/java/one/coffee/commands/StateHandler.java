@@ -28,17 +28,26 @@ public abstract class StateHandler extends Handler {
             return handleText(message);
         }
 
-        messageSender.sendMessage(
-                message.getSender().getUserId(),
-                "Такой команды не знаю :("
-        );
+        if (getStateBaseCommandsKeyboard() == null) {
+            messageSender.sendMessage(
+                    message.getSender().getUserId(),
+                    """
+                            Такой команды не знаю :(
+                            Напиши лучше /help для получения списка команд
+                            """
+            );
+        } else {
+            messageSender.sendKeyboard(message.getSender().getUserId(), getStateBaseCommandsKeyboard());
+        }
         return new StateResult(Result.ResultState.ERROR, "Unknown command");
     }
 
     protected StateResult handleText(Message message) {
         messageSender.sendMessage(
                 message.getSender().getUserId(),
-                "Напиши мне лучше команду"
+                """
+                        Напиши мне лучше команду /help
+                        """
         );
         return new StateResult(Result.ResultState.SUCCESS);
     }

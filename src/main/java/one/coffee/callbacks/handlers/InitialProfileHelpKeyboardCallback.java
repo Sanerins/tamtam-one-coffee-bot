@@ -8,6 +8,7 @@ import one.coffee.ParentClasses.Result;
 import one.coffee.callbacks.CallbackResult;
 import one.coffee.callbacks.KeyboardCallbackHandler;
 import one.coffee.keyboards.DefaultProfileStateKeyboard;
+import one.coffee.keyboards.DefaultStateKeyboard;
 import one.coffee.keyboards.FillProfileKeyboard;
 import one.coffee.keyboards.InitialProfileStateKeyboard;
 import one.coffee.keyboards.Keyboard;
@@ -31,5 +32,12 @@ public class InitialProfileHelpKeyboardCallback extends KeyboardCallbackHandler 
     public CallbackResult ProfileButtonCallback(Message message) {
         messageSender.sendKeyboard(message.getRecipient().getUserId(), new FillProfileKeyboard("Для заполнения профиля нужно выполнить каждое из действий:"));
         return new CallbackResult(Result.ResultState.SUCCESS);
+    }
+
+    @Override
+    protected Keyboard getStateBaseCommandsKeyboard() {
+        return new InitialProfileStateKeyboard("""
+                        Напиши мне лучше команду /help
+                        """);
     }
 }

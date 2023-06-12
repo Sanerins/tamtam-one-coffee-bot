@@ -4,6 +4,7 @@ import chat.tamtam.botapi.model.Message;
 import one.coffee.ParentClasses.Result;
 import one.coffee.callbacks.CallbackResult;
 import one.coffee.callbacks.KeyboardCallbackHandler;
+import one.coffee.keyboards.DefaultStateKeyboard;
 import one.coffee.keyboards.FillProfileKeyboard;
 import one.coffee.keyboards.Keyboard;
 import one.coffee.keyboards.buttons.ButtonAnnotation;
@@ -59,5 +60,12 @@ public class FillProfileKeyboardCallback extends KeyboardCallbackHandler {
     @ButtonAnnotation(FinishProfileButton.class)
     public CallbackResult FinishProfileButtonCallback(Message message) {
         return utils.finishProfile(message.getRecipient().getUserId()).toCallbackResult();
+    }
+
+    @Override
+    protected Keyboard getStateBaseCommandsKeyboard() {
+        return new FillProfileKeyboard("""
+                        Напиши мне лучше команду /help
+                        """);
     }
 }

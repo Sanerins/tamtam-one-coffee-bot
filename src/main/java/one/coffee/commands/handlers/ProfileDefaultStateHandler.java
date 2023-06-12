@@ -7,6 +7,8 @@ import one.coffee.commands.StateHandler;
 import one.coffee.commands.StateResult;
 import one.coffee.keyboards.DefaultProfileStateKeyboard;
 import one.coffee.keyboards.FillProfileKeyboard;
+import one.coffee.keyboards.Keyboard;
+import one.coffee.keyboards.WaitingKeyboard;
 import one.coffee.sql.states.UserState;
 import org.springframework.stereotype.Component;
 
@@ -19,9 +21,9 @@ public class ProfileDefaultStateHandler extends StateHandler {
 
     @Override
     protected StateResult handleText(Message message) {
-        messageSender.sendMessage(
+        messageSender.sendKeyboard(
                 message.getSender().getUserId(),
-                "В начале выбери, что мы будем изменять."
+                new FillProfileKeyboard("В начале выбери, что мы будем изменять: ")
         );
         return new StateResult(Result.ResultState.SUCCESS);
     }
@@ -41,5 +43,12 @@ public class ProfileDefaultStateHandler extends StateHandler {
     private StateResult handleProfile(Message message) {
         messageSender.sendKeyboard(message.getSender().getUserId(), new FillProfileKeyboard("Для заполнения профиля нужно выполнить каждое из действий:"));
         return new StateResult(Result.ResultState.SUCCESS);
+    }
+
+    @Override
+    protected Keyboard getStateBaseCommandsKeyboard() {
+        return new DefaultProfileStateKeyboard("""
+                        Напиши мне лучше команду /help
+                        """);
     }
 }

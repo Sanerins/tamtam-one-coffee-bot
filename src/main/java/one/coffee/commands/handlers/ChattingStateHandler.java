@@ -18,6 +18,8 @@ import one.coffee.antispam.DetectPornService;
 import one.coffee.commands.StateHandler;
 import one.coffee.commands.StateResult;
 import one.coffee.keyboards.InConversationKeyboard;
+import one.coffee.keyboards.Keyboard;
+import one.coffee.keyboards.WaitingKeyboard;
 import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.utils.ChattingStateUtils;
@@ -124,7 +126,7 @@ public class ChattingStateHandler extends StateHandler {
         if (hasPorn.get()) {
             messageSender.sendMessage(
                     recipient.getId(),
-                    NewMessageBodyBuilder.ofText("Вам отправили фото неприличного содержания - мы его заблокировали, чтобы вам было комфортно").build()
+                    "Вам отправили фото неприличного содержания - мы его заблокировали, чтобы вам было комфортно"
             );
         } else {
             messageSender.sendMessage(
@@ -157,5 +159,12 @@ public class ChattingStateHandler extends StateHandler {
                         Или же используйте кнопки:
                         """));
         return new StateResult(Result.ResultState.SUCCESS);
+    }
+
+    @Override
+    protected Keyboard getStateBaseCommandsKeyboard() {
+        return new InConversationKeyboard("""
+                        Напиши мне лучше команду /help
+                        """);
     }
 }

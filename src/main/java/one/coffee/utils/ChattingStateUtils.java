@@ -142,7 +142,10 @@ public class ChattingStateUtils extends StateUtils {
     }
 
     private void handleConnectionError(long userId, String username) {
-        messageSender.sendMessage(userId, "Похоже соединение разорвалось...");
+        messageSender.sendMessage(userId, """
+                Похоже соединение разорвалось...
+                /help - для списка команд в этот тяжелый момент
+                """);
         Optional<User> optionalSender = userService.get(userId);
         User sender;
         if (optionalSender.isEmpty()) { // TODO Восстановление инфы
@@ -159,7 +162,10 @@ public class ChattingStateUtils extends StateUtils {
         return Optional.ofNullable(userConnectionService.getInProgressConnectionByUserId(senderId).orElseGet(() -> {
             messageSender.sendMessage(
                     senderId,
-                    "Не могу найти Вашего собеседника! Видимо, он решил поиграть в прятки..."
+                    """
+                            Не могу найти Вашего собеседника! Видимо, он решил поиграть в прятки...
+                            /help - для списка команд в этот тяжелый момент
+                            """
             );
             LOG.warn("Can't handle: No such user connection for sender {}", senderId);
             return null;

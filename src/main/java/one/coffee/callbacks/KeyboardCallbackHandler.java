@@ -22,10 +22,17 @@ public abstract class KeyboardCallbackHandler extends Handler {
     @SuppressWarnings("unchecked")
     @Override
     protected <R extends Result> R handleDefault(Message message) {
-        messageSender.sendMessage(
-                message.getSender().getUserId(),
-                "Такой кнопки не знаю :("
-        );
+        if (getStateBaseCommandsKeyboard() == null) {
+            messageSender.sendMessage(
+                    message.getSender().getUserId(),
+                    """
+                            Такой кнопки не знаю :(
+                            Напиши лучше /help для получения списка команд
+                            """
+            );
+        } else {
+            messageSender.sendKeyboard(message.getSender().getUserId(), getStateBaseCommandsKeyboard());
+        }
         return (R) new CallbackResult(Result.ResultState.ERROR, "Unknown button");
     }
 
