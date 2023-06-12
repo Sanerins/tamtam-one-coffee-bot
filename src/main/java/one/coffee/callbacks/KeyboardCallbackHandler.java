@@ -30,7 +30,8 @@ public abstract class KeyboardCallbackHandler extends Handler {
                 message.getRecipient().getUserId(),
                 """
                         Такой кнопки не знаю :(
-                        Напиши лучше /help для получения списка команд
+                        Ну или в данный момент она неактуальна)
+                        Напиши лучше /help для получения списка команд и кнопок
                         """
         );
         return (R) new CallbackResult(Result.ResultState.ERROR, "Unknown button");
