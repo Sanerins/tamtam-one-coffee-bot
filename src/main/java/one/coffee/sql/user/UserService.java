@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandles;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @Component
@@ -23,9 +24,24 @@ public class UserService
     @Autowired
     private UserConnectionService userConnectionService;
 
+    public static boolean checkProfileValid(User user) {
+        String city = user.getCity();
+        String contacts = user.getUserInfo();
+        String name = user.getUsername();
+
+        return checkString(city) && isValidCity(city) && checkString(contacts) && checkString(name);
+    }
+
+    public static boolean checkString(String string) {
+        return !(string == null || string.isEmpty() || string.isBlank() || string.toLowerCase(Locale.ROOT).equals("null"));
+    }
+
     // TODO Enhance
     private static boolean isValidCity(String city) {
-        return city != null && !city.trim().isEmpty();
+        if (city == null) {
+            return true;
+        }
+        return !city.trim().isEmpty();
     }
 
     @Override

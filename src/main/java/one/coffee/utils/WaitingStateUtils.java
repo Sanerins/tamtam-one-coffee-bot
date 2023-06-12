@@ -21,7 +21,7 @@ public class WaitingStateUtils extends StateUtils {
         Optional<User> optionalSender = userService.get(userId);
         User sender;
         // См. возможные причины в OneCoffeeUpdateHandler::visit(MessageCreatedUpdate)
-        sender = optionalSender.orElseGet(() -> new User(userId, "Cyberpunk2077", UserState.DEFAULT, username));
+        sender = optionalSender.orElseGet(() -> new User(userId, null, UserState.DEFAULT, username));
         sender.setState(UserState.DEFAULT);
         userService.save(sender);
         messageSender.sendKeyboard(userId, new DefaultStateKeyboard("Ты успешно вышел из очереди!"));

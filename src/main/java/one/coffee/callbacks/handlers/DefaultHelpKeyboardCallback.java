@@ -8,9 +8,11 @@ import one.coffee.callbacks.CallbackResult;
 import one.coffee.callbacks.KeyboardCallbackHandler;
 import one.coffee.keyboards.DefaultStateKeyboard;
 import one.coffee.keyboards.Keyboard;
+import one.coffee.keyboards.WaitingKeyboard;
 import one.coffee.keyboards.buttons.ButtonAnnotation;
 import one.coffee.keyboards.buttons.ProfileButton;
 import one.coffee.keyboards.buttons.StartButton;
+import one.coffee.sql.states.UserState;
 import one.coffee.utils.DefaultStateUtils;
 
 @Component
@@ -32,5 +34,17 @@ public class DefaultHelpKeyboardCallback extends KeyboardCallbackHandler {
     @ButtonAnnotation(StartButton.class)
     public CallbackResult StartButtonCallback(Message message) {
         return utils.handleStart(message.getRecipient().getUserId(), "Person").toCallbackResult();
+    }
+
+    @Override
+    protected Keyboard getStateBaseCommandsKeyboard() {
+        return new DefaultStateKeyboard("""
+                        Напиши мне лучше команду /help
+                        """);
+    }
+
+    @Override
+    protected boolean isStateAllowed(UserState state) {
+        return state == UserState.DEFAULT;
     }
 }

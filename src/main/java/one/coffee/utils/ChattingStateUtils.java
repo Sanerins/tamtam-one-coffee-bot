@@ -68,7 +68,7 @@ public class ChattingStateUtils extends StateUtils {
         Optional<User> optionalRecipient = userService.get(recipientId);
         User recipient;
         if (optionalRecipient.isEmpty()) { // TODO Восстановление инфы
-            recipient = new User(recipientId, "Cyberpunk2077", UserState.DEFAULT, "Вася Пупкин");
+            recipient = new User(recipientId, null, UserState.DEFAULT, "User");
             userService.save(recipient);
         } else {
             recipient = optionalRecipient.get();
@@ -142,11 +142,14 @@ public class ChattingStateUtils extends StateUtils {
     }
 
     private void handleConnectionError(long userId, String username) {
-        messageSender.sendMessage(userId, "Похоже соединение разорвалось...");
+        messageSender.sendMessage(userId, """
+                Похоже соединение разорвалось...
+                /help - для списка команд в этот тяжелый момент
+                """);
         Optional<User> optionalSender = userService.get(userId);
         User sender;
         if (optionalSender.isEmpty()) { // TODO Восстановление инфы
-            sender = new User(userId, "Cyberpunk2077", UserState.DEFAULT, username);
+            sender = new User(userId, null, UserState.DEFAULT, username);
             userService.save(sender);
         } else {
             sender = optionalSender.get();
@@ -159,7 +162,10 @@ public class ChattingStateUtils extends StateUtils {
         return Optional.ofNullable(userConnectionService.getInProgressConnectionByUserId(senderId).orElseGet(() -> {
             messageSender.sendMessage(
                     senderId,
-                    "Не могу найти Вашего собеседника! Видимо, он решил поиграть в прятки..."
+                    """
+                            Не могу найти Вашего собеседника! Видимо, он решил поиграть в прятки...
+                            /help - для списка команд в этот тяжелый момент
+                            """
             );
             LOG.warn("Can't handle: No such user connection for sender {}", senderId);
             return null;

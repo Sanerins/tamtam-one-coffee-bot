@@ -5,6 +5,8 @@ import one.coffee.ParentClasses.HandlerAnnotation;
 import one.coffee.commands.StateHandler;
 import one.coffee.commands.StateResult;
 import one.coffee.keyboards.DefaultStateKeyboard;
+import one.coffee.keyboards.Keyboard;
+import one.coffee.keyboards.WaitingKeyboard;
 import one.coffee.sql.states.UserState;
 import one.coffee.utils.DefaultStateUtils;
 
@@ -49,5 +51,12 @@ public class DefaultStateHandler extends StateHandler {
     @HandlerAnnotation("/profile")
     private StateResult handleProfile(Message message) {
         return utils.handleProfile(message.getSender().getUserId(), message.getSender().getUsername());
+    }
+
+    @Override
+    protected Keyboard getStateBaseCommandsKeyboard() {
+        return new DefaultStateKeyboard("""
+                        Напиши мне лучше команду /help
+                        """);
     }
 }

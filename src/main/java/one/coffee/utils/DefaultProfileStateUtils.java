@@ -8,11 +8,11 @@ import org.springframework.stereotype.Component;
 
 import one.coffee.ParentClasses.Result;
 import one.coffee.commands.StateResult;
-import one.coffee.keyboards.DefaultProfileStateKeyboard;
 import one.coffee.keyboards.DefaultStateKeyboard;
 import one.coffee.keyboards.FillProfileKeyboard;
 import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
+import one.coffee.sql.user.UserService;
 
 @Component
 public class DefaultProfileStateUtils extends StateUtils {
@@ -20,9 +20,7 @@ public class DefaultProfileStateUtils extends StateUtils {
 
     public StateResult finishProfile(long userId) {
         User user = userService.get(userId).get();
-        if (!user.getUsername().isBlank()
-                && !user.getCity().isBlank()
-                && !user.getUserInfo().isBlank()) {
+        if (UserService.checkProfileValid(user)) {
             user.setState(UserState.DEFAULT);
             userService.save(user);
             messageSender.sendKeyboard(user.getId(), new DefaultStateKeyboard("Вы успешно создали профиль! Можно приступать к общению!"));

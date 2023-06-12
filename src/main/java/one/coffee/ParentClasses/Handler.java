@@ -1,6 +1,7 @@
 package one.coffee.ParentClasses;
 
 import chat.tamtam.botapi.model.Message;
+import one.coffee.keyboards.Keyboard;
 import one.coffee.sql.user.UserService;
 import one.coffee.sql.user_connection.UserConnectionService;
 import one.coffee.utils.MessageSender;
@@ -48,6 +49,10 @@ public abstract class Handler
 
     protected Handler() {
         handlers = new HashMap<>();
+    }
+
+    protected Keyboard getStateBaseCommandsKeyboard() {
+        return null;
     }
 
     // Дальше лучше не смотреть - сложная логика

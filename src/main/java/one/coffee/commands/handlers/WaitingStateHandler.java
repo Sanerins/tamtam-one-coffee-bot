@@ -5,6 +5,7 @@ import one.coffee.ParentClasses.HandlerAnnotation;
 import one.coffee.ParentClasses.Result;
 import one.coffee.commands.StateHandler;
 import one.coffee.commands.StateResult;
+import one.coffee.keyboards.Keyboard;
 import one.coffee.keyboards.WaitingKeyboard;
 import one.coffee.sql.states.UserState;
 import one.coffee.utils.WaitingStateUtils;
@@ -44,5 +45,12 @@ public class WaitingStateHandler extends StateHandler {
     @HandlerAnnotation("/stop")
     private StateResult handleStop(Message message) {
         return utils.handleStop(message.getSender().getUserId(), message.getSender().getUsername());
+    }
+
+    @Override
+    protected Keyboard getStateBaseCommandsKeyboard() {
+        return new WaitingKeyboard("""
+                        Напиши мне лучше команду /help
+                        """);
     }
 }

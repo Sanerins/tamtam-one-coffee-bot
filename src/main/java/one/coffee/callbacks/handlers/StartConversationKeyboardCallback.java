@@ -7,6 +7,7 @@ import chat.tamtam.botapi.model.Message;
 import one.coffee.ParentClasses.Result;
 import one.coffee.callbacks.CallbackResult;
 import one.coffee.callbacks.KeyboardCallbackHandler;
+import one.coffee.keyboards.DefaultStateKeyboard;
 import one.coffee.keyboards.InConversationKeyboard;
 import one.coffee.keyboards.Keyboard;
 import one.coffee.keyboards.StartConversationKeyboard;
@@ -14,6 +15,7 @@ import one.coffee.keyboards.buttons.ApproveButton;
 import one.coffee.keyboards.buttons.ButtonAnnotation;
 import one.coffee.keyboards.buttons.EndConversationButton;
 import one.coffee.keyboards.buttons.SendHelloButton;
+import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.utils.ChattingStateUtils;
 
@@ -35,5 +37,17 @@ public class StartConversationKeyboardCallback extends KeyboardCallbackHandler {
         messageSender.sendMessage(recipient.getId(), "Привет!)");
         messageSender.sendMessage(sender.getId(), "Отправили собеседнику \"Привет!)\"");
         return new CallbackResult(Result.ResultState.SUCCESS);
+    }
+
+    @Override
+    protected Keyboard getStateBaseCommandsKeyboard() {
+        return new StartConversationKeyboard("""
+                        Напиши мне лучше команду /help
+                        """);
+    }
+
+    @Override
+    protected boolean isStateAllowed(UserState state) {
+        return state == UserState.CHATTING;
     }
 }

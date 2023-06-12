@@ -5,10 +5,14 @@ import one.coffee.ParentClasses.Handler;
 import one.coffee.ParentClasses.Result;
 import one.coffee.keyboards.Keyboard;
 import one.coffee.keyboards.buttons.ButtonAnnotation;
+import one.coffee.sql.states.UserState;
+import one.coffee.sql.user.User;
+
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import java.lang.annotation.Annotation;
+import java.util.Optional;
 
 @Component
 public abstract class KeyboardCallbackHandler extends Handler {
@@ -23,8 +27,12 @@ public abstract class KeyboardCallbackHandler extends Handler {
     @Override
     protected <R extends Result> R handleDefault(Message message) {
         messageSender.sendMessage(
-                message.getSender().getUserId(),
-                "Такой кнопки не знаю :("
+                message.getRecipient().getUserId(),
+                """
+                        Такой кнопки не знаю :(
+                        Ну или в данный момент она неактуальна)
+                        Напиши лучше /help для получения списка команд и кнопок
+                        """
         );
         return (R) new CallbackResult(Result.ResultState.ERROR, "Unknown button");
     }
@@ -32,6 +40,11 @@ public abstract class KeyboardCallbackHandler extends Handler {
     public CallbackResult handle(Message message, String buttonPrefix, String additionalPayload) {
         Handle handler = handlers.get(buttonPrefix);
         if (handler == null) {
+            return handleDefault(message);
+        }
+
+        Optional<User> user = userService.get(message.getRecipient().getUserId());
+        if (user.isEmpty() || !isStateAllowed(user.get().getState())) {
             return handleDefault(message);
         }
 
@@ -45,6 +58,10 @@ public abstract class KeyboardCallbackHandler extends Handler {
         } catch (Throwable throwable) {
             throw new RuntimeException(throwable);
         }
+    }
+
+    protected boolean isStateAllowed(UserState state) {
+        return true;
     }
 
     @NotNull

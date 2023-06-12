@@ -11,10 +11,12 @@ import one.coffee.ParentClasses.Result;
 import one.coffee.commands.StateResult;
 import one.coffee.keyboards.FillProfileKeyboard;
 import one.coffee.keyboards.InConversationKeyboard;
+import one.coffee.keyboards.InitialProfileStateKeyboard;
 import one.coffee.keyboards.StartConversationKeyboard;
 import one.coffee.keyboards.WaitingKeyboard;
 import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
+import one.coffee.sql.user.UserService;
 import one.coffee.sql.user_connection.UserConnection;
 
 @Component
@@ -22,6 +24,16 @@ public class DefaultStateUtils extends StateUtils {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public StateResult handleStart(long userId, String username) {
+        Optional<User> user = userService.get(userId);
+
+        if (user.isEmpty() || !UserService.checkProfileValid(user.get())) {
+            User sender = user.orElseGet(() -> new User(userId, null, UserState.DEFAULT, username));
+            sender.setState(UserState.PROFILE_DEFAULT);
+            userService.save(sender);
+            messageSender.sendKeyboard(userId, new InitialProfileStateKeyboard("Ваш профиль еще не полностью заполнен!"));
+            return new StateResult(Result.ResultState.SUCCESS);
+        }
+
         Optional<User> chattingCandidateOptional = userService.getChattingCandidate(userId);
         if (chattingCandidateOptional.isEmpty()) {
             startTheWait(userId, username);
@@ -47,10 +59,10 @@ public class DefaultStateUtils extends StateUtils {
 
         Optional<User> optionalSender = userService.get(userId);
         User sender;
-        sender = optionalSender.orElseGet(() -> new User(userId, "Cyberpunk2077", UserState.DEFAULT, username));
+        sender = optionalSender.orElseGet(() -> new User(userId, null, UserState.DEFAULT, username));
         sender.setState(UserState.PROFILE_DEFAULT);
         userService.save(sender);
-        messageSender.sendKeyboard(userId, new FillProfileKeyboard("Какое из дейсвий вы хотите сделать со своим профилем?"));
+        messageSender.sendKeyboard(userId, new FillProfileKeyboard("Какое из действий вы хотите сделать со своим профилем?"));
         return new StateResult(Result.ResultState.SUCCESS);
     }
 
@@ -60,7 +72,7 @@ public class DefaultStateUtils extends StateUtils {
         User sender;
         // НЕ РЕФАКТОРИТЬ!!! TODO
         // См. возможные причины в OneCoffeeUpdateHandler::map(MessageCreatedUpdate)
-        sender = optionalSender.orElseGet(() -> new User(userId, "Cyberpunk2077", UserState.DEFAULT, username));
+        sender = optionalSender.orElseGet(() -> new User(userId, null, UserState.DEFAULT, username));
         sender.setState(UserState.WAITING);
         userService.save(sender);
         messageSender.sendKeyboard(userId,
