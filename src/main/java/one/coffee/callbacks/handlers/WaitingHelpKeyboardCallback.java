@@ -12,6 +12,7 @@ import one.coffee.keyboards.WaitingKeyboard;
 import one.coffee.keyboards.buttons.ButtonAnnotation;
 import one.coffee.keyboards.buttons.ProfileButton;
 import one.coffee.keyboards.buttons.StopButton;
+import one.coffee.sql.states.UserState;
 import one.coffee.utils.WaitingStateUtils;
 
 @Component
@@ -35,5 +36,10 @@ public class WaitingHelpKeyboardCallback extends KeyboardCallbackHandler {
         return new WaitingKeyboard("""
                         Напиши мне лучше команду /help
                         """);
+    }
+
+    @Override
+    protected boolean isStateAllowed(UserState state) {
+        return state == UserState.WAITING;
     }
 }

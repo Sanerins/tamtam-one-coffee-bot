@@ -15,6 +15,7 @@ import one.coffee.keyboards.buttons.ButtonAnnotation;
 import one.coffee.keyboards.buttons.FinishProfileButton;
 import one.coffee.keyboards.buttons.ProfileButton;
 import one.coffee.keyboards.buttons.StartButton;
+import one.coffee.sql.states.UserState;
 import one.coffee.utils.DefaultProfileStateUtils;
 
 @Component
@@ -44,5 +45,10 @@ public class DefaultProfileHelpKeyboardCallback extends KeyboardCallbackHandler 
         return new DefaultProfileStateKeyboard("""
                         Напиши мне лучше команду /help
                         """);
+    }
+
+    @Override
+    protected boolean isStateAllowed(UserState state) {
+        return state == UserState.PROFILE_DEFAULT;
     }
 }

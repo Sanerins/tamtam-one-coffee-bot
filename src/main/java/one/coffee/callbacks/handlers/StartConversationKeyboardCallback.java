@@ -15,6 +15,7 @@ import one.coffee.keyboards.buttons.ApproveButton;
 import one.coffee.keyboards.buttons.ButtonAnnotation;
 import one.coffee.keyboards.buttons.EndConversationButton;
 import one.coffee.keyboards.buttons.SendHelloButton;
+import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
 import one.coffee.utils.ChattingStateUtils;
 
@@ -43,5 +44,10 @@ public class StartConversationKeyboardCallback extends KeyboardCallbackHandler {
         return new StartConversationKeyboard("""
                         Напиши мне лучше команду /help
                         """);
+    }
+
+    @Override
+    protected boolean isStateAllowed(UserState state) {
+        return state == UserState.CHATTING;
     }
 }

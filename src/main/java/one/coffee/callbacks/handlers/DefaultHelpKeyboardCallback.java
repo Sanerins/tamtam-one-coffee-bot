@@ -12,6 +12,7 @@ import one.coffee.keyboards.WaitingKeyboard;
 import one.coffee.keyboards.buttons.ButtonAnnotation;
 import one.coffee.keyboards.buttons.ProfileButton;
 import one.coffee.keyboards.buttons.StartButton;
+import one.coffee.sql.states.UserState;
 import one.coffee.utils.DefaultStateUtils;
 
 @Component
@@ -40,5 +41,10 @@ public class DefaultHelpKeyboardCallback extends KeyboardCallbackHandler {
         return new DefaultStateKeyboard("""
                         Напиши мне лучше команду /help
                         """);
+    }
+
+    @Override
+    protected boolean isStateAllowed(UserState state) {
+        return state == UserState.DEFAULT;
     }
 }

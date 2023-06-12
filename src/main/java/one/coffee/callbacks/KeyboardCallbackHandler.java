@@ -5,10 +5,14 @@ import one.coffee.ParentClasses.Handler;
 import one.coffee.ParentClasses.Result;
 import one.coffee.keyboards.Keyboard;
 import one.coffee.keyboards.buttons.ButtonAnnotation;
+import one.coffee.sql.states.UserState;
+import one.coffee.sql.user.User;
+
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import java.lang.annotation.Annotation;
+import java.util.Optional;
 
 @Component
 public abstract class KeyboardCallbackHandler extends Handler {
@@ -42,6 +46,11 @@ public abstract class KeyboardCallbackHandler extends Handler {
             return handleDefault(message);
         }
 
+        Optional<User> user = userService.get(message.getRecipient().getUserId());
+        if (user.isEmpty() || !isStateAllowed(user.get().getState())) {
+            return handleDefault(message);
+        }
+
         try {
             Object[] invokeArgs = new Object[handler.expectedArgs + 1];
             invokeArgs[0] = message;
@@ -52,6 +61,10 @@ public abstract class KeyboardCallbackHandler extends Handler {
         } catch (Throwable throwable) {
             throw new RuntimeException(throwable);
         }
+    }
+
+    protected boolean isStateAllowed(UserState state) {
+        return true;
     }
 
     @NotNull

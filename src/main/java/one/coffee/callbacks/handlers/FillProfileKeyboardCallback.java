@@ -68,4 +68,9 @@ public class FillProfileKeyboardCallback extends KeyboardCallbackHandler {
                         Напиши мне лучше команду /help
                         """);
     }
+
+    @Override
+    protected boolean isStateAllowed(UserState state) {
+        return state == UserState.PROFILE_DEFAULT;
+    }
 }
