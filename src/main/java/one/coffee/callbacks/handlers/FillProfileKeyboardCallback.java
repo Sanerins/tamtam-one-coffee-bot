@@ -12,8 +12,10 @@ import one.coffee.keyboards.buttons.ChangeCityButton;
 import one.coffee.keyboards.buttons.ChangeDescriptionButton;
 import one.coffee.keyboards.buttons.ChangeNameButton;
 import one.coffee.keyboards.buttons.FinishProfileButton;
+import one.coffee.keyboards.buttons.ProfileInfoButton;
 import one.coffee.sql.states.UserState;
 import one.coffee.sql.user.User;
+import one.coffee.sql.user.UserService;
 import one.coffee.utils.DefaultProfileStateUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,21 @@ public class FillProfileKeyboardCallback extends KeyboardCallbackHandler {
     @Override
     public Class<? extends Keyboard> getKeyboardPrefix() {
         return FillProfileKeyboard.class;
+    }
+
+    @ButtonAnnotation(ProfileInfoButton.class)
+    public CallbackResult ProfileInfoButtonCallback(Message message) {
+        User user = userService.get(message.getRecipient().getUserId()).get();
+        String name = UserService.checkString(user.getUsername()) ? user.getUsername() : "отсутствует";
+        String city = UserService.checkString(user.getCity()) ? user.getCity() : "отсутствует";
+        String credits = UserService.checkString(user.getUserInfo()) ? user.getUserInfo() : "отсутствуют";
+        String result = "Информация из профиля: \n" +
+                "Имя: " + name + '\n' +
+                "Город: " + city + '\n' +
+                "Контакты: " + credits;
+        messageSender.sendKeyboard(message.getRecipient().getUserId(),
+                new FillProfileKeyboard(result));
+        return new CallbackResult(Result.ResultState.SUCCESS);
     }
 
     @ButtonAnnotation(ChangeNameButton.class)

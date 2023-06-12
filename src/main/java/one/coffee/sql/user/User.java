@@ -22,7 +22,7 @@ public class User implements Entity {
 
     // От этого надо избавиться
     public User(long id, String city, UserState state, String username) {
-        this(id, city, state, SQLUtils.DEFAULT_ID, username, "Живу на болоте");
+        this(id, city, state, SQLUtils.DEFAULT_ID, username, "");
     }
 
     public User(long id, String city, UserState state, long connectionId, String username, String userInfo) {

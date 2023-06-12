@@ -54,7 +54,7 @@ public class OneCoffeeBotUpdateMapper extends DefaultUpdateMapper<Result> {
     @Override
     public StateResult map(BotStartedUpdate model) {
         long userId = Objects.requireNonNull(model.getUser().getUserId(), "UserId is null");
-        User user = new User(userId, "Cyberpunk2077", UserState.PROFILE_DEFAULT, SQLUtils.DEFAULT_ID, model.getUser().getUsername(), null);
+        User user = new User(userId, null, UserState.PROFILE_DEFAULT, SQLUtils.DEFAULT_ID, model.getUser().getUsername(), null);
         userService.save(user);
         messageSender.sendKeyboard(userId, new InitialProfileStateKeyboard("Привет! Помогу тебе найти классного собеседника, жми на кнопку, чтобы заполнить свой профиль!"));
         return new StateResult(StateResult.ResultState.SUCCESS);
@@ -74,7 +74,7 @@ public class OneCoffeeBotUpdateMapper extends DefaultUpdateMapper<Result> {
             // Действия:
             // 1. Пересоздание пользователя (реализуется).
             LOG.warn("No user with id {} in DB! It will be recreated.", userId);
-            user = new User(userId, "Cyberpunk2077", UserState.DEFAULT, update.getMessage().getSender().getUsername());
+            user = new User(userId, null, UserState.DEFAULT, update.getMessage().getSender().getUsername());
             userService.save(user);
         } else {
             user = optionalUser.get();
