@@ -54,7 +54,7 @@ public class UserServiceTest
     }
 
     @Test
-    void invalidUserCity1() {
+    void validUserCity1() {
         final long userId = 123;
         final String userCity = null;
         final UserState state = UserState.DEFAULT;
@@ -62,7 +62,7 @@ public class UserServiceTest
         User user = new User(userId, userCity, state, connectionId, "Вася Пупкин", "Живу на болоте");
 
         userService.save(user);
-        assertTrue(userService.get(userId).isEmpty());
+        assertTrue(userService.get(userId).isPresent());
     }
 
     @Test
